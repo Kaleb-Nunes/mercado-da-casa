@@ -20,3 +20,16 @@ Foto do cupom → Claude lê → `tools/gerar_importacao.py cupom.json` gera a m
 - Android: tocar no link.
 - iPhone: abrir o app, tocar em **Importar compra do cupom** e colar a mensagem inteira (o app da tela de início guarda os dados separado do Safari).
 O app lança o gasto do mês, guarda o preço de cada item naquele mercado, cria os itens novos, tira da lista o que foi comprado e não deixa importar a mesma nota duas vezes (usa a chave de acesso da NFC-e como id).
+
+## Ofertas da semana
+
+Tela **Ofertas da semana** (cartão no Início e botão em Preços). Lê o `ofertas.json` deste repositório toda vez que o app abre com internet e guarda uma cópia pra usar sem internet.
+
+O `ofertas.json` tem:
+- `encartes`: encartes valendo nos mercados de BC e Camboriú, com período e link. Somem sozinhos quando vencem.
+- `rotinas`: dias fixos de oferta (`dias`: 0 = domingo … 6 = sábado). O app avisa "Hoje tem…".
+- `avisos`: recados com data pra sumir (`ate`), com fonte.
+- `ofertas`: preços de oferta por produto (`m`, `nome`, `cat`, `por`, `p`, `de`, `ini`, `fim`, `item` opcional).
+- `sem_encarte`: mercados que não publicam encarte na internet.
+
+Preço de oferta por produto também entra por código, igual ao cupom: foto do encarte → Claude lê → `tools/gerar_ofertas.py encarte.json` gera a mensagem com `#ofertas=...`. No app, cada oferta aparece comparada com o último preço pago, marcada se estiver fora da dieta, e o botão **+ Lista** põe o item na lista com o preço da oferta. Ao finalizar a compra no mesmo mercado da oferta, o preço guardado é o da oferta.

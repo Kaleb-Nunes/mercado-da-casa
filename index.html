@@ -236,6 +236,39 @@ textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-h
 .tips .ti{font-size:20px;flex:none;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 .cheap-line{font-size:12px;font-weight:700;color:var(--good);margin-top:4px}
 
+/* ---------- Ofertas ---------- */
+.back{display:inline-flex;align-items:center;gap:2px;background:none;border:0;padding:2px 0 6px;color:var(--muted);font-weight:600;font-size:14px}
+.back svg{width:18px;height:18px}
+.ofcard{display:flex;flex-direction:column;gap:10px;padding:16px 18px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:20px;box-shadow:var(--shadow)}
+.of-line{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.4}
+.of-line .ti{font-size:20px;flex:none;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.of-line b{color:var(--ink)}
+.of-go{font-size:13px;font-weight:700;color:var(--good)}
+.today{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--good-soft)}
+.today .ti{font-size:24px;flex:none;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.today b{display:block;font-size:15px}
+.today span{font-size:14px;color:var(--muted)}
+.enc{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+.rows li:first-child .enc,.rows li:first-child .ofrow,.rows li:first-child .rot{border-top:0}
+.enc .go{font-weight:700;font-size:13px;color:var(--good);white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:1px;white-space:nowrap}
+.pill.hot{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.pill.ok{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.ofrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.of-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.of-de{font-size:12px;color:var(--muted);text-decoration:line-through;font-variant-numeric:tabular-nums}
+.of-add{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-weight:700;font-size:13px;white-space:nowrap}
+.of-add.on{background:var(--good-soft);color:var(--good);border-color:transparent}
+.of-cmp{font-size:12px;font-weight:700;margin-top:4px}
+.of-cmp.good{color:var(--good)}
+.of-cmp.bad{color:var(--warn)}
+.rot{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:12px 18px;border-top:1px solid var(--line);font-size:14px}
+.rot .ti{grid-row:span 2;font-size:20px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.rot b{font-size:15px}
+.rot span{color:var(--muted)}
+.src{font-size:12px;color:var(--muted)}
+.src a{color:var(--muted)}
+
 /* ---------- Barra inferior ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -303,6 +336,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   <section class="view" id="view-precos" aria-label="Preços"></section>
   <section class="view" id="view-lista" aria-label="Lista"></section>
   <section class="view" id="view-rotulo" aria-label="Dieta"></section>
+  <section class="view" id="view-ofertas" aria-label="Ofertas da semana"></section>
 </main>
 
 <nav class="tabs" aria-label="Navegação">
@@ -443,8 +477,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       }).join("") + '</div><p class="note-sm">A foto fica só neste celular e não entra no backup.</p></div>';
   }
   var MK_COLORS = ["#0F3B2E","#B4531A","#2F5D8A","#7A3E6A","#8A6A1F","#3B6E4F","#9C2F3B","#36507A"];
-  function mkColor(name){ var n = norm(name), x = 0; for(var i = 0; i < n.length; i++){ x = (x * 31 + n.charCodeAt(i)) >>> 0; } return MK_COLORS[x % MK_COLORS.length]; }
-  function mkInitial(name){ var w = String(name || "?").trim().split(/\s+/)[0] || "?"; return w.charAt(0).toUpperCase(); }
+  /* "Koch BC", "Supermercados Koch" e "Koch" são o mesmo mercado: a chave é a primeira palavra que não é genérica */
+  function mkKey(name){ var n = norm(name).replace(/[^a-z0-9 ]/g, " ").replace(/^\s*((supermercados?|super|mercados?|rede|atacado)\s+)+/, "").trim(); return n.split(/\s+/)[0] || n; }
+  function sameMk(a, b){ return !!a && !!b && mkKey(a) === mkKey(b); }
+  function mkColor(name){ var n = mkKey(name), x = 0; for(var i = 0; i < n.length; i++){ x = (x * 31 + n.charCodeAt(i)) >>> 0; } return MK_COLORS[x % MK_COLORS.length]; }
+  function mkInitial(name){ var w = mkKey(name) || "?"; return w.charAt(0).toUpperCase(); }
   function mkBadge(name, cls){ if(!name) return ""; return '<span class="mk ' + (cls || "") + '" style="background:' + mkColor(name) + '" aria-hidden="true">' + esc(mkInitial(name)) + '</span>'; }
   function priceInMonth(it, key){ var r = null; (it.hist || []).forEach(function(x){ if(String(x.d).slice(0,7) === key) r = x; }); return r; }
   function priceBefore(it, key){ var r = null; (it.hist || []).forEach(function(x){ if(String(x.d).slice(0,7) < key) r = x; }); return r; }
@@ -477,6 +514,14 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       var left = dim - day + 1, sobra = orc - gasto;
       if(sobra < 0) out.push(["⚠️", "O mês já passou " + brl(-sobra) + " do orçamento. Até o dia " + dim + ", só o essencial da lista."]);
       else if(gasto > 0 && sobra / left < 8) out.push(["⚠️", "Sobram " + brl(sobra) + " pra " + left + (left === 1 ? " dia" : " dias") + " (" + brl(sobra / left) + " por dia). Priorize proteína e o básico da lista."]);
+    }
+    if(k === nowKey){
+      var om = ofertasPorItem(), lst = state.items.filter(function(i){ return i.lista && om[i.id]; });
+      if(!lst.length) lst = state.items.filter(function(i){ return i.basico && om[i.id] && cur(i); });
+      if(lst.length){
+        var bo = lst.map(function(i){ var c = cur(i); return {it: i, o: om[i.id], e: c ? c.p - om[i.id].p : 0}; }).sort(function(a, b){ return b.e - a.e; })[0];
+        out.push(["🏷️", bo.it.nome + " está em oferta no " + bo.o.m + " por " + brl(bo.o.p) + (bo.e > 0 ? ", " + brl(bo.e) + " a menos que da última vez" : "") + (bo.o.fim ? " (" + ateTxt(bo.o.fim) + ")" : "") + "."]);
+      }
     }
     var ch = monthChanges(k).filter(function(c){ return c.pct >= 8; });
     if(ch.length){ var c0 = ch[0]; out.push(["📈", c0.it.nome + " subiu " + pctTxt(c0.pct) + " (de " + brl(c0.a.p) + " pra " + brl(c0.b.p) + "). Compare em outro mercado antes de levar."]); }
@@ -517,6 +562,96 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       if(new RegExp("(^|[^a-z0-9])" + escRe(k) + "($|[^a-z0-9])").test(t)) return ev[i];
     }
     return null;
+  }
+
+  /* ---------- Ofertas: encartes da semana (ofertas.json) e ofertas importadas ---------- */
+  var OF_KEY = "despensa-ofertas", remote = null;
+  var DIAS = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+  function addDays(s, n){ var p = String(s).split("-"); var d = new Date(+p[0], +p[1]-1, +p[2] + n); return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function weekday(s){ var p = String(s).split("-"); return new Date(+p[0], +p[1]-1, +p[2]).getDay(); }
+  function ateTxt(fim){
+    if(!fim) return "";
+    var n = daysUntil(fim);
+    if(n < 0) return "encerrada"; if(n === 0) return "termina hoje"; if(n === 1) return "termina amanhã";
+    if(n <= 6) return "até " + DIAS[weekday(fim)] + ", " + dShort(fim);
+    return "até " + dShort(fim);
+  }
+  function diasTxt(arr){
+    var d = (arr || []).slice().sort(function(a, b){ return a - b; }).map(function(i){ return DIAS[i]; });
+    if(d.length <= 1) return d.join("");
+    return d.slice(0, -1).join(", ") + " e " + d[d.length - 1];
+  }
+  function validRemote(o){ return o && o.v === 1 && /^\d{4}-\d{2}-\d{2}$/.test(o.atualizado || ""); }
+  function loadRemote(){ try{ var r = localStorage.getItem(OF_KEY); if(r){ var o = JSON.parse(r); if(validRemote(o)) remote = o; } }catch(e){} }
+  function fetchRemote(){
+    if(!window.fetch || location.protocol === "file:" || location.hostname.indexOf("claude") >= 0) return;
+    fetch("ofertas.json", {cache: "no-store"}).then(function(r){ return r.ok ? r.json() : null; }).then(function(o){
+      if(!validRemote(o)) return;
+      if(remote && remote.atualizado === o.atualizado && JSON.stringify(remote) === JSON.stringify(o)) return;
+      remote = o;
+      try{ localStorage.setItem(OF_KEY, JSON.stringify(o)); }catch(e){}
+      if(ui.view === "inicio" || ui.view === "ofertas" || ui.view === "precos" || ui.view === "lista") render();
+    }).catch(function(){});
+  }
+  function encartesAtivos(){
+    var t = todayStr(), mine = meusMercados();
+    return ((remote && remote.encartes) || []).filter(function(e){ return e && e.m && (!e.fim || e.fim >= t) && (!e.ini || e.ini <= t); })
+      .sort(function(a, b){ var ma = mine[mkKey(a.m)] ? 0 : 1, mb = mine[mkKey(b.m)] ? 0 : 1; return ma - mb || (a.fim || "9") .localeCompare(b.fim || "9") || a.m.localeCompare(b.m); });
+  }
+  function rotinasDoDia(w){ return ((remote && remote.rotinas) || []).filter(function(r){ return r && (r.dias || []).indexOf(w) >= 0; }); }
+  function avisosAtivos(){
+    var t = todayStr(), lidos = state.avisosLidos || [];
+    return ((remote && remote.avisos) || []).filter(function(a){ return a && a.id && (!a.ate || a.ate >= t) && lidos.indexOf(a.id) < 0; });
+  }
+  function meusMercados(){
+    var s = {};
+    Object.keys(state.meses).forEach(function(k){ state.meses[k].gastos.forEach(function(g){ if(g.local) s[mkKey(g.local)] = 1; }); });
+    state.items.forEach(function(it){ (it.hist || []).forEach(function(x){ if(x.m) s[mkKey(x.m)] = 1; }); });
+    return s;
+  }
+  function allOfertas(){
+    var t = todayStr(), out = [];
+    ((remote && remote.ofertas) || []).forEach(function(o, i){ if(o && o.nome) out.push({id: o.id || ("r" + i + "-" + norm(o.nome).slice(0, 12)), m: o.m, nome: o.nome, cat: o.cat, por: o.por, p: +o.p, de: +o.de || 0, ini: o.ini || "", fim: o.fim || "", item: o.item || "", url: o.url || "", t: o.t || ""}); });
+    (state.ofertas || []).forEach(function(o){ out.push(o); });
+    return out.filter(function(o){ return o.m && o.p > 0 && (!o.fim || o.fim >= t) && (!o.ini || o.ini <= addDays(t, 2)); });
+  }
+  function findOferta(id){ var a = allOfertas(); for(var i = 0; i < a.length; i++){ if(a[i].id === id) return a[i]; } return null; }
+  var STOP = {"de":1,"da":1,"do":1,"das":1,"dos":1,"com":1,"tipo":1,"para":1,"sem":1,"pct":1,"pacote":1,"unidade":1,"bandeja":1};
+  function toks(s){ return norm(s).replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(function(w){ return w.length >= 3 && !STOP[w] && !/\d/.test(w); }); }
+  function sizeKey(s){
+    var t = norm(s).replace(/,/g, "."), m = t.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml|l|un)\b/);
+    if(!m) return /(^|[^a-z])kg($|[^a-z])/.test(t) ? "kg" : "";
+    var v = parseFloat(m[1]), u = m[2];
+    if(u === "kg"){ v *= 1000; u = "g"; } if(u === "l"){ v *= 1000; u = "ml"; }
+    return Math.round(v) + u;
+  }
+  /* Liga a oferta a um item cadastrado: pelo id, pelo nome igual ou pelo mesmo produto no mesmo tamanho */
+  function matchItem(o){
+    if(o.item){ var a = findItem(o.item); if(a) return a; }
+    var b = findByName(o.nome); if(b) return b;
+    var ot = toks(o.nome), osz = sizeKey((o.por || "") + " " + o.nome), best = null;
+    if(!ot.length) return null;
+    state.items.forEach(function(it){
+      if(best) return;
+      var tt = toks(it.nome); if(!tt.length || tt[0] !== ot[0]) return;
+      if(tt.length > 1 && ot.length > 1 && tt[1] !== ot[1]) return;
+      var isz = sizeKey((it.por || "") + " " + it.nome);
+      if(isz !== osz) return;
+      best = it;
+    });
+    return best;
+  }
+  function ofertaAtiva(it){ var o = it && it.oferta; if(!o || !(o.p > 0)) return null; if(o.fim && o.fim < todayStr()) return null; return o; }
+  function precoEfetivo(it){ var o = ofertaAtiva(it), c = cur(it); if(o && (!c || o.p < c.p)) return o.p; return c ? c.p : 0; }
+  /* Melhor oferta da semana pra cada item: só entra se for mais barata do que o último preço pago */
+  function ofertasPorItem(){
+    var map = {};
+    allOfertas().forEach(function(o){
+      var it = matchItem(o); if(!it) return;
+      var c = cur(it); if(c && !(o.p < c.p * 0.99)) return;
+      if(!map[it.id] || o.p < map[it.id].p) map[it.id] = o;
+    });
+    return map;
   }
 
   /* ---------- Estado ---------- */
@@ -630,6 +765,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<button class="qbtn" type="button" data-act="novo-gasto"><span class="ic">' + IC.plus + '</span><span>Anotar gasto<small>leva 10 segundos</small></span></button>' +
       '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button>' +
       '<button class="qbtn" type="button" data-act="colar-import" style="grid-column:1/-1"><span class="ic">' + IC.receipt + '</span><span>Importar compra do cupom<small>cole o código que chegou no WhatsApp</small></span></button></div>';
+    if(isNow){ var och = ofertasCardHtml(); if(och) h += '<div class="section"><div class="s-head"><span class="s-title">Ofertas da semana</span>' + (remote ? '<span class="s-meta">atualizado ' + dShort(remote.atualizado) + '</span>' : '') + '</div>' + och + '</div>'; }
     var dc = dicas(k);
     if(dc.length) h += '<div class="section"><div class="s-head"><span class="s-title">Dicas pra economizar</span></div><div class="card"><ul class="tips">' +
       dc.map(function(d){ return '<li><span class="ti" aria-hidden="true">' + d[0] + '</span><span>' + esc(d[1]) + '</span></li>'; }).join("") + '</ul></div></div>';
@@ -680,6 +816,27 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var a = document.getElementById("wa-resumo");
     if(a) a.href = "https://wa.me/?text=" + encodeURIComponent(resumoTexto());
   }
+  var TIPO_OF = {"Hortifruti":"oferta de hortifruti","Carnes":"oferta de carnes","Semanal":"encarte semanal"};
+  function tipoTxt(r){ return TIPO_OF[r.tipo] || ("oferta de " + String(r.tipo || "").toLowerCase()); }
+  function ofertasCardHtml(){
+    var ofs = allOfertas(); if(!remote && !ofs.length) return "";
+    var w = new Date().getDay();
+    var hoje = rotinasDoDia(w).filter(function(r){ return r.tipo !== "Semanal"; });
+    var amanha = rotinasDoDia((w + 1) % 7).filter(function(r){ return r.tipo !== "Semanal" && !hoje.some(function(x){ return sameMk(x.m, r.m) && x.tipo === r.tipo; }); });
+    var enc = encartesAtivos(), om = ofertasPorItem(), boas = Object.keys(om).filter(function(k){ return cur(findItem(k)); }).length, lines = [];
+    hoje.slice(0, 2).forEach(function(r){ lines.push([r.icone || "🏷️", '<b>Hoje tem ' + esc(tipoTxt(r)) + ' no ' + esc(r.m) + '</b>']); });
+    if(!lines.length) amanha.slice(0, 1).forEach(function(r){ lines.push([r.icone || "🏷️", '<b>Amanhã tem ' + esc(tipoTxt(r)) + ' no ' + esc(r.m) + '</b>']); });
+    if(boas) lines.push(["💚", '<b>' + boas + (boas === 1 ? ' oferta mais barata' : ' ofertas mais baratas') + '</b> do que você pagou da última vez']);
+    else if(ofs.length) lines.push(["🏷️", ofs.length + (ofs.length === 1 ? ' oferta com preço' : ' ofertas com preço') + ' cadastradas']);
+    if(enc.length){
+      var soon = enc.slice().sort(function(a, b){ return (a.fim || "9").localeCompare(b.fim || "9"); })[0];
+      lines.push(["📰", enc.length + (enc.length === 1 ? ' encarte valendo' : ' encartes valendo') + (soon && soon.fim && daysUntil(soon.fim) <= 2 ? ' · ' + esc(soon.titulo || soon.m) + ' ' + esc(ateTxt(soon.fim)) : '')]);
+    }
+    if(!lines.length) lines.push(["📰", "Nenhum encarte valendo agora. A lista volta a encher na próxima atualização."]);
+    return '<button class="ofcard" type="button" data-act="nav" data-view="ofertas">' +
+      lines.map(function(l){ return '<span class="of-line"><span class="ti" aria-hidden="true">' + l[0] + '</span><span>' + l[1] + '</span></span>'; }).join("") +
+      '<span class="of-go">Ver ofertas da semana ›</span></button>';
+  }
   function listaCount(){ var n = state.items.filter(function(i){ return i.lista; }).length; return n ? n + (n === 1 ? " item" : " itens") + " pra comprar" : "vazia"; }
   function resumoTexto(){
     var k = state.mes, m = mesData(k,false), g = gastoTotal(m);
@@ -693,7 +850,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var v = document.getElementById("view-precos");
     if(!v.dataset.built){
       v.innerHTML = '<div class="head-row"><div><h2 class="title">Preços</h2><p class="sub">O último valor pago em cada item.</p></div>' +
-        '<button class="btn-sm" type="button" data-act="novo-item">' + IC.plus + 'Novo</button></div>' + '<div id="precos-mudancas"></div>' +
+        '<div style="display:flex;gap:8px"><button class="btn-sm" type="button" data-act="nav" data-view="ofertas">🏷️ Ofertas</button><button class="btn-sm" type="button" data-act="novo-item">' + IC.plus + 'Novo</button></div></div>' + '<div id="precos-mudancas"></div>' +
         '<div class="searchbox"><label class="search" for="busca">' + IC.search + '<input id="busca" type="search" placeholder="Buscar item" autocomplete="off" enterkeyhint="search"></label>' +
         '<div class="chips" id="chips-cat"></div></div><div id="precos-lista" class="section"></div>';
       v.dataset.built = "1";
@@ -712,7 +869,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       if(!q) return true;
       return it.nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").indexOf(q) >= 0;
     });
-    var h = "";
+    var h = "", om = ofertasPorItem();
     if(!list.length){
       h = '<div class="card"><div class="empty"><b>Nada encontrado</b>Toque em "Novo" para cadastrar esse item.</div></div>';
     } else {
@@ -724,7 +881,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
             var c0 = cur(it), vr = variation(it);
             var vtag = Math.abs(vr) >= 0.5 ? '<span class="var ' + (vr > 0 ? 'up' : 'down') + '">' + (vr > 0 ? '↑ ' : '↓ ') + Math.round(Math.abs(vr)) + '%</span>' : '';
             return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '">' + thumb(it) + '<span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + (dietFlag(it.nome) ? '<span class="flag">fora da dieta</span>' : '') + '</span>' +
-              '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + (cheaperElsewhere(it) ? '<span class="var down">+ barato no ' + esc(cheaperElsewhere(it).m) + '</span>' : '') + '</span></span>' +
+              '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + (cheaperElsewhere(it) ? '<span class="var down">+ barato no ' + esc(cheaperElsewhere(it).m) + '</span>' : '') + (om[it.id] ? '<span class="var down">oferta ' + brl(om[it.id].p) + ' no ' + esc(om[it.id].m) + '</span>' : '') + '</span></span>' +
               '<span class="r-val">' + (c0 ? brl(c0.p) : '—') + (isKg(it) && c0 ? '<small>por kg</small>' : '') + '</span></button></li>';
           }).join("") + '</ul></div></div>';
       });
@@ -733,7 +890,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
 
   /* ---------- Lista ---------- */
-  function lineTotal(it){ var c = cur(it); return c ? c.p * (it.qtd || 1) : 0; }
+  function lineTotal(it){ return precoEfetivo(it) * (it.qtd || 1); }
   function qtdLabel(it){ return isKg(it) ? String(it.qtd).replace(".",",") + " kg" : it.qtd + " ×"; }
   function renderLista(){
     var items = state.items.filter(function(i){ return i.lista; });
@@ -751,14 +908,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     }
     h += '<div class="sum"><div><span>Estimado</span><b>' + brl(est) + '</b></div><div class="cart"><span>No carrinho · ' + done + ' de ' + items.length + '</span><b>' + brl(cart) + '</b></div></div>';
     h += '<div class="card"><ul class="rows">' + items.map(function(it){
-      var c = cur(it);
+      var c = cur(it), of = ofertaAtiva(it);
       return '<li><div class="litem' + (it.ok ? ' done' : '') + '">' +
         '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' + thumb(it) +
-        '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : ' · sem preço') + '</div>' +
+        '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : (of ? ' · ainda sem preço pago' : ' · sem preço')) + '</div>' +
         (dietFlag(it.nome) ? '<div class="flag-line">Fora da dieta: tem “' + esc(dietFlag(it.nome)) + '”</div>' : '') +
-        (cheaperElsewhere(it) ? '<div class="cheap-line">Mais barato no ' + esc(cheaperElsewhere(it).m) + ': ' + brl(cheaperElsewhere(it).p) + '</div>' : '') +
+        (of ? '<div class="cheap-line">Oferta no ' + esc(of.m) + ': ' + (of.nome && norm(of.nome) !== norm(it.nome) ? esc(of.nome) + ', ' : '') + brl(of.p) + (isKg(it) ? '/kg' : '') + (of.fim ? ' · ' + esc(ateTxt(of.fim)) : '') + '</div>' :
+          (cheaperElsewhere(it) ? '<div class="cheap-line">Mais barato no ' + esc(cheaperElsewhere(it).m) + ': ' + brl(cheaperElsewhere(it).p) + '</div>' : '')) +
         '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
-        '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="Corrigir preço de ' + esc(it.nome) + '">' + (c ? brl(lineTotal(it)) : '—') + '<small>corrigir</small></button>' +
+        '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="Corrigir preço de ' + esc(it.nome) + '">' + (precoEfetivo(it) ? brl(lineTotal(it)) : '—') + '<small>corrigir</small></button>' +
         '</div></li>';
     }).join("") + '</ul></div>';
     h += '<div class="sh-actions"><button class="bigbtn" type="button" data-act="finalizar">' + IC.check + 'Finalizar compra</button>' +
@@ -771,7 +929,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function listaTexto(){
     var items = state.items.filter(function(i){ return i.lista; });
     var L = ["*Lista de mercado · sem leite*",""];
-    items.forEach(function(it){ var c = cur(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (c ? " · ~" + brl(lineTotal(it)) : "")); });
+    items.forEach(function(it){ var of = ofertaAtiva(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (precoEfetivo(it) ? " · ~" + brl(lineTotal(it)) : "") + (of ? " · oferta no " + of.m : "")); });
     L.push("", "Estimado: " + brl(items.reduce(function(s,i){ return s + lineTotal(i); }, 0)));
     if(state.dieta && state.dieta.ativa) L.push("_Dieta: " + state.dieta.nome + ". Confira o rótulo._");
     return L.join("\n");
@@ -903,7 +1061,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var loc = document.getElementById("f-local").value.trim();
     m.gastos.push({id: uid(), data: data, local: loc, tipo: "Mercado", valor: v, obs: "Lista"});
     state.items.forEach(function(i){
-      if(i.lista && i.ok){ var c = cur(i); if(c && loc && !(c.d === data && c.m === loc)){ i.hist.push({p: c.p, m: loc, d: data}); if(i.hist.length > 24) i.hist = i.hist.slice(-24); } }
+      if(!(i.lista && i.ok)) return;
+      var c = cur(i), of = ofertaAtiva(i);
+      var p = (of && sameMk(of.m, loc)) ? of.p : (c ? c.p : 0);
+      if(p > 0 && loc){
+        var same = null; i.hist.forEach(function(x){ if(x.d === data && norm(x.m) === norm(loc)) same = x; });
+        if(same) same.p = p; else i.hist.push({p: p, m: loc, d: data});
+        if(i.hist.length > 24) i.hist = i.hist.slice(-24);
+      }
+      delete i.oferta;
     });
     state.items.forEach(function(i){ if(i.lista && i.ok){ i.lista = false; i.ok = false; i.qtd = 1; } });
     state.mes = monthKey(data);
@@ -973,7 +1139,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function sheetColar(){
     ui.sheet = {type:"colar"};
-    openSheet('<h3 class="sh-title" id="sh-title">Importar compra</h3><p class="sh-sub">Cole aqui a mensagem com o código do cupom. Pode colar a mensagem inteira.</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">Colar código</h3><p class="sh-sub">Cole aqui a mensagem com o código do cupom ou do encarte. Pode colar a mensagem inteira.</p>' +
       '<div class="form"><textarea class="inp" id="f-import" placeholder="Cole aqui"></textarea>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="ler-import">Ler código</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-import");
   }
@@ -1008,6 +1174,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       it.hist.sort(function(a, b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
       if(it.hist.length > 24) it.hist = it.hist.slice(-24);
       if(it.lista){ it.lista = false; it.ok = false; it.qtd = 1; }
+      delete it.oferta;
     });
     if(o.id) state.importados.push(o.id);
     state.mes = monthKey(o.d);
@@ -1078,6 +1245,139 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     save(); closeSheet(); render(); toast("Dieta salva");
   }
 
+  /* ---------- Ofertas da semana ---------- */
+  function cap(s){ s = String(s || ""); return s.charAt(0).toUpperCase() + s.slice(1); }
+  function renderOfertas(){
+    var v = document.getElementById("view-ofertas"), w = new Date().getDay(), mine = meusMercados();
+    var h = '<div><button class="back" type="button" data-act="nav" data-view="inicio">' + IC.left + 'Início</button>' +
+      '<h2 class="title">Ofertas da semana</h2><p class="sub">' + (remote ? esc(remote.regiao || "") + ' · atualizado em ' + dShort(remote.atualizado) + (remote.proxima && remote.proxima >= todayStr() ? ' · próxima atualização ' + dShort(remote.proxima) : '') : 'As ofertas chegam quando o app abre com internet.') + '</p></div>';
+
+    avisosAtivos().forEach(function(a){
+      h += '<div class="tip"><b>' + esc((a.icone ? a.icone + ' ' : '') + a.titulo) + '</b><span>' + esc(a.texto) + '</span>' +
+        (a.fonte && a.fonte.url ? '<span class="src">Fonte: <a href="' + esc(a.fonte.url) + '" target="_blank" rel="noopener">' + esc(a.fonte.nome || 'link') + '</a></span>' : '') +
+        '<button class="x" type="button" data-act="aviso-lido" data-id="' + esc(a.id) + '">Entendi</button></div>';
+    });
+
+    var hoje = rotinasDoDia(w), amanha = rotinasDoDia((w + 1) % 7).filter(function(r){ return hoje.indexOf(r) < 0 && r.tipo !== "Semanal"; });
+    if(remote && (remote.rotinas || []).length){
+      h += '<div class="section"><div class="s-head"><span class="s-title">Hoje, ' + DIAS[w] + '</span></div>';
+      if(hoje.length) h += hoje.map(function(r){ return '<div class="today"><span class="ti" aria-hidden="true">' + (r.icone || '🏷️') + '</span><div><b>' + esc(cap(tipoTxt(r))) + ' no ' + esc(r.m) + '</b><span>' + esc(r.texto) + '</span></div></div>'; }).join("");
+      else h += '<div class="card pad"><p class="note-sm">Hoje não tem dia fixo de oferta nos mercados acompanhados.</p></div>';
+      if(amanha.length) h += '<p class="note-sm" style="padding:0 4px">Amanhã: ' + amanha.map(function(r){ return esc(tipoTxt(r)) + ' no ' + esc(r.m); }).join(" · ") + '.</p>';
+      h += '</div>';
+    }
+
+    var ofs = allOfertas();
+    h += '<div class="section"><div class="s-head"><span class="s-title">Preços em oferta</span><span class="s-meta">' + ofs.length + '</span></div>';
+    if(!ofs.length){
+      h += '<div class="card"><div class="empty"><b>Nenhum preço de oferta cadastrado</b>Os encartes logo abaixo mostram as ofertas. Quer o preço aqui, comparado com o que você já pagou? Tire foto do encarte, mande pro Kaleb e cole o código que ele devolver.' +
+        '<div class="sh-actions" style="margin-top:14px"><button class="bigbtn ghost" type="button" data-act="colar-import">Colar código de ofertas</button></div></div></div>';
+    } else {
+      var rows = ofs.map(function(o){ var it = matchItem(o), c = it && cur(it); return {o: o, it: it, c: c, e: c ? c.p - o.p : null, flag: dietFlag(o.nome)}; });
+      rows.sort(function(a, b){
+        return (a.flag ? 1 : 0) - (b.flag ? 1 : 0) || ((b.e != null ? b.e : 0) - (a.e != null ? a.e : 0)) || a.o.m.localeCompare(b.o.m) || a.o.nome.localeCompare(b.o.nome, "pt-BR");
+      });
+      h += '<div class="card"><ul class="rows">' + rows.map(ofRow).join("") + '</ul></div>' +
+        '<button class="quiet" type="button" data-act="colar-import">Colar código de outro encarte</button>';
+    }
+    h += '</div>';
+
+    var enc = encartesAtivos();
+    h += '<div class="section"><div class="s-head"><span class="s-title">Encartes valendo</span><span class="s-meta">' + enc.length + '</span></div>';
+    if(enc.length){
+      h += '<div class="card"><ul class="rows">' + enc.map(function(e){
+        var hot = e.fim && daysUntil(e.fim) <= 1;
+        return '<li><a class="enc" href="' + esc(e.url) + '" target="_blank" rel="noopener">' + mkBadge(e.m) +
+          '<span class="r-main"><span class="r-name">' + esc(e.titulo) + (mine[mkKey(e.m)] ? '<span class="pill ok">você compra aqui</span>' : '') + '</span>' +
+          '<span class="r-meta">' + esc(e.m) + (e.loja ? ' · ' + esc(e.loja) : '') + '</span>' +
+          (e.fim ? '<span class="r-meta"><span class="pill' + (hot ? ' hot' : '') + '" style="margin-left:0">' + esc(ateTxt(e.fim)) + '</span></span>' : '') +
+          (e.nota ? '<span class="flag-line">' + esc(e.nota) + '</span>' : '') + '</span><span class="go">Abrir ›</span></a></li>';
+      }).join("") + '</ul></div>';
+    } else {
+      h += '<div class="card"><div class="empty">Nenhum encarte valendo agora. A próxima atualização traz os novos.</div></div>';
+    }
+    if(remote && remote.sem_encarte && remote.sem_encarte.length) h += '<p class="note-sm" style="padding:0 4px">' + esc(remote.sem_encarte.join(", ")) + (remote.sem_encarte.length === 1 ? ' não publica' : ' não publicam') + ' encarte na internet. O preço de lá vem dos seus cupons.</p>';
+    h += '</div>';
+
+    var rot = (remote && remote.rotinas) || [];
+    if(rot.length){
+      h += '<div class="section"><div class="s-head"><span class="s-title">Dias de oferta</span></div><div class="card"><ul class="rows">' + rot.map(function(r){
+        var on = (r.dias || []).indexOf(w) >= 0;
+        return '<li><div class="rot"><span class="ti" aria-hidden="true">' + (r.icone || '🏷️') + '</span><b>' + esc(r.m) + ' · ' + esc(r.tipo) + (on ? '<span class="pill ok">hoje</span>' : '') + '</b>' +
+          '<span>' + esc(cap(diasTxt(r.dias))) + '. ' + esc(r.texto) + (r.certeza === "provavel" ? ' Confirme no encarte da semana.' : '') + '</span></div></li>';
+      }).join("") + '</ul></div></div>';
+    }
+
+    h += '<div class="card pad"><div class="safe">' + IC.shield + '<div><p><b>Preço de encarte vale na loja e no período do encarte.</b> Pode variar de loja pra loja e acabar no estoque. Na dúvida, vale o preço da gôndola. Produto novo também passa pela regra da dieta: leia o rótulo.</p></div></div></div>';
+    v.innerHTML = h;
+  }
+  function ofRow(r){
+    var o = r.o, it = r.it, inList = !!(it && it.lista && it.oferta && it.oferta.oid === o.id), cmp = "";
+    if(r.c){
+      if(r.e > 0.009) cmp = '<div class="of-cmp good">' + brl(r.e) + ' a menos do que você pagou no ' + esc(r.c.m || 'último mercado') + '</div>';
+      else if(r.e < -0.009) cmp = '<div class="of-cmp bad">Mais caro do que você pagou no ' + esc(r.c.m || 'último mercado') + ' (' + brl(r.c.p) + ')</div>';
+      else cmp = '<div class="of-cmp">Mesmo preço que você pagou</div>';
+    }
+    return '<li><div class="ofrow">' + (it ? thumb(it) : '<span class="thumb" aria-hidden="true">' + autoIcon(o.nome, o.cat) + '</span>') +
+      '<div class="r-main"><div class="r-name">' + esc(o.nome) + (r.flag ? '<span class="flag">fora da dieta</span>' : '') + '</div>' +
+      '<div class="r-meta">' + mkBadge(o.m, 'sm') + esc(o.m) + (o.por ? ' · ' + esc(o.por) : '') + (o.fim ? ' · ' + esc(ateTxt(o.fim)) : '') + '</div>' + cmp + '</div>' +
+      '<div class="of-side"><span class="r-val">' + brl(o.p) + (o.por === "kg" ? '<small>por kg</small>' : '') + '</span>' + (o.de > o.p ? '<span class="of-de">' + brl(o.de) + '</span>' : '') +
+      '<button class="of-add' + (inList ? ' on' : '') + '" type="button" data-act="oferta-lista" data-oid="' + esc(o.id) + '" aria-label="' + (inList ? 'Ver na lista: ' : 'Pôr na lista: ') + esc(o.nome) + '">' + (inList ? '✓ Na lista' : '+ Lista') + '</button></div></div></li>';
+  }
+  function addOfertaToList(oid){
+    var o = findOferta(oid); if(!o) return;
+    var it = matchItem(o);
+    if(it && it.lista && it.oferta && it.oferta.oid === o.id){ show("lista"); return; }
+    if(!it){ it = {id: uid(), cat: CATS.indexOf(o.cat) >= 0 ? o.cat : "Outros", nome: o.nome, por: o.por || "unidade", hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false, icon: ""}; state.items.push(it); }
+    it.oferta = {p: o.p, m: o.m, fim: o.fim || "", oid: o.id, nome: o.nome};
+    it.lista = true; it.ok = false;
+    save(); render();
+    toast(dietFlag(o.nome) || dietFlag(it.nome) ? "Na lista, mas está fora da dieta" : "Foi pra lista com o preço da oferta");
+  }
+  function parseOfertasCode(text){
+    var s = String(text || "").trim(), k = s.indexOf("ofertas=");
+    if(k >= 0) s = s.slice(k + 8);
+    var mt = s.match(/[A-Za-z0-9_-]{40,}/); if(!mt) return null;
+    var o = decodePayload(mt[0]);
+    if(!o || o.v !== 1 || o.tipo !== "ofertas" || !o.m || !Array.isArray(o.i) || !o.i.length) return null;
+    if(o.fim && !/^\d{4}-\d{2}-\d{2}$/.test(o.fim)) return null;
+    return o;
+  }
+  function sheetOfertasImport(o){
+    ui.sheet = {type: "ofimport", data: o};
+    var ja = !!o.id && (state.ofImportados || []).indexOf(o.id) >= 0, vencido = !!o.fim && o.fim < todayStr();
+    var rows = o.i.map(function(r){
+      var it = matchItem({nome: r[0], por: r[2], item: r[5] || ""}), c = it && cur(it), e = c ? c.p - (+r[3]) : null;
+      return '<li><span>' + esc(r[0]) + (dietFlag(r[0]) ? ' · <b class="up">fora da dieta</b>' : '') +
+        (e != null ? (e > 0.009 ? ' · <b class="down">' + brl(e) + ' a menos</b>' : (e < -0.009 ? ' · <b class="up">mais caro</b>' : '')) : '') +
+        '</span><b class="num">' + brl(+r[3]) + (r[2] === "kg" ? '/kg' : '') + '</b></li>';
+    }).join("");
+    openSheet('<div class="pic-row">' + mkBadge(o.m) + '<div><h3 class="sh-title" id="sh-title">' + esc(o.t || ("Ofertas do " + o.m)) + '</h3><p class="sh-sub">' + esc(o.m) + ' · ' + o.i.length + (o.i.length === 1 ? ' oferta' : ' ofertas') + (o.fim ? ' · ' + esc(ateTxt(o.fim)) : '') + '</p></div></div>' +
+      '<div class="form">' + (ja ? '<div class="warnbox">Essas ofertas já foram importadas.</div>' : '') + (vencido ? '<div class="warnbox">Esse encarte acabou em ' + dLong(o.fim) + '.</div>' : '') +
+      '<div class="fl"><label>Ofertas</label><ul class="hist">' + rows + '</ul></div>' +
+      '<p class="note-sm">Ao importar, as ofertas aparecem em Ofertas da semana comparadas com o que você pagou, e somem sozinhas quando o encarte acaba. Os seus preços pagos não mudam.</p>' +
+      '<div class="sh-actions">' + (ja || vencido ? '' : '<button class="bigbtn" type="button" data-act="confirmar-ofertas">Importar ofertas</button>') +
+      '<button class="quiet" type="button" data-act="fechar">' + (ja || vencido ? 'Fechar' : 'Cancelar') + '</button></div></div>');
+  }
+  function confirmOfertas(){
+    var o = ui.sheet && ui.sheet.data; if(!o) return;
+    state.ofImportados = state.ofImportados || []; state.ofertas = state.ofertas || [];
+    if(o.id && state.ofImportados.indexOf(o.id) >= 0){ toast("Essas ofertas já foram importadas"); return; }
+    var base = o.id || uid(), n = 0;
+    o.i.forEach(function(r, i){
+      var p = +r[3]; if(!(p > 0) || !r[0]) return;
+      state.ofertas.push({id: base + "-" + i, m: o.m, nome: String(r[0]), cat: r[1] || "Outros", por: r[2] || "unidade", p: Math.round(p * 100) / 100, de: +r[4] || 0, ini: o.ini || "", fim: o.fim || "", item: r[5] || "", t: o.t || "", url: o.u || ""});
+      n++;
+    });
+    if(o.id){ state.ofImportados.push(o.id); state.ofImportados = state.ofImportados.slice(-60); }
+    save(); closeSheet(); show("ofertas"); toast(n + (n === 1 ? " oferta importada" : " ofertas importadas"));
+  }
+  function limparOfertasVencidas(){
+    var t = todayStr();
+    state.ofertas = (state.ofertas || []).filter(function(o){ return !o.fim || o.fim >= t; });
+    state.items.forEach(function(it){ if(it.oferta && it.oferta.fim && it.oferta.fim < t) delete it.oferta; });
+  }
+
   /* ---------- Toast e cópia ---------- */
   var toastT = null;
   function toast(msg){
@@ -1091,12 +1391,13 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
 
   /* ---------- Navegação ---------- */
-  var VIEWS = ["inicio","precos","lista","rotulo"];
+  var VIEWS = ["inicio","precos","lista","rotulo","ofertas"];
   function render(){
     if(ui.view === "inicio") renderInicio();
     else if(ui.view === "precos") renderPrecos();
     else if(ui.view === "lista") renderLista();
     else if(ui.view === "rotulo") renderDieta();
+    else if(ui.view === "ofertas") renderOfertas();
     var tn = document.getElementById("top-note"); if(tn) tn.textContent = state.dieta && state.dieta.ativa ? state.dieta.nome : "";
   }
   function show(v, fromHash){
@@ -1105,7 +1406,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     VIEWS.forEach(function(x){
       document.getElementById("view-" + x).classList.toggle("on", x === v);
       var t = document.getElementById("tab-" + x);
-      if(x === v) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current");
+      if(t){ if(x === v) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current"); }
     });
     render();
     if(!fromHash){ try{ history.replaceState(null, "", "#" + v); }catch(e){} }
@@ -1132,9 +1433,16 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "ver-carta": showWelcome(); break;
       case "colar-import": sheetColar(); break;
       case "ler-import":
-        var oi = parseImport(document.getElementById("f-import").value);
-        if(!oi){ toast("Código inválido. Copie a mensagem inteira"); break; }
-        sheetImport(oi); break;
+        var rawImp = document.getElementById("f-import").value;
+        var oi = parseImport(rawImp);
+        if(oi){ sheetImport(oi); break; }
+        var oo = parseOfertasCode(rawImp);
+        if(oo){ sheetOfertasImport(oo); break; }
+        toast("Código inválido. Copie a mensagem inteira"); break;
+      case "confirmar-ofertas": confirmOfertas(); break;
+      case "oferta-lista": addOfertaToList(b.dataset.oid); break;
+      case "aviso-lido":
+        state.avisosLidos = (state.avisosLidos || []).concat([id]).slice(-30); save(); render(); break;
       case "confirmar-import": confirmImport(); break;
       case "fechar-carta":
         state.cartaVista = true; save();
@@ -1179,7 +1487,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "salvar-preco": salvarPreco(); break;
       case "toggle-lista":
         it = findItem(ui.sheet.id); if(!it) break;
-        it.lista = !it.lista; if(!it.lista){ it.ok = false; it.qtd = 1; }
+        it.lista = !it.lista; if(!it.lista){ it.ok = false; it.qtd = 1; delete it.oferta; }
         save(); closeSheet(); render(); toast(it.lista ? (dietFlag(it.nome) ? "Na lista, mas está fora da dieta" : "Foi pra lista") : "Saiu da lista"); break;
       case "apagar-item":
         b.dataset.orig = "Apagar item";
@@ -1212,7 +1520,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "confirmar-compra": confirmarCompra(); break;
       case "limpar":
         if(ui.armed !== "limpar"){ ui.armed = "limpar"; renderLista(); setTimeout(function(){ if(ui.armed === "limpar"){ ui.armed = null; if(ui.view === "lista") renderLista(); } }, 3500); break; }
-        state.items.forEach(function(x){ x.lista = false; x.ok = false; x.qtd = 1; });
+        state.items.forEach(function(x){ x.lista = false; x.ok = false; x.qtd = 1; delete x.oferta; });
         ui.armed = null; save(); renderLista(); toast("Lista limpa"); break;
       case "backup": sheetBackup(); break;
       case "copiar-backup": copy(JSON.stringify(state), document.getElementById("f-backup")); break;
@@ -1268,6 +1576,13 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       if(oi) setTimeout(function(){ sheetImport(oi); }, 200); else toast("Código inválido");
       return;
     }
+    if(hs.indexOf("#ofertas=") === 0){
+      var oo2 = parseOfertasCode(hs);
+      try{ history.replaceState(null, "", location.pathname + location.search + "#ofertas"); }catch(e){}
+      show("ofertas", true);
+      if(oo2) setTimeout(function(){ sheetOfertasImport(oo2); }, 200); else toast("Código inválido");
+      return;
+    }
     if(hs.indexOf("#para=") === 0){
       var c = decodeCarta(hs.slice(6));
       try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
@@ -1286,11 +1601,17 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(!state.mes) state.mes = monthKey(todayStr());
     if(!state.dieta) state.dieta = defaultDieta();
     if(!state.importados) state.importados = [];
-    var hh = location.hash || "", pendingImport = null;
+    loadRemote(); limparOfertasVencidas();
+    var hh = location.hash || "", pendingImport = null, pendingOfertas = null;
     if(hh.indexOf("#importar=") === 0){
       pendingImport = parseImport(hh);
       try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
       hh = "#inicio";
+    }
+    if(hh.indexOf("#ofertas=") === 0){
+      pendingOfertas = parseOfertasCode(hh);
+      try{ history.replaceState(null, "", location.pathname + location.search + "#ofertas"); }catch(e){}
+      hh = "#ofertas";
     }
     if(hh.indexOf("#para=") === 0){
       var carta = decodeCarta(hh.slice(6));
@@ -1302,6 +1623,9 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     save();
     if(state.carta && !state.cartaVista) showWelcome();
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
+    else if(pendingOfertas) setTimeout(function(){ sheetOfertasImport(pendingOfertas); }, 350);
+    fetchRemote();
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden){ limparOfertasVencidas(); fetchRemote(); } });
   }
   try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot){ window.claude.hot.snapshot(function(){ return JSON.parse(JSON.stringify(state)); }); } }catch(e){}
   if(window.claude && window.claude.hot && window.claude.hot.ready){ window.claude.hot.ready(start); }

@@ -1,0 +1,105 @@
+{
+  "v": 1,
+  "atualizado": "2026-11-18",
+  "proxima": "2026-11-25",
+  "regiao": "Balneário Camboriú e Camboriú",
+  "avisos": [
+    {
+      "id": "black-friday-2026",
+      "icone": "🏷️",
+      "titulo": "Black Friday é sexta, 27/11",
+      "texto": "No mercado, o desconto costuma ser pequeno: em 2025 o café vendeu o dobro na Black Friday com desconto médio de só 4%. Antes de encher o carrinho, compare com o preço que você já pagou aqui no app.",
+      "ate": "2026-11-28",
+      "fonte": {"nome": "SuperVarejo, 30/10/2026", "url": "https://supervarejo.com.br/varejo/black-friday-cinco-categorias-que-podem-impulsionar-as-vendas-dos-supermercados"}
+    }
+  ],
+  "rotinas": [
+    {
+      "m": "Fort Atacadista",
+      "dias": [3, 4],
+      "tipo": "Hortifruti",
+      "icone": "🥬",
+      "texto": "Encarte de frutas, legumes e verduras (FLV).",
+      "certeza": "provavel",
+      "fonte": {"nome": "Encartes Fort SC no Tiendeo", "url": "https://www.tiendeo.com.br/palhoca/fort-atacadista"}
+    },
+    {
+      "m": "Fort Atacadista",
+      "dias": [5],
+      "tipo": "Carnes",
+      "icone": "🥩",
+      "texto": "Encarte da carne. Bom dia pra frango e carne moída.",
+      "certeza": "provavel",
+      "fonte": {"nome": "Encartes Fort SC no Tiendeo", "url": "https://www.tiendeo.com.br/natal/fort-atacadista"}
+    },
+    {
+      "m": "Fort Atacadista",
+      "dias": [1, 2, 3, 4],
+      "tipo": "Semanal",
+      "icone": "🛒",
+      "texto": "Encarte semanal da loja de Camboriú.",
+      "certeza": "provavel",
+      "fonte": {"nome": "Fort Camboriú no Tiendeo", "url": "https://www.tiendeo.com.br/Lojas/camboriu/rua-jos%C3%A9-francisco-bernardes/908370"}
+    }
+  ],
+  "encartes": [
+    {
+      "m": "Koch",
+      "titulo": "Encarte Supermercados Koch",
+      "loja": "Balneário Camboriú",
+      "ini": "2026-11-06",
+      "fim": "2026-11-20",
+      "url": "https://www.tiendeo.com.br/Catalogos/1412367",
+      "fonte": {"nome": "Koch BC no Tiendeo", "url": "https://www.tiendeo.com.br/balneario-camboriu/supermercados-koch"}
+    },
+    {
+      "m": "Fort Atacadista",
+      "titulo": "Fort Semanal, 3ª edição",
+      "loja": "Camboriú · Rua José Francisco Bernardes, 490",
+      "ini": "2026-11-16",
+      "fim": "2026-11-19",
+      "url": "https://www.tiendeo.com.br/Catalogos/1417946",
+      "fonte": {"nome": "Fort Camboriú no Tiendeo", "url": "https://www.tiendeo.com.br/Lojas/camboriu/rua-jos%C3%A9-francisco-bernardes/908370"}
+    },
+    {
+      "m": "Fort Atacadista",
+      "titulo": "Fort 11.11",
+      "loja": "Camboriú",
+      "ini": "2026-11-11",
+      "fim": "2026-11-25",
+      "url": "https://www.tiendeo.com.br/Catalogos/1415751",
+      "fonte": {"nome": "Fort Camboriú no Tiendeo", "url": "https://www.tiendeo.com.br/Lojas/camboriu/rua-jos%C3%A9-francisco-bernardes/908370"}
+    },
+    {
+      "m": "Fort Atacadista",
+      "titulo": "Seara",
+      "loja": "Camboriú",
+      "ini": "2026-11-11",
+      "fim": "2026-11-20",
+      "nota": "Embutido e empanado costuma ter leite. Leia o rótulo.",
+      "url": "https://www.tiendeo.com.br/Catalogos/1415765",
+      "fonte": {"nome": "Fort Camboriú no Tiendeo", "url": "https://www.tiendeo.com.br/Lojas/camboriu/rua-jos%C3%A9-francisco-bernardes/908370"}
+    },
+    {
+      "m": "Fort Atacadista",
+      "titulo": "Seu dia pede Sadia",
+      "loja": "Camboriú",
+      "ini": "2026-11-09",
+      "fim": "2026-11-22",
+      "nota": "Embutido e empanado costuma ter leite. Leia o rótulo.",
+      "url": "https://www.tiendeo.com.br/Catalogos/1414161",
+      "fonte": {"nome": "Fort Camboriú no Tiendeo", "url": "https://www.tiendeo.com.br/Lojas/camboriu/rua-jos%C3%A9-francisco-bernardes/908370"}
+    },
+    {
+      "m": "Angeloni",
+      "titulo": "Encarte Angeloni",
+      "loja": "Balneário Camboriú · Quarta Avenida, 880",
+      "ini": "2026-11-11",
+      "fim": "2026-11-25",
+      "url": "https://www.tiendeo.com.br/Catalogos/1415266",
+      "fonte": {"nome": "Angeloni BC no Tiendeo", "url": "https://www.tiendeo.com.br/Lojas/balneario-camboriu/angeloni-quarta-avenida--centro/12242"}
+    }
+  ],
+  "sem_encarte": ["Komprão"],
+  "ofertas": []
+}
