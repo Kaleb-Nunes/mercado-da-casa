@@ -202,6 +202,23 @@ textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-h
 .emo.on{border-color:var(--brass);box-shadow:inset 0 0 0 2px var(--brass)}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 
+.welcome{position:fixed;inset:0;z-index:90;background:var(--hero);color:var(--hero-ink);display:flex;flex-direction:column;justify-content:center;padding:calc(32px + env(safe-area-inset-top)) 28px calc(32px + env(safe-area-inset-bottom));overflow-y:auto}
+.welcome[hidden]{display:none}
+.welcome::before{content:"";position:absolute;right:-90px;top:-90px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(217,180,90,.22);pointer-events:none}
+.welcome::after{content:"";position:absolute;right:-30px;top:-150px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(217,180,90,.12);pointer-events:none}
+.w-inner{max-width:460px;width:100%;margin:0 auto;display:flex;flex-direction:column}
+.w-brand{font-family:var(--font-display);font-weight:600;font-size:18px;color:var(--brass-hero);margin-bottom:28px}
+.w-name{font-family:var(--font-display);font-weight:600;font-size:48px;line-height:1.05;letter-spacing:-.02em;margin:0 0 18px}
+.w-text p{font-size:18px;line-height:1.55;margin:0 0 14px;color:var(--hero-ink)}
+.w-sign{font-family:var(--font-display);font-weight:500;font-size:22px;color:var(--brass-hero);margin:10px 0 4px}
+.w-note{font-size:13px;color:var(--hero-muted);margin-bottom:26px}
+.w-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.w-chips span{border:1px solid rgba(217,180,90,.4);border-radius:99px;padding:6px 12px;font-size:13px}
+.w-btn{min-height:56px;border-radius:16px;border:0;background:var(--brass-hero);color:#10261F;font-weight:700;font-size:17px}
+.reveal{opacity:0;transform:translateY(10px);animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none} }
+
 /* ---------- Barra inferior ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -287,6 +304,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <div class="scrim" id="scrim" data-act="fechar"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="w-name"></div>
 
 <script>
 (function(){
@@ -505,7 +523,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         '<button class="x" type="button" data-act="fechar-ios">Entendi</button></div>';
     }
     if(ios && state.dicaIos !== false){
-      h += '<div class="tip"><b>Deixe como app no iPhone</b><span>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima) e depois em <b>Adicionar à Tela de Início</b>. Assim ele abre igual um aplicativo e os dados ficam guardados.</span>' +
+      h += '<div class="tip"><b>Deixe como app no iPhone</b><span>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima) e depois em <b>Adicionar à Tela de Início</b>. Faça isso antes de anotar qualquer coisa: no iPhone, o app da tela inicial guarda os dados separado do Safari.</span>' +
         '<button class="x" type="button" data-act="fechar-ios">Entendi</button></div>';
     }
     var dd = state.dieta;
@@ -568,7 +586,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 
     h += '<div class="card pad"><div class="safe">' + IC.shield + '<div><p><b>Seus dados ficam só neste celular.</b> Uma vez por mês, faça um backup e mande no seu WhatsApp. Se trocar de celular ou limpar o navegador, é só restaurar.</p>' +
       '<div class="links"><button class="link" type="button" data-act="backup">Fazer backup</button><button class="link" type="button" data-act="restaurar">Restaurar</button>' +
-      '<a class="link" id="wa-resumo" href="#" target="_blank" rel="noopener">Enviar resumo do mês</a></div></div></div></div>';
+      '<a class="link" id="wa-resumo" href="#" target="_blank" rel="noopener">Enviar resumo do mês</a>' +
+      (state.carta ? '<button class="link" type="button" data-act="ver-carta">Ler a mensagem</button>' : '') + '</div></div></div></div>';
 
     document.getElementById("view-inicio").innerHTML = h;
     var a = document.getElementById("wa-resumo");
@@ -833,6 +852,31 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     sheet.querySelectorAll(".emo").forEach(function(b){ var on = b.dataset.v === icon; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
   }
 
+  function decodeCarta(s){
+    try{
+      s = s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length % 4) s += "=";
+      var bin = atob(s), bytes = new Uint8Array(bin.length);
+      for(var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var o = JSON.parse(new TextDecoder().decode(bytes));
+      if(o && o.n && o.m) return o;
+    }catch(e){}
+    return null;
+  }
+  function showWelcome(){
+    var c = state.carta; if(!c) return;
+    var w = document.getElementById("welcome");
+    var paras = String(c.m).split(/\n+/).filter(function(x){ return x.trim(); });
+    var html = '<div class="w-inner"><div class="w-brand reveal" style="animation-delay:0s">Despensa.</div>' +
+      '<h1 class="w-name reveal" id="w-name" style="animation-delay:.2s">' + esc(c.n) + ',</h1><div class="w-text">' +
+      paras.map(function(p, i){ return '<p class="reveal" style="animation-delay:' + (0.7 + i * 0.55).toFixed(2) + 's">' + esc(p) + '</p>'; }).join("") + '</div>';
+    var t = 0.7 + paras.length * 0.55;
+    if(c.a) html += '<div class="w-sign reveal" style="animation-delay:' + t.toFixed(2) + 's">' + esc(c.a) + '</div>';
+    if(c.f) html += '<div class="w-note reveal" style="animation-delay:' + (t + 0.25).toFixed(2) + 's">' + esc(c.f) + '</div>';
+    if(c.c && c.c.length) html += '<div class="w-chips reveal" style="animation-delay:' + (t + 0.5).toFixed(2) + 's">' + c.c.map(function(x){ return '<span>' + esc(x) + '</span>'; }).join("") + '</div>';
+    html += '<button class="w-btn reveal" type="button" data-act="fechar-carta" style="animation-delay:' + (t + 0.75).toFixed(2) + 's">' + esc(c.b || "Abrir") + '</button></div>';
+    w.innerHTML = html; w.hidden = false; w.scrollTop = 0; document.body.style.overflow = "hidden";
+  }
+
   /* ---------- Dieta ---------- */
   function words(list, cls){
     if(!list || !list.length) return '<p class="note-sm">Nada cadastrado.</p>';
@@ -933,6 +977,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "fechar": closeSheet(); break;
       case "fechar-dica": state.dica = false; save(); renderInicio(); break;
       case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
+      case "ver-carta": showWelcome(); break;
+      case "fechar-carta":
+        state.cartaVista = true; save();
+        var wl = document.getElementById("welcome"); wl.hidden = true; wl.innerHTML = ""; document.body.style.overflow = "";
+        show("inicio"); break;
       case "instalar":
         if(installEvt){ try{ installEvt.prompt(); installEvt.userChoice.then(function(){ installEvt = null; renderInicio(); }, function(){}); }catch(err){} }
         break;
@@ -1061,9 +1110,16 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
     if(!state.dieta) state.dieta = defaultDieta();
+    var hh = location.hash || "";
+    if(hh.indexOf("#para=") === 0){
+      var carta = decodeCarta(hh.slice(6));
+      if(carta){ state.carta = carta; state.cartaVista = false; }
+      try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
+    }
     var h = (location.hash || "").replace("#","");
     show(VIEWS.indexOf(h) >= 0 ? h : "inicio", true);
     save();
+    if(state.carta && !state.cartaVista) showWelcome();
   }
   try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot){ window.claude.hot.snapshot(function(){ return JSON.parse(JSON.stringify(state)); }); } }catch(e){}
   if(window.claude && window.claude.hot && window.claude.hot.ready){ window.claude.hot.ready(start); }
