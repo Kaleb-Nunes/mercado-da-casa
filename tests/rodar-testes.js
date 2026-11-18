@@ -219,6 +219,7 @@ confere(/function save\(\)\{\s*atualizarMarcas\(\);/.test(html), "save deveria a
 })();
 
 /* 12. P1: contraste e área de toque */
+confere(/--good:#2A7550;/.test(html), "verde do tema claro deveria ter contraste 4,5:1 no fundo claro (#2A7550)");
 confere(/--muted:#5F6C66;/.test(html) && /--warn:#A94E18;/.test(html), "cores do tema claro deveriam ter contraste 4,5:1 (muted #5F6C66, warn #A94E18)");
 confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height:44px/.test(html), "links pequenos deveriam ter 44px de área de toque");
 

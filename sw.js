@@ -22,7 +22,9 @@ self.addEventListener("fetch", (e) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(req, copy));
         return res;
-      }).catch(() => caches.match(req, { ignoreSearch: true }).then((r) => r || caches.match("./index.html")))
+      }).catch(() => caches.match(req, { ignoreSearch: true })
+        .then((r) => r || caches.match("./"))
+        .then((r) => r || caches.match("./index.html")))
     );
   } else if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
     e.respondWith(
