@@ -1,0 +1,37 @@
+{
+  "titulo": "Bateria de rótulos reais (leite) do app Elida",
+  "status": "PILOTO. Pendente de conferência na embalagem atual e de revisão por profissional de saúde habilitado.",
+  "como_a_referencia_foi_definida": "Pelo próprio rótulo, nunca pela lista do app: CONTEM_LEITE quando a advertência ALÉRGICOS diz que contém leite ou derivados, ou quando a lista de ingredientes tem leite ou derivado; PODE_CONTER_LEITE quando o leite só aparece em 'pode conter'; INCONSISTENTE quando a fonte se contradiz; NAO_DECLARA quando o rótulo não menciona leite.",
+  "fontes": "Open Food Facts (base colaborativa, licença ODbL, https://world.openfoodfacts.org) e uma fonte secundária marcada. Dados colaborativos podem estar desatualizados ou errados: por isso cada item precisa ser conferido na embalagem.",
+  "acesso": "2026-11-18",
+  "protocolo_para_completar": [
+    "Fotografar a frente, a lista de ingredientes e a advertência ALÉRGICOS da embalagem que está na casa ou no mercado.",
+    "Copiar o nome como está na frente da embalagem, a marca, o EAN (código de barras) e a data da conferência.",
+    "Marcar a referência pelo rótulo com as regras acima. Não usar o app para decidir.",
+    "Quem confere: um adulto da casa; quem revisa: o profissional de saúde, que pode mudar a referência e deve assinar a revisão.",
+    "Repetir a cada embalagem nova: a receita muda."
+  ],
+  "itens": [
+    {"id": "R01", "ean": "7891203010056", "nome_no_rotulo": "Pão de forma", "marca": "Panco", "trecho_do_rotulo": "ingredientes incluem soro de leite", "advertencia_alergicos": "não aparece na fonte", "contem_lactose": "não aparece na fonte", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7891203010056", "fonte_tipo": "colaborativa"},
+    {"id": "R02", "ean": "7896066301488", "nome_no_rotulo": "Pão do Forno Brioche", "marca": "Wickbold", "trecho_do_rotulo": "ALÉRGICOS: contém derivados de trigo, soja e leite", "advertencia_alergicos": "contém leite", "contem_lactose": "sim", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7896066301488/pao-do-forno-brioche-wickbold", "fonte_tipo": "colaborativa"},
+    {"id": "R03", "ean": "7896066305615", "nome_no_rotulo": "Pão de forma sem casca tradicional", "marca": "Wickbold", "trecho_do_rotulo": "ALÉRGICOS: contém derivados de trigo; a base marca leite como alérgeno e como traço", "advertencia_alergicos": "contraditória na fonte", "contem_lactose": "não aparece na fonte", "referencia_rotulo": "INCONSISTENTE", "fonte": "https://world.openfoodfacts.org/product/7896066305615/pao-de-forma-sem-casca-tradicional-wickbold-pacote-450g", "fonte_tipo": "colaborativa"},
+    {"id": "R04", "ean": "7896024760456", "nome_no_rotulo": "Biscoito Salgado Integral", "marca": "Piraquê", "trecho_do_rotulo": "ALÉRGICOS: contém derivados de leite, de soja e de trigo", "advertencia_alergicos": "contém leite", "contem_lactose": "sim", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7896024760456", "fonte_tipo": "colaborativa"},
+    {"id": "R05", "ean": "7891962014999", "nome_no_rotulo": "Biscoito Água e Sal Levíssimo", "marca": "Bauducco", "trecho_do_rotulo": "ALÉRGICOS: contém derivados de trigo, soja, cevada e de leite", "advertencia_alergicos": "contém leite", "contem_lactose": "sim", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7891962014999/biscoito-agua-e-sal-bauducco-levissimo-pacote-200g", "fonte_tipo": "colaborativa"},
+    {"id": "R06", "ean": "7891962065908", "nome_no_rotulo": "Biscoito Recheado sabor Baunilha", "marca": "Bauducco", "trecho_do_rotulo": "ingredientes incluem leite em pó integral e soro de leite em pó", "advertencia_alergicos": "não aparece na fonte", "contem_lactose": "não aparece na fonte", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7891962065908/biscoito-recheado-sabor-baunilha-bauducco", "fonte_tipo": "colaborativa"},
+    {"id": "R07", "ean": "7890120202650", "nome_no_rotulo": "Ovomaltine recheado", "marca": "Brasil Cacau", "trecho_do_rotulo": "ALÉRGICOS: contém cevada, avelã e derivados de cevada, leite e soja", "advertencia_alergicos": "contém leite", "contem_lactose": "sim", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7890120202650/ovomaltine-recheado-brasilcacau", "fonte_tipo": "colaborativa"},
+    {"id": "R08", "ean": "7898142856707", "nome_no_rotulo": "Chocolate ao leite com recheio sabor chocolate com biscoito e cereal crocante", "marca": "Arcor", "trecho_do_rotulo": "o biscoito do recheio leva leite desnatado em pó", "advertencia_alergicos": "não aparece na fonte", "contem_lactose": "não aparece na fonte", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7898142856707", "fonte_tipo": "colaborativa"},
+    {"id": "R09", "ean": "7908320902383", "nome_no_rotulo": "Chocolate Amargo Extrafino Excellence 70% Cacau", "marca": "Lindt", "trecho_do_rotulo": "pode conter traços de leite e nozes", "advertencia_alergicos": "pode conter leite", "contem_lactose": "não aparece na fonte", "referencia_rotulo": "PODE_CONTER_LEITE", "fonte": "https://world.openfoodfacts.org/product/7908320902383", "fonte_tipo": "colaborativa"},
+    {"id": "R10", "ean": "7898142863897", "nome_no_rotulo": "Chocolate amargo 70% cacau", "marca": "Arcor", "trecho_do_rotulo": "ALÉRGICOS: contém derivados de soja e pode conter trigo, leite e outros", "advertencia_alergicos": "pode conter leite", "contem_lactose": "não aparece na fonte", "referencia_rotulo": "PODE_CONTER_LEITE", "fonte": "https://world.openfoodfacts.org/product/7898142863897", "fonte_tipo": "colaborativa"},
+    {"id": "R11", "ean": "", "nome_no_rotulo": "Chocolate Amargo", "marca": "Lacta", "trecho_do_rotulo": "a fonte diz que a formulação leva leite em pó desnatado", "advertencia_alergicos": "não verificada", "contem_lactose": "não verificada", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://vitat.com.br/alimentacao/busca-de-alimentos/alimentos/239-chocolate-amaro-lacta/", "fonte_tipo": "secundária (não é o rótulo)"},
+    {"id": "R12", "ean": "7891000100103", "nome_no_rotulo": "Leite Condensado Integral Moça", "marca": "Nestlé", "trecho_do_rotulo": "só o nome foi consultado", "advertencia_alergicos": "não consultada", "contem_lactose": "não consultada", "referencia_rotulo": "CONTEM_LEITE", "fonte": "https://world.openfoodfacts.org/product/7891000100103", "fonte_tipo": "colaborativa (só o nome)"}
+  ],
+  "a_preencher": [
+    "Bisnaguinha", "Pão de hambúrguer", "Pão de queijo congelado", "Torrada", "Biscoito maisena", "Biscoito de polvilho", "Cookie", "Wafer", "Bolo pronto", "Bolinho recheado",
+    "Margarina", "Creme vegetal", "Maionese", "Molho de tomate", "Tempero pronto", "Caldo em cubo", "Batata palha", "Salgadinho de milho", "Pipoca de micro-ondas", "Farofa pronta",
+    "Salsicha", "Presunto", "Peito de peru", "Mortadela", "Hambúrguer congelado", "Empanado de frango", "Linguiça",
+    "Achocolatado em pó", "Cereal matinal", "Barra de cereal", "Granola", "Chocolate amargo de outra marca", "Bombom", "Sorvete de fruta", "Picolé de fruta", "Gelatina",
+    "Macarrão instantâneo", "Pizza congelada", "Lasanha congelada", "Sopa pronta", "Purê instantâneo",
+    "Bebida vegetal de soja", "Bebida vegetal de amêndoas", "Bebida vegetal de aveia", "Leite de coco", "Iogurte vegetal", "Queijo vegetal", "Creme culinário vegetal",
+    "Papinha industrializada", "Cereal infantil"
+  ]
+}
