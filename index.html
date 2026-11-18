@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0F3B2E">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Mercado">
+<meta name="apple-mobile-web-app-title" content="Despensa">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Mercado da Casa</title>
+<title>Despensa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -156,7 +156,7 @@ h2.title{font-family:var(--font-display);font-weight:600;font-size:30px;line-hei
 .sum span{font-size:12px;color:var(--muted);display:block}
 .sum b{font-family:var(--font-display);font-weight:600;font-size:26px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .sum .cart b{color:var(--good)}
-.litem{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.litem{display:grid;grid-template-columns:auto auto 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
 .rows li:first-child .litem{border-top:0}
 .check{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;transition:all .2s ease}
 .check svg{width:16px;height:16px;opacity:0;color:#fff}
@@ -190,6 +190,18 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;f
 textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-height:1.4}
 .tip .act{align-self:flex-start;background:var(--hero);color:var(--hero-ink);border:0;border-radius:99px;padding:7px 14px;font-weight:700;font-size:13px}
 
+.thumb,.emo,.avatar.emoji{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.thumb{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--bg);border:1px solid var(--line);font-size:24px;line-height:1;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb.lg{width:76px;height:76px;font-size:42px;border-radius:20px}
+.avatar.emoji{font-size:20px;background:var(--bg);border:1px solid var(--line)}
+.pic-row{display:flex;gap:14px;align-items:center}
+.pic-actions{display:flex;flex-wrap:wrap;gap:8px}
+.emojis{display:flex;flex-wrap:wrap;gap:6px}
+.emo{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:22px;display:grid;place-items:center;padding:0}
+.emo.on{border-color:var(--brass);box-shadow:inset 0 0 0 2px var(--brass)}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+
 /* ---------- Barra inferior ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -214,7 +226,8 @@ nav.tabs{
 }
 .sheet.on{transform:none}
 .grab{width:40px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 14px}
-.sh-title{font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-.01em;margin:0}
+.sh-close{position:absolute;top:12px;right:14px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:20px;line-height:1;display:grid;place-items:center;color:var(--muted);z-index:2}
+.sh-title{font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-.01em;margin:0;padding-right:40px}
 .sh-sub{color:var(--muted);font-size:14px;margin:2px 0 0}
 .form{display:flex;flex-direction:column;gap:16px;margin-top:18px}
 .money{display:flex;align-items:baseline;gap:8px;border-bottom:2px solid var(--line);padding-bottom:6px}
@@ -247,7 +260,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <body>
 
 <div class="top">
-  <div class="brand">Mercado <span>da Casa</span></div>
+  <div class="brand">Despensa<span>.</span></div>
   <div class="top-note" id="top-note"></div>
 </div>
 
@@ -357,6 +370,43 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
   function dLong(s){ var p = String(s).split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
   function daysUntil(s){ var p = String(s).split("-"); var t = new Date(+p[0], +p[1]-1, +p[2]); var n = new Date(); n.setHours(0,0,0,0); return Math.round((t - n) / 86400000); }
+  var ICON_MAP = [["molho","🥫"],["extrato","🥫"],["leite de coco","🥥"],["agua de coco","🥥"],["coco","🥥"],["pipoca","🍿"],["flocao","🌽"],["cuscuz","🌽"],["milho","🌽"],["macarrao","🍝"],["massa","🍝"],["espaguete","🍝"],["arroz","🍚"],["feijao","🫘"],["lentilha","🫘"],["grao","🫘"],["ovo","🥚"],["frango","🍗"],["peito","🍗"],["coxa","🍗"],["sobrecoxa","🍗"],["salsicha","🌭"],["carne","🥩"],["musculo","🥩"],["bife","🥩"],["patinho","🥩"],["acem","🥩"],["peixe","🐟"],["tilapia","🐟"],["sardinha","🐟"],["atum","🐟"],["tomate","🍅"],["cebola","🧅"],["alho","🧄"],["batata","🥔"],["mandioca","🥔"],["aipim","🥔"],["cenoura","🥕"],["abobora","🎃"],["repolho","🥬"],["couve","🥬"],["alface","🥬"],["espinafre","🥬"],["brocolis","🥦"],["banana","🍌"],["laranja","🍊"],["mexerica","🍊"],["maca","🍎"],["manga","🥭"],["mamao","🍈"],["melao","🍈"],["limao","🍋"],["morango","🍓"],["uva","🍇"],["abacate","🥑"],["energetico","⚡"],["refrigerante","🥤"],["suco","🧃"],["agua","💧"],["cafe","☕"],["aveia","🥣"],["granola","🥣"],["tapioca","🫓"],["pao","🍞"],["farinha","🌾"],["acucar","🍬"],["sal","🧂"],["oleo","🫒"],["azeite","🫒"],["amendoim","🥜"],["castanha","🌰"],["fralda","🧷"],["lenco","🧻"],["papel","🧻"],["sabao","🧼"],["detergente","🧴"],["amaciante","🧴"]];
+  var CAT_IC = {"Mercearia":"🛒","Proteínas":"🍖","Hortifruti":"🥗","Bebidas":"🥤","Bebê":"🍼","Limpeza e casa":"🧽","Outros":"🛍️"};
+  var TIPO_IC = {"Mercado":"🛒","Feira":"🥕","Açougue":"🥩","Farmácia":"💊","Bebê":"🍼","Outros":"🛍️"};
+  var EMOJI_CHOICES = ["🍚","🫘","🥚","🍗","🥩","🐟","🍝","🥣","🌽","🫓","🍿","🥫","🍅","🧅","🧄","🥔","🥕","🎃","🥬","🥦","🍌","🍊","🍎","🥭","🍋","🍈","🥑","🥥","⚡","🥤","☕","🍞","🥜","🧂","🫒","🍼","🧼","🧻","🛒"];
+  function autoIcon(name, cat){
+    var n = norm(name);
+    for(var i = 0; i < ICON_MAP.length; i++){ if(new RegExp("(^|[^a-z0-9])" + escRe(ICON_MAP[i][0])).test(n)) return ICON_MAP[i][1]; }
+    return CAT_IC[cat] || "🛒";
+  }
+  var FOTO_KEY = "mercado-casa-fotos", fotos = {};
+  function loadFotos(){ try{ var r = localStorage.getItem(FOTO_KEY); if(r){ var o = JSON.parse(r); if(o && typeof o === "object") fotos = o; } }catch(e){} }
+  function saveFotos(){ try{ localStorage.setItem(FOTO_KEY, JSON.stringify(fotos)); return true; }catch(e){ toast("Sem espaço pra mais fotos neste celular"); return false; } }
+  function thumb(it, cls, icon, foto){
+    var f = foto !== undefined ? foto : fotos[it.id];
+    if(f) return '<span class="thumb ' + (cls || '') + '"><img src="' + f + '" alt=""></span>';
+    return '<span class="thumb ' + (cls || '') + '" aria-hidden="true">' + (icon || it.icon || autoIcon(it.nome, it.cat)) + '</span>';
+  }
+  function fileToThumb(file, cb){
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      var s = Math.min(img.naturalWidth, img.naturalHeight), sx = (img.naturalWidth - s) / 2, sy = (img.naturalHeight - s) / 2;
+      var c = document.createElement("canvas"); c.width = c.height = 240;
+      c.getContext("2d").drawImage(img, sx, sy, s, s, 0, 0, 240, 240);
+      URL.revokeObjectURL(url); cb(c.toDataURL("image/jpeg", 0.72));
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); toast("Não deu pra abrir essa foto"); };
+    img.src = url;
+  }
+  function picPicker(current, hasFoto){
+    return '<div class="fl"><label>Imagem do item</label><div class="pic-actions">' +
+      '<label class="btn-sm" for="foto-input">📷 Tirar ou escolher foto</label>' +
+      (hasFoto ? '<button class="btn-sm" type="button" data-act="remover-foto">Remover foto</button>' : '') +
+      '</div><input type="file" id="foto-input" class="vh" accept="image/*">' +
+      '<div class="emojis" role="radiogroup" aria-label="Ícone">' + EMOJI_CHOICES.map(function(e){
+        return '<button class="emo' + (e === current ? ' on' : '') + '" type="button" role="radio" aria-checked="' + (e === current ? 'true' : 'false') + '" data-act="set-icone" data-v="' + e + '">' + e + '</button>';
+      }).join("") + '</div><p class="note-sm">A foto fica só neste celular e não entra no backup.</p></div>';
+  }
   function defaultDieta(){
     return {ativa:true, nome:"Sem leite",
       evitar:["Contém leite","Pode conter leite","Leite","Leite em pó","Soro de leite","Whey","Caseína","Caseinato","Lactoalbumina","Lactoglobulina","Lactose","Sem lactose","Zero lactose","Gordura láctea","Composto lácteo","Queijo","Requeijão","Iogurte","Manteiga","Margarina com leite","Creme de leite","Nata","Coalho","Ghee","Petit suisse","Bebida láctea","Leite fermentado","Leite condensado","Doce de leite","Pudim","Chocolate ao leite","Molho branco","Leite de cabra"],
@@ -380,6 +430,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   var mem = null;
   var state = null;
   var ui = {view:"inicio", filtro:"Todos", busca:"", sheet:null, armed:null};
+  var installEvt = null;
 
   function load(){
     try{ var raw = localStorage.getItem(KEY); if(raw){ var s = JSON.parse(raw); if(valid(s)) return s; } }catch(e){}
@@ -445,7 +496,14 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     } else { tip = "Defina quanto pode gastar no mês"; }
 
     var h = '';
-    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
+    var standalone = window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone;
+    var android = /Android/i.test(navigator.userAgent) && !standalone;
+    if(android && state.dicaIos !== false){
+      h += '<div class="tip"><b>Deixe como app no Android</b><span>' + (installEvt ? 'Toque em <b>Instalar</b> e ele vai pra tela inicial.' : 'No Chrome, toque nos 3 pontinhos (⋮) e depois em <b>Adicionar à tela inicial</b> ou <b>Instalar app</b>.') + '</span>' +
+        (installEvt ? '<button class="act" type="button" data-act="instalar">Instalar</button>' : '') +
+        '<button class="x" type="button" data-act="fechar-ios">Entendi</button></div>';
+    }
     if(ios && state.dicaIos !== false){
       h += '<div class="tip"><b>Deixe como app no iPhone</b><span>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima) e depois em <b>Adicionar à Tela de Início</b>. Assim ele abre igual um aplicativo e os dados ficam guardados.</span>' +
         '<button class="x" type="button" data-act="fechar-ios">Entendi</button></div>';
@@ -484,7 +542,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       h += '<div class="empty"><b>Nenhum gasto ainda</b>Toque no + para anotar a primeira compra do mês.</div>';
     } else {
       h += '<ul class="rows">' + gs.map(function(g){
-        return '<li><button class="row" type="button" data-act="editar-gasto" data-id="' + esc(g.id) + '"><span class="avatar">' + esc(initials(g.tipo)) + '</span>' +
+        return '<li><button class="row" type="button" data-act="editar-gasto" data-id="' + esc(g.id) + '"><span class="avatar emoji" aria-hidden="true">' + (TIPO_IC[g.tipo] || '🛒') + '</span>' +
           '<span class="r-main"><span class="r-name">' + esc(g.local || g.tipo) + '</span><span class="r-meta">' + dShort(g.data) + ' · ' + esc(g.tipo) + (g.obs ? ' · ' + esc(g.obs) : '') + '</span></span>' +
           '<span class="r-val">' + brl(g.valor) + '</span></button></li>';
       }).join("") + '</ul>';
@@ -519,7 +577,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function listaCount(){ var n = state.items.filter(function(i){ return i.lista; }).length; return n ? n + (n === 1 ? " item" : " itens") + " pra comprar" : "vazia"; }
   function resumoTexto(){
     var k = state.mes, m = mesData(k,false), g = gastoTotal(m);
-    var L = ["*Mercado da Casa · " + monthName(k) + "*", "Orçamento: " + brl(m.orc || 0), "Gasto: " + brl(g), ((m.orc||0) - g >= 0 ? "Sobra: " : "Passou: ") + brl(Math.abs((m.orc||0) - g)), ""];
+    var L = ["*Despensa · " + monthName(k) + "*", "Orçamento: " + brl(m.orc || 0), "Gasto: " + brl(g), ((m.orc||0) - g >= 0 ? "Sobra: " : "Passou: ") + brl(Math.abs((m.orc||0) - g)), ""];
     m.gastos.slice().sort(function(a,b){ return a.data > b.data ? 1 : -1; }).forEach(function(x){ L.push(dShort(x.data) + " · " + (x.local || x.tipo) + " · " + brl(x.valor)); });
     return L.join("\n");
   }
@@ -558,7 +616,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           group.map(function(it){
             var c0 = cur(it), vr = variation(it);
             var vtag = Math.abs(vr) >= 0.5 ? '<span class="var ' + (vr > 0 ? 'up' : 'down') + '">' + (vr > 0 ? '↑ ' : '↓ ') + Math.round(Math.abs(vr)) + '%</span>' : '';
-            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '"><span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + (dietFlag(it.nome) ? '<span class="flag">fora da dieta</span>' : '') + '</span>' +
+            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '">' + thumb(it) + '<span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + (dietFlag(it.nome) ? '<span class="flag">fora da dieta</span>' : '') + '</span>' +
               '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + '</span></span>' +
               '<span class="r-val">' + (c0 ? brl(c0.p) : '—') + (isKg(it) && c0 ? '<small>por kg</small>' : '') + '</span></button></li>';
           }).join("") + '</ul></div></div>';
@@ -588,7 +646,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     h += '<div class="card"><ul class="rows">' + items.map(function(it){
       var c = cur(it);
       return '<li><div class="litem' + (it.ok ? ' done' : '') + '">' +
-        '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' +
+        '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' + thumb(it) +
         '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : ' · sem preço') + '</div>' +
         (dietFlag(it.nome) ? '<div class="flag-line">Fora da dieta: tem “' + esc(dietFlag(it.nome)) + '”</div>' : '') +
         '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
@@ -616,7 +674,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   var lastFocus = null;
   function openSheet(html, focusId){
     lastFocus = document.activeElement;
-    sheet.innerHTML = '<div class="grab" aria-hidden="true"></div>' + html;
+    sheet.innerHTML = '<div class="grab" aria-hidden="true"></div><button class="sh-close" type="button" data-act="fechar" aria-label="Fechar">×</button>' + html;
     sheet.classList.add("on"); scrim.classList.add("on");
     document.body.style.overflow = "hidden";
     setTimeout(function(){ var f = focusId && document.getElementById(focusId); if(f){ try{ f.focus(); if(f.select) f.select(); }catch(e){} } }, 280);
@@ -668,13 +726,14 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     ui.sheet = {type:"item", id: it.id};
     var c = cur(it), locs = locais();
     var hist = (it.hist || []).slice().reverse().slice(0,5);
-    openSheet('<h3 class="sh-title" id="sh-title">' + esc(it.nome) + '</h3><p class="sh-sub">' + esc(it.por) + ' · ' + esc(it.cat) + '</p>' +
+    openSheet('<div class="pic-row"><span id="pic-preview">' + thumb(it, 'lg') + '</span><div><h3 class="sh-title" id="sh-title">' + esc(it.nome) + '</h3><p class="sh-sub">' + esc(it.por) + ' · ' + esc(it.cat) + '</p></div></div>' +
       (dietFlag(it.nome) ? '<div class="warnbox" style="margin-top:12px">Atenção: “' + esc(dietFlag(it.nome)) + '” está nos gatilhos da dieta.</div>' : '') +
       '<div class="form"><div class="fl"><label for="f-preco">Preço de hoje' + (isKg(it) ? ' (por kg)' : '') + '</label>' +
       '<div class="money"><span>R$</span><input id="f-preco" inputmode="decimal" autocomplete="off" placeholder="0,00" value="' + (c ? fmt(c.p) : '') + '"></div></div>' +
       '<div class="fl"><label for="f-mercado">Mercado</label><input class="inp" id="f-mercado" value="' + esc(c ? c.m : lastLocal()) + '" autocomplete="off">' +
       (locs.length ? '<div class="chips">' + locs.map(function(l){ return '<button class="chip" type="button" data-act="set-mercado" data-v="' + esc(l) + '">' + esc(l) + '</button>'; }).join("") + '</div>' : '') + '</div>' +
       (it.nota ? '<p class="note-sm">' + esc(it.nota) + '</p>' : '') +
+      picPicker(it.icon || autoIcon(it.nome, it.cat), !!fotos[it.id]) +
       (hist.length ? '<div class="fl"><label>Últimos preços</label><ul class="hist">' + hist.map(function(h){ return '<li><span>' + dShort(h.d) + ' · ' + esc(h.m || '') + '</span><b class="num">' + brl(h.p) + '</b></li>'; }).join("") + '</ul></div>' : '') +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-preco">Salvar preço</button>' +
       '<button class="bigbtn ghost" type="button" data-act="toggle-lista">' + (it.lista ? 'Tirar da lista' : 'Pôr na lista') + '</button>' +
@@ -693,14 +752,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
 
   function sheetNovoItem(){
-    ui.sheet = {type:"novo"};
-    openSheet('<h3 class="sh-title" id="sh-title">Novo item</h3><p class="sh-sub">Cadastre uma vez, depois é só atualizar o preço.</p>' +
+    ui.sheet = {type:"novo", icon:"", foto:""};
+    openSheet('<div class="pic-row"><span id="pic-preview">' + thumb({nome:"", cat:"Mercearia"}, 'lg', '🛒', '') + '</span><div><h3 class="sh-title" id="sh-title">Novo item</h3><p class="sh-sub">Cadastre uma vez, depois é só atualizar o preço.</p></div></div>' +
       '<div class="form"><div class="fl"><label for="n-nome">Nome</label><input class="inp" id="n-nome" autocomplete="off" placeholder="Ex.: Sardinha em lata"><div class="warnbox" id="n-flag" hidden></div></div>' +
       '<div class="fl"><label>Categoria</label>' + chipGroup("n-cat", CATS, ui.filtro !== "Todos" ? ui.filtro : "Mercearia") + '</div>' +
       '<div class="fl"><label for="n-por">Como é vendido</label><input class="inp" id="n-por" autocomplete="off" placeholder="kg, unidade, pacote 1 kg, lata 125 g">' +
       '<div class="chips"><button class="chip" type="button" data-act="set-por" data-v="kg">kg</button><button class="chip" type="button" data-act="set-por" data-v="unidade">unidade</button><button class="chip" type="button" data-act="set-por" data-v="pacote ">pacote</button><button class="chip" type="button" data-act="set-por" data-v="lata ">lata</button></div></div>' +
       '<div class="fl"><label for="n-preco">Preço (opcional)</label><div class="money"><span>R$</span><input id="n-preco" inputmode="decimal" autocomplete="off" placeholder="0,00"></div></div>' +
       '<div class="fl"><label for="n-mercado">Mercado</label><input class="inp" id="n-mercado" value="' + esc(lastLocal()) + '" autocomplete="off"></div>' +
+      picPicker("", false) +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-item">Cadastrar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "n-nome");
   }
   function salvarItem(){
@@ -708,7 +768,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(!nome){ toast("Digite o nome"); document.getElementById("n-nome").focus(); return; }
     var p = parseMoney(document.getElementById("n-preco").value);
     var it = {id: uid(), cat: document.getElementById("n-cat").value || "Outros", nome: nome, por: document.getElementById("n-por").value.trim() || "unidade",
-      hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false};
+      hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false, icon: ui.sheet.icon || ""};
+    if(ui.sheet.foto){ fotos[it.id] = ui.sheet.foto; saveFotos(); }
     if(p !== null && p > 0) it.hist.push({p: p, m: document.getElementById("n-mercado").value.trim(), d: todayStr()});
     state.items.push(it); ui.filtro = it.cat; ui.busca = "";
     var b = document.getElementById("busca"); if(b) b.value = "";
@@ -746,10 +807,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function sheetBackup(){
     ui.sheet = {type:"backup"};
     var data = JSON.stringify(state);
-    openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Guarde este texto no seu WhatsApp. Ele traz tudo de volta se precisar.</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Guarde este texto no seu WhatsApp. Ele traz tudo de volta se precisar. As fotos dos produtos não entram.</p>' +
       '<div class="form"><textarea class="inp" id="f-backup" readonly>' + esc(data) + '</textarea>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="copiar-backup">Copiar backup</button>' +
-      '<a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent("Backup Mercado da Casa " + dShort(todayStr()) + "\n" + data) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar no WhatsApp</a>' +
+      '<a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent("Backup Despensa " + dShort(todayStr()) + "\n" + data) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar no WhatsApp</a>' +
       '<button class="quiet" type="button" data-act="fechar">Fechar</button></div></div>');
   }
   function sheetRestaurar(){
@@ -757,6 +818,19 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     openSheet('<h3 class="sh-title" id="sh-title">Restaurar backup</h3><p class="sh-sub">Cole o texto do backup. Isso substitui o que está no app agora.</p>' +
       '<div class="form"><textarea class="inp" id="f-restaurar" placeholder="Cole aqui o texto que começa com {&quot;v&quot;:1"></textarea>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Restaurar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-restaurar");
+  }
+
+  function novoPreview(){
+    var pv = document.getElementById("pic-preview"); if(!pv || !ui.sheet || ui.sheet.type !== "novo") return;
+    var nome = (document.getElementById("n-nome") || {}).value || "", cat = (document.getElementById("n-cat") || {}).value || "Mercearia";
+    var icon = ui.sheet.icon || autoIcon(nome, cat);
+    pv.innerHTML = thumb({nome: nome, cat: cat}, "lg", icon, ui.sheet.foto || "");
+    sheet.querySelectorAll(".emo").forEach(function(b){ var on = b.dataset.v === icon; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
+  }
+  function itemPreview(it){
+    var pv = document.getElementById("pic-preview"); if(pv) pv.innerHTML = thumb(it, "lg");
+    var icon = it.icon || autoIcon(it.nome, it.cat);
+    sheet.querySelectorAll(".emo").forEach(function(b){ var on = b.dataset.v === icon; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
   }
 
   /* ---------- Dieta ---------- */
@@ -859,6 +933,9 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "fechar": closeSheet(); break;
       case "fechar-dica": state.dica = false; save(); renderInicio(); break;
       case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
+      case "instalar":
+        if(installEvt){ try{ installEvt.prompt(); installEvt.userChoice.then(function(){ installEvt = null; renderInicio(); }, function(){}); }catch(err){} }
+        break;
       case "novo-gasto": sheetGasto(null); break;
       case "editar-gasto":
         var m = mesData(state.mes, false), g = null;
@@ -876,7 +953,9 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         var g2 = b.dataset.g;
         b.parentNode.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("on"); c.setAttribute("aria-checked","false"); });
         b.classList.add("on"); b.setAttribute("aria-checked","true");
-        document.getElementById(g2).value = b.dataset.v; break;
+        document.getElementById(g2).value = b.dataset.v;
+        if(g2 === "n-cat") novoPreview();
+        break;
       case "set-local": document.getElementById("f-local").value = b.dataset.v; break;
       case "set-mercado": document.getElementById("f-mercado").value = b.dataset.v; break;
       case "set-por": var np = document.getElementById("n-por"); np.value = b.dataset.v; np.focus(); break;
@@ -899,8 +978,16 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         b.dataset.orig = "Apagar item";
         if(!arm("item", b, "Toque de novo para apagar")) break;
         state.items = state.items.filter(function(x){ return x.id !== ui.sheet.id; });
+        if(fotos[ui.sheet.id]){ delete fotos[ui.sheet.id]; saveFotos(); }
         save(); closeSheet(); render(); toast("Item apagado"); break;
       case "novo-item": sheetNovoItem(); break;
+      case "set-icone":
+        if(ui.sheet && ui.sheet.type === "novo"){ ui.sheet.icon = b.dataset.v; novoPreview(); }
+        else if(ui.sheet && ui.sheet.type === "item"){ it = findItem(ui.sheet.id); if(it){ it.icon = b.dataset.v; if(fotos[it.id]){ delete fotos[it.id]; saveFotos(); var rb = sheet.querySelector('[data-act="remover-foto"]'); if(rb) rb.remove(); } save(); itemPreview(it); render(); } }
+        break;
+      case "remover-foto":
+        if(ui.sheet && ui.sheet.type === "item"){ delete fotos[ui.sheet.id]; saveFotos(); it = findItem(ui.sheet.id); if(it) itemPreview(it); b.remove(); render(); toast("Foto removida"); }
+        break;
       case "editar-dieta": sheetDieta(); break;
       case "salvar-dieta": salvarDieta(); break;
       case "dieta-padrao":
@@ -936,6 +1023,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   });
   document.addEventListener("input", function(e){
     if(e.target.id === "busca"){ ui.busca = e.target.value; renderPrecosLista(); }
+    if(e.target.id === "n-nome"){ novoPreview(); }
     if(e.target.id === "n-nome"){
       var f = dietFlag(e.target.value), box = document.getElementById("n-flag");
       if(box){ if(f){ box.hidden = false; box.textContent = "Atenção: “" + f + "” está nos gatilhos da dieta."; } else { box.hidden = true; } }
@@ -949,10 +1037,27 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
     }
   });
+  document.addEventListener("change", function(e){
+    if(e.target.id !== "foto-input" || !e.target.files || !e.target.files[0] || !ui.sheet) return;
+    var file = e.target.files[0], tipo = ui.sheet.type, id = ui.sheet.id;
+    fileToThumb(file, function(url){
+      if(!ui.sheet) return;
+      if(tipo === "novo"){ ui.sheet.foto = url; novoPreview(); toast("Foto adicionada"); }
+      else if(tipo === "item"){
+        fotos[id] = url;
+        if(saveFotos()){ var it2 = findItem(id); if(it2) itemPreview(it2); render(); toast("Foto salva");
+          if(!sheet.querySelector('[data-act="remover-foto"]')){ var pa = sheet.querySelector(".pic-actions"); if(pa){ var rb = document.createElement("button"); rb.className = "btn-sm"; rb.type = "button"; rb.dataset.act = "remover-foto"; rb.textContent = "Remover foto"; pa.appendChild(rb); } } }
+      }
+    });
+    e.target.value = "";
+  });
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); installEvt = e; if(state && ui.view === "inicio") renderInicio(); });
   window.addEventListener("hashchange", function(){ show((location.hash || "").replace("#",""), true); });
 
   /* ---------- Início ---------- */
   function start(data){
+    loadFotos();
+    try{ if("serviceWorker" in navigator && location.protocol === "https:" && location.hostname.indexOf("claude") < 0){ navigator.serviceWorker.register("sw.js").catch(function(){}); } }catch(e){}
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
     if(!state.dieta) state.dieta = defaultDieta();
