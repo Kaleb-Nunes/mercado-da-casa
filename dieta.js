@@ -2,7 +2,7 @@
 
    Cada item recebe uma de três respostas:
    - "evitar":       o nome do item tem um termo da lista da dieta;
-   - "conferido":    alguém da casa leu o rótulo e marcou que está dentro da dieta;
+   - "conferido":    alguém da casa leu o rótulo e marcou que não achou nada da lista;
    - "insuficiente": o padrão. Só pelo nome não dá para saber.
 
    O motor nunca diz que um alimento é seguro. "Conferido" registra uma ação de
@@ -25,7 +25,7 @@
      Valor provisório: deve ser definido pelo profissional de saúde. */
   var VALIDADE_CONFERENCIA_DIAS = 180;
 
-  var AVISO_FIXO = "Os avisos são um lembrete da orientação médica. O app não diz se um alimento é seguro. Sempre leia o rótulo.";
+  var AVISO_FIXO = "O app só olha o nome do item: não lê os ingredientes nem as advertências do rótulo. Os avisos são um lembrete da orientação médica e não dizem que um alimento é seguro. Sempre leia o rótulo inteiro.";
   var AVISO_CURTO = "Leia o rótulo.";
 
   /* Sintaxe dos termos:
@@ -150,6 +150,17 @@
     return null;
   }
 
+  /* Devolve o pedaço do nome como a pessoa escreveu ("Requeijão", não "requeijao"). */
+  function trechoOriginal(nome, achado) {
+    var orig = String(nome == null ? "" : nome).split(/[^0-9A-Za-z\u00C0-\u024F]+/).filter(Boolean);
+    var norm = orig.map(function (w) { return normalizar(w).trim(); });
+    var alvo = achado.split(" "), k = alvo.length;
+    for (var i = 0; i + k <= norm.length; i++) {
+      if (norm.slice(i, i + k).join(" ") === achado) return orig.slice(i, i + k).join(" ");
+    }
+    return achado;
+  }
+
   function modeloPorId(id) { return id === MODELO_SEM_LEITE.id ? MODELO_SEM_LEITE : null; }
   function termosDoModelo(mod) {
     var out = [];
@@ -191,7 +202,7 @@
     var base = normalizar(it.nome);
     var texto = tirarExcecoes(base, L.pode);
     var achou = procurar(texto, L.evitar);
-    if (achou) return { estado: "evitar", termo: achou.achado, regra: achou.regra };
+    if (achou) return { estado: "evitar", termo: trechoOriginal(it.nome, achou.achado), regra: achou.regra };
 
     var dica = null;
     for (var i = 0; i < DICAS.length && !dica; i++) {

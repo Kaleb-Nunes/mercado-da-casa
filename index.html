@@ -187,17 +187,17 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;f
 
 .flag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;background:var(--warn-soft);color:var(--warn);vertical-align:1px}
 .flag-line{font-size:12px;font-weight:700;color:var(--warn);margin-top:4px}
-.flag.ok{background:var(--good-soft);color:var(--good)}
+.flag.ok{background:transparent;color:var(--ink);border:1px solid var(--ink)}
 .flag.q{background:transparent;color:var(--muted);border:1px solid var(--line)}
 .diet-line{font-size:12px;font-weight:600;color:var(--muted);margin-top:4px}
-.diet-line.ok{color:var(--good)}
+.diet-line.ok{color:var(--ink)}
 .dbox{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .dbox b{font-weight:700}
 .dbox span{color:var(--muted);font-size:13px}
 .dbox.no{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 .dbox.no span{color:inherit;font-weight:500}
-.dbox.ok{border-color:var(--good)}
-.dbox.ok b{color:var(--good)}
+.dbox.ok{border-color:var(--ink)}
+.word.neutro{background:transparent;color:var(--muted);border:1px solid var(--line)}
 .dbox .quiet{align-self:flex-start;padding:2px 0}
 .aviso-fixo{font-size:13px;color:var(--muted);border-left:3px solid var(--brass);padding:6px 10px;margin:4px 0 0}
 .estados{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -610,10 +610,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var r = dietaAval(it), mod = DietaMotor.modeloPorId(state.dieta && state.dieta.modelo);
     if(r.estado === "evitar") return '<div class="dbox no" role="alert"><b>Evitar: o nome tem “' + esc(r.termo) + '”, que está na lista da dieta.</b><span>' + esc(DietaMotor.AVISO_FIXO) + '</span></div>';
     if(r.estado === "conferido") return '<div class="dbox ok"><b>Rótulo conferido em ' + dLong(r.conferencia.d) + (r.conferencia.q ? ' por ' + esc(r.conferencia.q) : '') + '</b>' +
-      '<span>Vale até ' + dLong(r.conferencia.vence) + '. Embalagem nova ou receita nova: leia de novo. ' + esc(DietaMotor.AVISO_FIXO) + '</span>' +
+      '<span>Isto registra a leitura de vocês, não diz que o produto é seguro. Vale até ' + dLong(r.conferencia.vence) + '. Embalagem nova ou receita nova: leia de novo. ' + esc(DietaMotor.AVISO_FIXO) + '</span>' +
       '<button class="quiet" type="button" data-act="desconferir" data-id="' + esc(it.id) + '">Desfazer conferência</button></div>';
     if(r.estado === "insuficiente") return '<div class="dbox"><b>Informação insuficiente</b><span>Só pelo nome não dá para saber.' + (r.dica ? ' ' + esc(r.dica) : '') + (r.motivo ? ' ' + esc(r.motivo) : '') + ' ' + esc(DietaMotor.AVISO_CURTO) + '</span>' +
-      (r.bloqueiaConferencia ? '' : '<button class="btn-sm" type="button" data-act="conferir" data-id="' + esc(it.id) + '">' + esc(mod ? mod.acaoConferir : 'Li o rótulo: está dentro da dieta') + '</button>') + '</div>';
+      (r.bloqueiaConferencia ? '' : '<button class="btn-sm" type="button" data-act="conferir" data-id="' + esc(it.id) + '">' + esc(mod ? mod.acaoConferir : 'Li o rótulo: não tem nada da lista') + '</button>') + '</div>';
     return '';
   }
   function dietaLigada(){ return !!(state.dieta && state.dieta.ativa && (state.dieta.modelo || (state.dieta.evitar || []).length)); }
@@ -991,7 +991,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var L = ["*Lista de mercado*",""];
     items.forEach(function(it){ var of = ofertaAtiva(it); var fl = dietFlag(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (precoEfetivo(it) ? " · ~" + brl(lineTotal(it)) : "") + (of ? " · oferta no " + of.m : "") + (fl ? " · ⚠️ evitar: tem " + fl : "")); });
     L.push("", "Estimado: " + brl(items.reduce(function(s,i){ return s + lineTotal(i); }, 0)));
-    if(dietaLigada()) L.push("_Dieta: " + (state.dieta.nome || "ligada") + ". Os avisos são lembrete da orientação médica. Leia o rótulo._");
+    if(dietaLigada()) L.push("_Dieta: " + (state.dieta.nome || "ligada") + ". O app só olha o nome dos itens. Os avisos são lembrete da orientação médica. Leia o rótulo._");
     return L.join("\n");
   }
 
@@ -1266,7 +1266,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var d = state.dieta || defaultDieta(), mod = DietaMotor.modeloPorId(d.modelo);
     var temLista = !!mod || (d.evitar || []).length > 0, ligada = d.ativa && temLista;
     var h = '<div class="head-row"><div><h2 class="title">' + esc(ligada ? (d.nome || 'Dieta') : (temLista ? 'Dieta desligada' : 'Nenhuma dieta')) + '</h2><p class="sub">' +
-      (ligada ? 'Cada item da casa recebe um de três avisos.' : temLista ? 'O app não está avisando nada. Toque em Editar para ligar de novo.' : 'Se alguém da casa tem uma restrição orientada pelo médico, monte a lista aqui.') + '</p></div>' +
+      (ligada ? 'Cada item da casa recebe um de três avisos, só pelo nome.' : temLista ? 'O app não está avisando nada. Toque em Editar para ligar de novo.' : 'Se alguém da casa tem uma restrição orientada pelo médico, monte a lista aqui.') + '</p></div>' +
       (temLista ? '<button class="btn-sm" type="button" data-act="editar-dieta">' + IC.edit + 'Editar</button>' : '') + '</div>';
     h += '<p class="aviso-fixo" role="note">' + esc(DietaMotor.AVISO_FIXO) + '</p>';
     if(!temLista){
@@ -1289,7 +1289,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       h += '<div class="card pad"><h3>Os três avisos</h3><ul class="estados">' +
         '<li><span class="flag">evitar</span><span>O nome tem uma palavra da lista. Volta pra prateleira.</span></li>' +
         '<li><span class="flag q">conferir</span><span>Informação insuficiente: só pelo nome não dá para saber. Todo item começa assim.</span></li>' +
-        '<li><span class="flag ok">conferido</span><span>Alguém da casa leu o rótulo e marcou no item. Vale ' + Math.round(DietaMotor.VALIDADE_CONFERENCIA_DIAS / 30) + ' meses ou até o nome mudar.</span></li></ul></div>';
+        '<li><span class="flag ok">conferido</span><span>Alguém da casa leu o rótulo e marcou no item. Registra a leitura, não é garantia. Vale ' + Math.round(DietaMotor.VALIDADE_CONFERENCIA_DIAS / 30) + ' meses ou até o nome mudar.</span></li></ul></div>';
       var ev = [], nc = 0, ni = 0;
       state.items.forEach(function(i){ var r = dietaAval(i); if(r.estado === "evitar") ev.push(i.nome); else if(r.estado === "conferido") nc++; else if(r.estado === "insuficiente") ni++; });
       h += '<div class="card pad"><h3>Itens da casa</h3><p class="note-sm">' + ev.length + ' para evitar · ' + nc + (nc === 1 ? ' conferido' : ' conferidos') + ' · ' + ni + ' sem informação suficiente</p>' + (ev.length ? words(ev, '') : '') + '</div>';
@@ -1301,7 +1301,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       }
       if((d.evitar || []).length) h += '<div class="card pad"><h3>' + (mod ? 'Termos que você acrescentou' : 'Se aparecer, volta pra prateleira') + '</h3>' + words(d.evitar.map(DietaMotor.rotuloTermo), '') + '</div>';
       var pode = (mod ? mod.pode : []).concat(d.pode || []);
-      if(pode.length) h += '<div class="card pad"><h3>Parece, mas pode</h3>' + words(pode, ' ok') + '</div>';
+      if(pode.length) h += '<div class="card pad"><h3>Exceções: não entram no aviso</h3><p class="note-sm">Só quer dizer que essas palavras sozinhas não disparam “evitar”. Não quer dizer que o produto pode.</p>' + words(pode, ' neutro') + '</div>';
       var cuid = (mod ? mod.cuidados : []).concat(d.cuidados || []);
       if(cuid.length) h += '<div class="card pad"><h3>Na hora da compra</h3><ul class="plain">' + cuid.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
     }
@@ -1316,7 +1316,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<p class="note-sm">A lista base sem leite tem ' + DietaMotor.termosDoModelo(DietaMotor.MODELO_SEM_LEITE).length + ' termos e ainda não foi revisada por profissional de saúde.</p></div>' +
       '<div class="fl"><label for="d-nome">Nome da dieta</label><input class="inp" id="d-nome" value="' + esc(d.nome || "") + '" autocomplete="off" placeholder="Ex.: Sem leite e sem soja"></div>' +
       '<div class="fl"><label for="d-evitar">' + (mod ? 'Termos a mais' : 'Termos') + ': se o nome do item tiver um destes, o app avisa “evitar”</label><textarea class="inp txt" id="d-evitar" style="height:150px">' + esc((d.evitar || []).join("\n")) + '</textarea></div>' +
-      '<div class="fl"><label for="d-pode">' + (mod ? 'Exceções a mais' : 'Exceções') + ': parecem, mas podem</label><textarea class="inp txt" id="d-pode">' + esc((d.pode || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-pode">' + (mod ? 'Exceções a mais' : 'Exceções') + ': palavras que não disparam o aviso</label><textarea class="inp txt" id="d-pode">' + esc((d.pode || []).join("\n")) + '</textarea></div>' +
       '<div class="fl"><label for="d-cuidados">' + (mod ? 'Cuidados a mais' : 'Cuidados') + ' na hora da compra</label><textarea class="inp txt" id="d-cuidados">' + esc((d.cuidados || []).join("\n")) + '</textarea></div>' +
       '<div class="fl"><label for="d-obs">Orientação do médico</label><textarea class="inp txt" id="d-obs" placeholder="Ex.: manter a dieta até a próxima consulta">' + esc(d.obs || "") + '</textarea></div>' +
       '<div class="fl"><label for="d-revisao">Próxima revisão com o médico</label><input class="inp" id="d-revisao" type="date" value="' + esc(d.revisao || "") + '"></div>' +

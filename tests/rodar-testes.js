@@ -142,6 +142,16 @@ confere(/<script src="dieta\.js"><\/script>/.test(html), "o app deveria carregar
 var sw = fs.readFileSync(path.join(RAIZ, "sw.js"), "utf8");
 confere(/"\.\/dieta\.js"/.test(sw), "service worker deveria guardar dieta.js para uso offline");
 
+confere(aval("Requeijão cremoso").termo === "Requeijão", "o alerta deveria mostrar a palavra como foi escrita (Requeijão)");
+confere(aval("Pão de queijo congelado").termo === "queijo" && aval("LEITE-EM-PO").termo === "LEITE", "o alerta deveria mostrar o trecho original do nome");
+
+/* 8. Textos: deixar claro que o app só olha o nome e nunca chamar produto de seguro */
+confere(/não lê os ingredientes/.test(D.AVISO_FIXO), "o aviso fixo deveria dizer que o app não lê os ingredientes");
+var proibidas = /(é seguro para|seguro para aplv|pode consumir|liberado para|sem risco|100% seguro)/i;
+[html, fs.readFileSync(path.join(RAIZ, "dieta.js"), "utf8")].forEach(function (t, i) {
+  confere(!proibidas.test(t), "texto que apresenta produto como seguro em " + (i ? "dieta.js" : "index.html"));
+});
+
 /* Relatório */
 function linha(r, nome) {
   return nome + ": " + r.total + " casos (A " + r.A + ", S " + r.S + ", I " + r.I + ") · falsos negativos " + r.fn.length +
