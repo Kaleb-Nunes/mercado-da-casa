@@ -77,7 +77,7 @@ var comExtra = dieta(); comExtra.evitar = ["soja"];
 confere(D.avaliar("Leite de soja", comExtra).estado === "evitar" && D.avaliar("Proteína de soja", comExtra).estado === "evitar", "modelo + termo extra deveria alertar nos dois");
 
 /* 5. Migração da dieta salva pela versão anterior */
-var antiga = { ativa: true, nome: "Sem leite", evitar: D.LEGADO_EVITAR.slice(), pode: D.LEGADO_PODE.slice(),
+var antiga = { ativa: true, nome: "Dieta de teste", evitar: D.LEGADO_EVITAR.slice(), pode: D.LEGADO_PODE.slice(),
   cuidados: ["Zero lactose e sem lactose não servem: ainda têm a proteína do leite."], obs: "Orientação de teste", revisao: "2026-12-01" };
 var m1 = D.migrar(JSON.parse(JSON.stringify(antiga)));
 confere(m1.modelo === "sem-leite" && m1.evitar.length === 0 && m1.pode.length === 0, "migração: dieta padrão antiga deveria virar o modelo sem extras");
