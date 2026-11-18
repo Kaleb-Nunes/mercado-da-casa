@@ -13,7 +13,7 @@ Abrir: https://kaleb-nunes.github.io/mercado-da-casa/
 
 ## Marca
 
-Símbolo: um pote de despensa com uma folha dentro, tampa em latão. Cores: Verde #0F3B2E, Latão #D9B45A, Creme #F4F1E6, Tinta #10261F, Névoa #F1F3EF. Tipos: Fraunces (títulos e valores) e Onest (textos).
+Símbolo: um pote de despensa com uma folha dentro, tampa em latão. Cores: Verde #0F3B2E, Latão #D9B45A, Creme #F4F1E6, Tinta #10261F, Névoa #F1F3EF. Tipos: Fraunces (títulos e valores) e Onest (textos), servidas pelo próprio app em `fonts/` (licença SIL OFL), sem pedir nada ao Google.
 Arquivos em `marca/`: símbolo, `wordmark.svg`, `logo-horizontal*.svg` e os PNG `elida-*` (logo, logo escuro, símbolo e manual da marca), todos com o nome Elida. O nome foi desenhado com Fraunces 600 (licença SIL OFL) convertida em curvas, sem depender da fonte instalada.
 
 ## Importar compra do cupom

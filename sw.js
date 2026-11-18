@@ -2,7 +2,7 @@
    Produção e homologação usam caches com nomes diferentes. */
 const PRODUCAO = self.location.hostname === "kaleb-nunes.github.io" && self.location.pathname.indexOf("/mercado-da-casa/") === 0;
 const CACHE = (PRODUCAO ? "despensa" : "despensa-hml") + "-v7";
-const CORE = ["./", "./index.html", "./dieta.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js"];
+const CORE = ["./", "./index.html", "./dieta.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js", "./fonts/fraunces.woff2", "./fonts/onest.woff2"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
@@ -25,14 +25,6 @@ self.addEventListener("fetch", (e) => {
       }).catch(() => caches.match(req, { ignoreSearch: true })
         .then((r) => r || caches.match("./"))
         .then((r) => r || caches.match("./index.html")))
-    );
-  } else if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
-    e.respondWith(
-      caches.match(req).then((r) => r || fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
-        return res;
-      }))
     );
   }
 });

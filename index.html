@@ -12,10 +12,12 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Elida</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/onest.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* Fontes no próprio site (licença SIL OFL, em fonts/): nada é pedido ao Google e funciona offline. */
+@font-face{font-family:"Fraunces";src:url(fonts/fraunces.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Onest";src:url(fonts/onest.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
   /* Layout: cartão-saldo verde no topo, listas limpas em superfícies claras, barra inferior com botão + central */
   --bg:#F1F3EF;
@@ -160,13 +162,16 @@ h2.title{font-family:var(--font-display);font-weight:600;font-size:30px;line-hei
 .sum .cart b{color:var(--good)}
 .litem{display:grid;grid-template-columns:auto auto 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
 .rows li:first-child .litem{border-top:0}
-.check{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;transition:all .2s ease}
-.check svg{width:16px;height:16px;opacity:0;color:#fff}
-.check.on{background:var(--good);border-color:var(--good)}
+/* O botão tem 44px para o dedo; a margem negativa mantém o desenho e o espaço de 28px. */
+.check{width:44px;height:44px;margin:-8px;border:0;background:none;display:grid;place-items:center;padding:0;position:relative;border-radius:12px}
+.check::before{content:"";position:absolute;inset:8px;border-radius:50%;border:2px solid var(--line);background:var(--surface);transition:all .2s ease}
+.stepper button::after{content:"";position:absolute;inset:-8px} /* área de toque de 44px sem mudar o desenho */
+.check svg{width:16px;height:16px;opacity:0;color:#fff;position:relative}
+.check.on::before{background:var(--good);border-color:var(--good)}
 .check.on svg{opacity:1}
 .litem.done .r-name{text-decoration:line-through;color:var(--muted)}
 .stepper{display:inline-flex;align-items:center;gap:2px;margin-top:6px;border:1px solid var(--line);border-radius:99px;padding:2px}
-.stepper button{width:28px;height:28px;border-radius:50%;border:0;background:var(--bg);font-weight:700;font-size:16px;line-height:1}
+.stepper button{width:28px;height:28px;border-radius:50%;border:0;background:var(--bg);font-weight:700;font-size:16px;line-height:1;position:relative}
 .stepper span{min-width:44px;text-align:center;font-size:13px;font-weight:600}
 .bigbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;border-radius:16px;border:0;background:var(--hero);color:var(--hero-ink);font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 8px 20px rgba(15,59,46,.22)}
 .bigbtn svg{width:20px;height:20px}

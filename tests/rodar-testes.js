@@ -126,7 +126,7 @@ termosPrivados = termosPrivados.map(function (s) { return s.replace(/==>.*$/, ""
 }).map(function (s) { return s.replace(/^literal:/, ""); });
 var lidos = 0;
 arquivos().forEach(function (f) {
-  if (/^vendor\//.test(f) || /\.(png|jpg|jpeg|gif|ico|webp)$/i.test(f)) return;
+  if (/^vendor\//.test(f) || /\.(png|jpg|jpeg|gif|ico|webp|woff2?)$/i.test(f)) return;
   var p = path.join(RAIZ, f); if (!fs.existsSync(p)) return;
   var txt = fs.readFileSync(p, "utf8"); lidos++;
   if (/\.svg$/i.test(f)) return; /* desenho vetorial: só números de coordenadas */
@@ -235,6 +235,14 @@ confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height
   confere(/não mande em grupo/.test(bk), "tela de backup deveria avisar que o arquivo não tem senha");
   confere(/case "hml-dados":\s*if\(!HML\) break;/.test(html), "dados de teste só podem existir na homologação");
 })();
+
+/* 14. Fontes no próprio site e área de toque */
+confere(!/fonts\.(googleapis|gstatic)\.com/.test(html) && !/fonts\.(googleapis|gstatic)\.com/.test(sw), "o app não pode pedir fontes ao Google");
+confere(/"\.\/fonts\/fraunces\.woff2", "\.\/fonts\/onest\.woff2"/.test(sw), "service worker deveria guardar as fontes para uso offline");
+["fonts/fraunces.woff2", "fonts/onest.woff2", "fonts/LICENCA-Fraunces-OFL.txt", "fonts/LICENCA-Onest-OFL.txt"].forEach(function (f) {
+  confere(fs.existsSync(path.join(RAIZ, f)), "falta " + f);
+});
+confere(/\.check\{width:44px;height:44px;margin:-8px;/.test(html) && /\.stepper button::after\{content:"";position:absolute;inset:-8px\}/.test(html), "check e botões +/− deveriam ter área de toque de 44px");
 
 /* Relatório */
 function linha(r, nome) {
