@@ -269,6 +269,24 @@ textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-h
 .src{font-size:12px;color:var(--muted)}
 .src a{color:var(--muted)}
 
+/* ---------- Tempo real ---------- */
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:99px;border:0;background:var(--good-soft);color:var(--good);white-space:nowrap}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block;flex:none}
+.live.off{background:var(--warn-soft);color:var(--warn)}
+.live.off i{background:var(--warn)}
+.live.wait{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.live.wait i{background:var(--brass)}
+.rt-card{display:flex;flex-direction:column;gap:12px;padding:16px 18px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.rt-card b{font-size:16px}
+.rt-card p{margin:0;font-size:14px;color:var(--muted)}
+.rt-actions{display:flex;gap:8px;flex-wrap:wrap}
+.rt-actions .act{background:var(--hero);color:var(--hero-ink);border:0;border-radius:99px;padding:9px 16px;font-weight:700;font-size:14px}
+.rt-actions .btn-sm{box-shadow:none}
+.membros{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.membros li{display:flex;align-items:center;gap:10px;font-size:15px}
+.membros li small{color:var(--muted);font-size:13px}
+.linkbox{font-size:13px;word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--muted)}
+
 /* ---------- Barra inferior ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -667,6 +685,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function save(){
     mem = state;
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+    agendarEnvio();
   }
   function valid(s){ return s && typeof s === "object" && Array.isArray(s.items) && s.meses && typeof s.meses === "object"; }
   function latestOrc(beforeKey){
@@ -765,6 +784,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<button class="qbtn" type="button" data-act="novo-gasto"><span class="ic">' + IC.plus + '</span><span>Anotar gasto<small>leva 10 segundos</small></span></button>' +
       '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button>' +
       '<button class="qbtn" type="button" data-act="colar-import" style="grid-column:1/-1"><span class="ic">' + IC.receipt + '</span><span>Importar compra do cupom<small>cole o código que chegou no WhatsApp</small></span></button></div>';
+    if(isNow) h += rtCardHtml();
     if(isNow){ var och = ofertasCardHtml(); if(och) h += '<div class="section"><div class="s-head"><span class="s-title">Ofertas da semana</span>' + (remote ? '<span class="s-meta">atualizado ' + dShort(remote.atualizado) + '</span>' : '') + '</div>' + och + '</div>'; }
     var dc = dicas(k);
     if(dc.length) h += '<div class="section"><div class="s-head"><span class="s-title">Dicas pra economizar</span></div><div class="card"><ul class="tips">' +
@@ -777,7 +797,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     } else {
       h += '<ul class="rows">' + gs.map(function(g){
         return '<li><button class="row" type="button" data-act="editar-gasto" data-id="' + esc(g.id) + '">' + (g.local ? mkBadge(g.local) : '<span class="avatar emoji" aria-hidden="true">' + (TIPO_IC[g.tipo] || '🛒') + '</span>') +
-          '<span class="r-main"><span class="r-name">' + esc(g.local || g.tipo) + '</span><span class="r-meta">' + dShort(g.data) + ' · ' + esc(g.tipo) + (g.obs ? ' · ' + esc(g.obs) : '') + '</span></span>' +
+          '<span class="r-main"><span class="r-name">' + esc(g.local || g.tipo) + '</span><span class="r-meta">' + dShort(g.data) + ' · ' + esc(g.tipo) + (g.obs ? ' · ' + esc(g.obs) : '') + (Sync.casa && g.por ? ' · por ' + esc(g.por) : '') + '</span></span>' +
           '<span class="r-val">' + brl(g.valor) + '</span></button></li>';
       }).join("") + '</ul>';
     }
@@ -837,6 +857,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       lines.map(function(l){ return '<span class="of-line"><span class="ti" aria-hidden="true">' + l[0] + '</span><span>' + l[1] + '</span></span>'; }).join("") +
       '<span class="of-go">Ver ofertas da semana ›</span></button>';
   }
+  function comPor(g){ if(Sync.casa && Sync.casa.eu) g.por = Sync.casa.eu; return g; }
   function listaCount(){ var n = state.items.filter(function(i){ return i.lista; }).length; return n ? n + (n === 1 ? " item" : " itens") + " pra comprar" : "vazia"; }
   function resumoTexto(){
     var k = state.mes, m = mesData(k,false), g = gastoTotal(m);
@@ -978,6 +999,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(v === null || v <= 0){ toast("Digite o valor"); document.getElementById("f-valor").focus(); return; }
     var data = document.getElementById("f-data").value || todayStr();
     var g = {id: ui.sheet.id || uid(), data: data, local: document.getElementById("f-local").value.trim(), tipo: document.getElementById("f-tipo").value || "Outros", valor: v, obs: document.getElementById("f-obs").value.trim()};
+    if(Sync.casa && Sync.casa.eu) g.por = Sync.casa.eu;
     if(ui.sheet.id){
       var old = mesData(ui.sheet.mes, true);
       old.gastos = old.gastos.filter(function(x){ return x.id !== ui.sheet.id; });
@@ -1059,7 +1081,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(v === null || v <= 0){ toast("Digite o valor da nota"); return; }
     var data = todayStr(), m = mesData(monthKey(data), true);
     var loc = document.getElementById("f-local").value.trim();
-    m.gastos.push({id: uid(), data: data, local: loc, tipo: "Mercado", valor: v, obs: "Lista"});
+    m.gastos.push(comPor({id: uid(), data: data, local: loc, tipo: "Mercado", valor: v, obs: "Lista"}));
     state.items.forEach(function(i){
       if(!(i.lista && i.ok)) return;
       var c = cur(i), of = ofertaAtiva(i);
@@ -1139,7 +1161,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function sheetColar(){
     ui.sheet = {type:"colar"};
-    openSheet('<h3 class="sh-title" id="sh-title">Colar código</h3><p class="sh-sub">Cole aqui a mensagem com o código do cupom ou do encarte. Pode colar a mensagem inteira.</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">Colar código</h3><p class="sh-sub">Cole aqui a mensagem com o código do cupom, do encarte ou o convite da casa. Pode colar a mensagem inteira.</p>' +
       '<div class="form"><textarea class="inp" id="f-import" placeholder="Cole aqui"></textarea>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="ler-import">Ler código</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-import");
   }
@@ -1162,7 +1184,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var o = ui.sheet && ui.sheet.data; if(!o) return;
     state.importados = state.importados || [];
     if(o.id && state.importados.indexOf(o.id) >= 0){ toast("Essa compra já foi importada"); return; }
-    mesData(monthKey(o.d), true).gastos.push({id: uid(), data: o.d, local: o.m, tipo: o.tp || "Mercado", valor: o.t, obs: "Cupom importado"});
+    mesData(monthKey(o.d), true).gastos.push(comPor({id: uid(), data: o.d, local: o.m, tipo: o.tp || "Mercado", valor: o.t, obs: "Cupom importado"}));
     var novos = 0, atual = 0;
     o.i.forEach(function(r){
       var p = +r[3]; if(!(p > 0)) return;
@@ -1378,11 +1400,329 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     state.items.forEach(function(it){ if(it.oferta && it.oferta.fim && it.oferta.fim < t) delete it.oferta; });
   }
 
+  /* ---------- Tempo real: a casa no Firebase ----------
+     Cada item, gasto, mês e configuração vira um documento em casas/{id}/...
+     Só os campos que mudaram são enviados, então duas pessoas mexendo em coisas diferentes não se atropelam.
+     Sem internet, o Firestore guarda no celular e envia quando a rede volta. */
+  var FB_CONFIG = null; /* {apiKey, authDomain, projectId, appId}: entra aqui quando o projeto do Firebase existir */
+  var CASA_KEY = "despensa-casa";
+  var COLS = ["itens", "gastos", "meses", "config", "ofertas"];
+  var Sync = {casa: null, db: null, auth: null, uid: null, ready: false, loaded: {}, started: {}, shadow: {}, membros: {}, unsub: [], pending: 0, timer: null, rtimer: null, evs: [], etimer: null, err: "", online: navigator.onLine !== false};
+  function fbCfg(){ var t = window.__DESPENSA_FB__; return (t && t.config) || FB_CONFIG; }
+  function syncDisponivel(){ return !!fbCfg(); }
+  function loadCasa(){ try{ var c = JSON.parse(localStorage.getItem(CASA_KEY) || "null"); if(c && c.id && c.id.length >= 20) return c; }catch(e){} return null; }
+  function saveCasa(c){ try{ if(c) localStorage.setItem(CASA_KEY, JSON.stringify(c)); else localStorage.removeItem(CASA_KEY); }catch(e){} }
+  function novoIdCasa(){ var b = new Uint8Array(20), s = ""; crypto.getRandomValues(b); for(var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function linkCasa(id){ return location.origin + location.pathname.replace(/index\.html$/, "") + "#casa=" + id; }
+  function parseCasa(text){ var m = String(text || "").match(/casa=([A-Za-z0-9_-]{20,})/); return m ? m[1] : null; }
+  function stableStr(v){
+    if(v === null || typeof v !== "object") return JSON.stringify(v);
+    if(Array.isArray(v)) return "[" + v.map(function(x){ return x === undefined ? "null" : stableStr(x); }).join(",") + "]";
+    return "{" + Object.keys(v).filter(function(k){ return v[k] !== undefined; }).sort().map(function(k){ return JSON.stringify(k) + ":" + stableStr(v[k]); }).join(",") + "}";
+  }
+  function campos(obj){ var o = {}; Object.keys(obj || {}).forEach(function(k){ if(k.charAt(0) === "_" || obj[k] === undefined) return; o[k] = stableStr(obj[k]); }); return o; }
+  function mesmosCampos(a, b){ if(!a || !b) return false; var ka = Object.keys(a), kb = Object.keys(b); if(ka.length !== kb.length) return false; for(var i = 0; i < ka.length; i++){ if(a[ka[i]] !== b[ka[i]]) return false; } return true; }
+  function limpo(v){ return v === undefined ? null : JSON.parse(JSON.stringify(v)); }
+  function semMeta(d){ var o = {}; Object.keys(d || {}).forEach(function(k){ if(k.charAt(0) !== "_") o[k] = d[k]; }); return o; }
+  function uniao(a, b){ var s = {}, out = []; (a || []).concat(b || []).forEach(function(x){ if(!s[x]){ s[x] = 1; out.push(x); } }); return out.slice(-60); }
+
+  function loadSdk(cb, fail){
+    if(window.FBSDK) return cb();
+    var s = document.createElement("script"); s.src = "vendor/firebase.js"; s.async = true;
+    s.onload = function(){ if(window.FBSDK) cb(); else fail(); }; s.onerror = function(){ fail(); };
+    document.head.appendChild(s);
+  }
+  function fbInit(){
+    if(Sync.db) return;
+    var F = window.FBSDK, t = window.__DESPENSA_FB__ || {};
+    var app = F.initializeApp(fbCfg());
+    Sync.auth = F.initializeAuth(app, {persistence: [F.indexedDBLocalPersistence, F.browserLocalPersistence]});
+    try{ Sync.db = F.initializeFirestore(app, {localCache: F.persistentLocalCache({tabManager: F.persistentMultipleTabManager()})}); }
+    catch(e){ Sync.db = F.initializeFirestore(app, {localCache: F.memoryLocalCache()}); }
+    if(t.emu){ F.connectAuthEmulator(Sync.auth, "http://" + t.emu + ":9099", {disableWarnings: true}); F.connectFirestoreEmulator(Sync.db, t.emu, 8080); }
+  }
+  function fbReady(cb, fail){
+    loadSdk(function(){
+      try{ fbInit(); }catch(e){ fail(e); return; }
+      if(Sync.uid) return cb();
+      var F = window.FBSDK, asked = false, done = false;
+      F.onAuthStateChanged(Sync.auth, function(u){
+        if(done) return;
+        if(u){ done = true; Sync.uid = u.uid; cb(); }
+        else if(!asked){ asked = true; F.signInAnonymously(Sync.auth).catch(function(e){ if(!done){ done = true; fail(e); } }); }
+      });
+    }, function(){ fail(new Error("sdk")); });
+  }
+  function cref(c){ return window.FBSDK.collection(Sync.db, "casas", Sync.casa.id, c); }
+  function dref(c, id){ return window.FBSDK.doc(Sync.db, "casas", Sync.casa.id, c, id); }
+
+  /* O estado do app, quebrado em documentos */
+  function entidades(){
+    var E = {itens: {}, gastos: {}, meses: {}, config: {}, ofertas: {}};
+    state.items.forEach(function(it){ E.itens[it.id] = it; });
+    Object.keys(state.meses).forEach(function(k){ var m = state.meses[k]; E.meses[k] = {orc: m.orc || 0}; (m.gastos || []).forEach(function(g){ E.gastos[g.id] = g; }); });
+    E.config.dieta = state.dieta || defaultDieta();
+    E.config.geral = {importados: state.importados || [], ofImportados: state.ofImportados || []};
+    (state.ofertas || []).forEach(function(o){ E.ofertas[o.id] = o; });
+    return E;
+  }
+  function agendarEnvio(){ if(!Sync.casa || !Sync.ready) return; clearTimeout(Sync.timer); Sync.timer = setTimeout(enviar, 250); }
+  function enviar(){
+    clearTimeout(Sync.timer); Sync.timer = null;
+    if(!Sync.casa || !Sync.ready || !Sync.db) return;
+    var F = window.FBSDK, E = entidades(), ops = [];
+    COLS.forEach(function(c){
+      var sh = Sync.shadow[c] || (Sync.shadow[c] = {}), atual = E[c];
+      Object.keys(atual).forEach(function(id){
+        var obj = atual[id], now = campos(obj), prev = sh[id], upd = {}, n = 0;
+        Object.keys(now).forEach(function(k){ if(!prev || prev[k] !== now[k]){ upd[k] = limpo(obj[k]); n++; } });
+        if(prev) Object.keys(prev).forEach(function(k){ if(!(k in now)){ upd[k] = F.deleteField(); n++; } });
+        if(n){ upd._by = Sync.uid; upd._nome = Sync.casa.eu || ""; upd._at = F.serverTimestamp(); ops.push(["set", c, id, upd]); sh[id] = now; }
+      });
+      Object.keys(sh).forEach(function(id){ if(!(id in atual)){ ops.push(["del", c, id]); delete sh[id]; } });
+    });
+    for(var i = 0; i < ops.length; i += 400){
+      (function(part){
+        var b = F.writeBatch(Sync.db);
+        part.forEach(function(o){ if(o[0] === "set") b.set(dref(o[1], o[2]), o[3], {merge: true}); else b.delete(dref(o[1], o[2])); });
+        Sync.pending += part.length; syncPill();
+        b.commit().then(function(){ Sync.pending = Math.max(0, Sync.pending - part.length); Sync.err = ""; syncPill(); },
+          function(e){ Sync.pending = Math.max(0, Sync.pending - part.length); Sync.err = String((e && e.code) || e); syncPill(); });
+      })(ops.slice(i, i + 400));
+    }
+  }
+
+  /* O que chega dos outros celulares */
+  function achaGasto(id){ var r = null; Object.keys(state.meses).forEach(function(k){ state.meses[k].gastos.forEach(function(g){ if(g.id === id) r = g; }); }); return r; }
+  function tiraGasto(id){ Object.keys(state.meses).forEach(function(k){ var m = state.meses[k]; m.gastos = m.gastos.filter(function(g){ return g.id !== id; }); }); }
+  function aplicar(c, id, d){
+    var o = semMeta(d);
+    if(c === "itens"){
+      o.id = id; var it = findItem(id);
+      if(it){ Object.keys(it).forEach(function(k){ if(!(k in o)) delete it[k]; }); for(var k in o) it[k] = o[k]; }
+      else { state.items.push(Object.assign({hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false, icon: ""}, o)); }
+    } else if(c === "gastos"){
+      o.id = id; tiraGasto(id); if(o.data) mesData(monthKey(o.data), true).gastos.push(o);
+    } else if(c === "meses"){
+      mesData(id, true).orc = +o.orc || 0;
+    } else if(c === "config"){
+      if(id === "dieta" && o.evitar) state.dieta = o;
+      if(id === "geral"){ state.importados = uniao(state.importados, o.importados); state.ofImportados = uniao(state.ofImportados, o.ofImportados); }
+    } else if(c === "ofertas"){
+      o.id = id; state.ofertas = (state.ofertas || []).filter(function(x){ return x.id !== id; }); state.ofertas.push(o);
+    }
+  }
+  function remover(c, id){
+    if(c === "itens") state.items = state.items.filter(function(x){ return x.id !== id; });
+    else if(c === "gastos") tiraGasto(id);
+    else if(c === "ofertas") state.ofertas = (state.ofertas || []).filter(function(x){ return x.id !== id; });
+  }
+  function salvarLocal(){ mem = state; try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function agendarRender(){ clearTimeout(Sync.rtimer); Sync.rtimer = setTimeout(function(){ render(); }, 80); }
+  function evento(c, id, tipo, antes, d){
+    var quem = d._nome || "Alguém";
+    if(c === "gastos") return antes ? [5, quem + " alterou um gasto", quem] : [1, quem + " anotou " + brl(+d.valor || 0) + (d.local ? " no " + d.local : ""), quem];
+    if(c === "itens"){
+      var it = findItem(id); if(!it) return null;
+      if(!antes) return [3, quem + " cadastrou " + it.nome, quem];
+      if(!antes.lista && it.lista) return [2, quem + " pôs " + it.nome + " na lista", quem];
+      if(!antes.ok && it.ok) return [8, "", quem, "ok"];
+      if((antes.hist || []).length < (it.hist || []).length || stableStr(antes.hist) !== stableStr(it.hist)) return [4, quem + " atualizou o preço de " + it.nome, quem];
+      return null;
+    }
+    if(c === "meses") return [6, quem + " mudou o orçamento de " + mesNome(id) + " pra " + brl(+d.orc || 0), quem];
+    if(c === "config" && id === "dieta") return [6, quem + " atualizou a dieta", quem];
+    if(c === "ofertas") return [7, quem + " importou ofertas de um encarte", quem];
+    return null;
+  }
+  function avisar(ev){
+    Sync.evs.push(ev); clearTimeout(Sync.etimer);
+    Sync.etimer = setTimeout(function(){
+      var evs = Sync.evs; Sync.evs = [];
+      evs.sort(function(a, b){ return a[0] - b[0]; });
+      var top = evs[0], n = evs.filter(function(e){ return e[0] === top[0]; }).length, msg = top[1];
+      if(top[3] === "ok") msg = top[2] + " pôs " + (n === 1 ? "1 item" : n + " itens") + " no carrinho";
+      else if(n > 1 && top[0] === 2) msg = top[2] + " pôs " + n + " itens na lista";
+      else if(n > 1 && top[0] === 4) msg = top[2] + " atualizou " + n + " preços";
+      else if(n > 1 && top[0] === 3) msg = top[2] + " cadastrou " + n + " itens";
+      else if(top[0] === 7) msg = top[1];
+      if(msg) toast(msg, 3200);
+    }, 900);
+  }
+  function ouvir(c){
+    var F = window.FBSDK;
+    return F.onSnapshot(cref(c), {includeMetadataChanges: true}, function(snap){
+      if(Sync.timer) enviar();
+      var mudou = false, primeira = !Sync.started[c];
+      snap.docChanges().forEach(function(ch){
+        var id = ch.doc.id, sh = Sync.shadow[c] || (Sync.shadow[c] = {});
+        if(ch.type === "removed"){ remover(c, id); delete sh[id]; mudou = true; return; }
+        var d = ch.doc.data(), now = campos(semMeta(d));
+        if(mesmosCampos(sh[id], now)) return;
+        var antes = c === "itens" ? (findItem(id) ? JSON.parse(JSON.stringify(findItem(id))) : null) : (c === "gastos" ? achaGasto(id) : true);
+        aplicar(c, id, d); sh[id] = now; mudou = true;
+        if(!primeira && d._by && d._by !== Sync.uid){ var ev = evento(c, id, ch.type, antes, d); if(ev) avisar(ev); }
+      });
+      /* Coleção vazia vinda só do cache não conta como carregada na primeira vez: evita mandar dados velhos por cima da casa */
+      if(!Sync.loaded[c]){
+        if(!snap.metadata.fromCache || snap.size > 0){ Sync.loaded[c] = true; if(snap.metadata.fromCache && snap.size > 0) Sync.cacheOk = true; checarPronto(); }
+        else { Sync.vazioCache = Sync.vazioCache || {}; Sync.vazioCache[c] = true; checarPronto(); }
+      }
+      Sync.started[c] = true;
+      if(mudou){ salvarLocal(); agendarRender(); }
+    }, function(e){ Sync.err = String((e && e.code) || e); syncPill(); });
+  }
+  function ouvirMembros(){
+    var F = window.FBSDK;
+    return F.onSnapshot(cref("membros"), function(snap){
+      var primeira = !Sync.started.membros;
+      snap.docChanges().forEach(function(ch){
+        var d = ch.doc.data() || {};
+        if(ch.type === "removed"){ delete Sync.membros[ch.doc.id]; return; }
+        var novo = !Sync.membros[ch.doc.id]; Sync.membros[ch.doc.id] = d.nome || "Alguém";
+        if(!primeira && novo && ch.doc.id !== Sync.uid) toast((d.nome || "Alguém") + " entrou na " + (Sync.casa ? Sync.casa.nome : "casa"), 3200);
+      });
+      Sync.started.membros = true;
+      if(ui.sheet && ui.sheet.type === "casa") sheetCasa();
+    }, function(){});
+  }
+  function checarPronto(){
+    if(Sync.ready) return;
+    for(var i = 0; i < COLS.length; i++){
+      var c = COLS[i];
+      if(!Sync.loaded[c] && Sync.casa.sincronizado && Sync.cacheOk && Sync.vazioCache && Sync.vazioCache[c]) Sync.loaded[c] = true;
+      if(!Sync.loaded[c]) return;
+    }
+    Sync.ready = true;
+    if(!Sync.casa.sincronizado){ Sync.casa.sincronizado = true; saveCasa(Sync.casa); }
+    enviar(); syncPill(); render();
+  }
+  function conectar(){
+    var F = window.FBSDK;
+    Sync.unsub.forEach(function(u){ try{ u(); }catch(e){} });
+    Sync.ready = false; Sync.loaded = {}; Sync.started = {}; Sync.shadow = {}; Sync.membros = {}; Sync.err = ""; Sync.cacheOk = false; Sync.vazioCache = {};
+    COLS.forEach(function(c){ Sync.shadow[c] = {}; });
+    Sync.unsub = COLS.map(ouvir).concat([ouvirMembros()]);
+    F.setDoc(dref("membros", Sync.uid), {nome: Sync.casa.eu || "", visto: F.serverTimestamp()}, {merge: true}).catch(function(){});
+    F.getDoc(F.doc(Sync.db, "casas", Sync.casa.id)).then(function(s){
+      if(s.exists() && s.data().nome && s.data().nome !== Sync.casa.nome){ Sync.casa.nome = s.data().nome; saveCasa(Sync.casa); syncPill(); }
+    }).catch(function(){});
+    syncPill();
+  }
+  function syncBoot(){
+    if(!syncDisponivel()) return;
+    var c = loadCasa(); if(!c) return;
+    Sync.casa = c; syncPill();
+    fbReady(conectar, function(){ Sync.err = "sem conexão"; syncPill(); });
+  }
+  function criarCasa(nome, eu){
+    if(navigator.onLine === false){ toast("Precisa de internet pra criar a casa"); return; }
+    var c = {id: novoIdCasa(), nome: nome, eu: eu, desde: todayStr()}, btn = sheet.querySelector('[data-act="confirmar-casa"]');
+    if(btn){ btn.disabled = true; btn.textContent = "Criando…"; }
+    fbReady(function(){
+      var F = window.FBSDK;
+      F.setDoc(F.doc(Sync.db, "casas", c.id), {nome: nome, criada: F.serverTimestamp(), v: 1, criador: Sync.uid}).then(function(){
+        Sync.casa = c; saveCasa(c); conectar(); render(); sheetConvite(true);
+      }, function(){ if(btn){ btn.disabled = false; btn.textContent = "Criar e ligar"; } toast("Não deu pra criar agora. Confira a internet"); });
+    }, function(){ if(btn){ btn.disabled = false; btn.textContent = "Criar e ligar"; } toast("Não deu pra conectar agora"); });
+  }
+  function entrarCasa(id, eu){
+    if(navigator.onLine === false){ toast("Precisa de internet pra entrar"); return; }
+    var btn = sheet.querySelector('[data-act="confirmar-entrar"]');
+    if(btn){ btn.disabled = true; btn.textContent = "Entrando…"; }
+    fbReady(function(){
+      var F = window.FBSDK;
+      F.getDoc(F.doc(Sync.db, "casas", id)).then(function(s){
+        if(!s.exists()){ if(btn){ btn.disabled = false; btn.textContent = "Entrar"; } toast("Convite inválido"); return; }
+        var c = {id: id, nome: s.data().nome || "Casa", eu: eu, desde: todayStr()};
+        if(Sync.casa) sairCasa(true);
+        Sync.casa = c; saveCasa(c); conectar(); closeSheet(); show("inicio"); toast("Você entrou na " + c.nome, 2600);
+      }, function(){ if(btn){ btn.disabled = false; btn.textContent = "Entrar"; } toast("Não deu pra entrar agora"); });
+    }, function(){ if(btn){ btn.disabled = false; btn.textContent = "Entrar"; } toast("Não deu pra conectar agora"); });
+  }
+  function sairCasa(quieto){
+    Sync.unsub.forEach(function(u){ try{ u(); }catch(e){} });
+    Sync.unsub = []; Sync.casa = null; Sync.ready = false; Sync.pending = 0; Sync.membros = {};
+    saveCasa(null);
+    if(!quieto){ syncPill(); render(); }
+  }
+  function syncPill(){
+    var el = document.getElementById("top-note"); if(!el || !state) return;
+    if(!Sync.casa){ el.textContent = state.dieta && state.dieta.ativa ? state.dieta.nome : ""; return; }
+    var off = Sync.online === false, txt, cls = "live";
+    if(off){ txt = "Sem sinal" + (Sync.pending ? " · " + Sync.pending + (Sync.pending === 1 ? " guardada" : " guardadas") : ""); cls += " off"; }
+    else if(Sync.err && !Sync.ready){ txt = "Sem conexão"; cls += " off"; }
+    else if(!Sync.ready){ txt = "Conectando…"; cls += " wait"; }
+    else if(Sync.pending){ txt = "Enviando…"; cls += " wait"; }
+    else txt = "Ao vivo";
+    el.innerHTML = '<button class="' + cls + '" type="button" data-act="casa" aria-label="Casa compartilhada: ' + esc(txt) + '"><i></i>' + esc(txt) + '</button>';
+  }
+  window.addEventListener("online", function(){ Sync.online = true; syncPill(); });
+  window.addEventListener("offline", function(){ Sync.online = false; syncPill(); });
+
+  /* Telas da casa */
+  function rtCardHtml(){
+    if(!syncDisponivel() || Sync.casa) return "";
+    return '<div class="rt-card"><b>🔄 Usar junto, em tempo real</b><p>O que um anota, o outro vê na hora, nos dois celulares. Funciona sem sinal e guarda tudo na nuvem.</p>' +
+      '<div class="rt-actions"><button class="act" type="button" data-act="criar-casa">Criar a casa</button><button class="btn-sm" type="button" data-act="colar-import">Tenho um convite</button></div></div>';
+  }
+  function sheetCriarCasa(){
+    ui.sheet = {type: "criar-casa"};
+    openSheet('<h3 class="sh-title" id="sh-title">Criar a casa</h3><p class="sh-sub">Depois é só mandar o convite. Tudo o que já está neste celular vai junto.</p>' +
+      '<div class="form"><div class="fl"><label for="c-nome">Nome da casa</label><input class="inp" id="c-nome" autocomplete="off" placeholder="Ex.: Casa da Ana"></div>' +
+      '<div class="fl"><label for="c-eu">Seu nome</label><input class="inp" id="c-eu" autocomplete="off" placeholder="Ex.: Ana"><p class="note-sm">Aparece pros outros quando você anota alguma coisa.</p></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-casa">Criar e ligar</button><button class="quiet" type="button" data-act="fechar">Agora não</button></div></div>', "c-nome");
+  }
+  function conviteTexto(){
+    return "Entra na nossa Despensa (" + Sync.casa.nome + "). O que um anota, o outro vê na hora.\n\n" +
+      "Android: é só tocar no link.\niPhone: abra o app Despensa pela tela de início, toque em Tenho um convite e cole esta mensagem inteira.\n\n" + linkCasa(Sync.casa.id);
+  }
+  function sheetConvite(primeira){
+    if(!Sync.casa) return;
+    ui.sheet = {type: "convite"};
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(Sync.casa.nome) + '</h3><p class="sh-sub">' + (primeira ? 'Pronto, a casa está ligada. Agora chame quem faz as compras com você.' : 'Convide quem faz as compras com você.') + '</p>' +
+      '<div class="form"><div class="tip" style="border-left-color:var(--good)"><b>Quem entrar pelo link vê e anota tudo junto com você.</b><span>Não encaminhe pra mais ninguém.</span></div>' +
+      '<div class="linkbox">' + esc(linkCasa(Sync.casa.id)) + '</div>' +
+      '<div class="sh-actions"><a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent(conviteTexto()) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar convite no WhatsApp</a>' +
+      '<button class="bigbtn ghost" type="button" data-act="copiar-convite">Copiar convite</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></div>');
+  }
+  function sheetEntrar(id){
+    ui.sheet = {type: "entrar", id: id};
+    var standalone = window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    var iosSafari = /iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone;
+    var ja = Sync.casa && Sync.casa.id === id;
+    openSheet('<h3 class="sh-title" id="sh-title">' + (ja ? 'Você já está nessa casa' : 'Entrar na casa') + '</h3><p class="sh-sub" id="entrar-nome">' + (ja ? esc(Sync.casa.nome) : 'Convite pra usar a Despensa junto, em tempo real.') + '</p>' +
+      (ja ? '<div class="form"><div class="sh-actions"><button class="bigbtn" type="button" data-act="fechar">Ok</button></div></div>' :
+      '<div class="form">' +
+      (iosSafari ? '<div class="warnbox">Você abriu no Safari. Se usa a Despensa pelo ícone da tela de início, entre por lá: abra o app, toque em <b>Tenho um convite</b> e cole a mensagem. O iPhone guarda os dois separados.</div>' : '') +
+      '<div class="fl"><label for="e-eu">Seu nome</label><input class="inp" id="e-eu" autocomplete="off" placeholder="Ex.: João"><p class="note-sm">O que já está neste celular vai junto pra casa. Se o mesmo item estiver nos dois, vale o da casa.</p></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-entrar">Entrar</button><button class="quiet" type="button" data-act="fechar">Agora não</button></div></div>'), ja ? null : "e-eu");
+    if(!ja && navigator.onLine !== false) fbReady(function(){
+      window.FBSDK.getDoc(window.FBSDK.doc(Sync.db, "casas", id)).then(function(s){
+        var el = document.getElementById("entrar-nome");
+        if(el && ui.sheet && ui.sheet.type === "entrar"){ el.textContent = s.exists() ? ("Convite pra " + (s.data().nome || "casa") + ". O que um anota, o outro vê na hora.") : "Esse convite não vale mais."; }
+      }).catch(function(){});
+    }, function(){});
+  }
+  function sheetCasa(){
+    if(!Sync.casa) return;
+    ui.sheet = {type: "casa"};
+    var ms = Object.keys(Sync.membros).map(function(u){ return [u, Sync.membros[u]]; });
+    var status = Sync.online === false ? "Sem sinal. O que você anotar fica guardado aqui e sobe sozinho quando a internet voltar." :
+      (!Sync.ready ? (Sync.err ? "Sem conexão com a casa agora. Tente abrir de novo com internet." : "Conectando com a casa…") : (Sync.pending ? "Enviando as últimas alterações…" : "Tudo em dia. O que um anota, o outro vê na hora."));
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(Sync.casa.nome) + '</h3><p class="sh-sub">' + esc(status) + '</p>' +
+      '<div class="form"><div class="fl"><label>Quem está na casa</label><ul class="membros">' +
+      (ms.length ? ms.map(function(m){ return '<li>' + mkBadge(m[1] || "?", 'sm') + esc(m[1] || "Sem nome") + (m[0] === Sync.uid ? ' <small>(você)</small>' : '') + '</li>'; }).join("") : '<li><small>Carregando…</small></li>') + '</ul></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="convidar">Convidar alguém</button>' +
+      '<button class="quiet" type="button" data-act="sair-casa" id="btn-sair">Sair da casa neste celular</button></div>' +
+      '<p class="note-sm">Sair só desliga o tempo real neste celular. O que está aqui continua aqui, e a casa continua pros outros.</p></div>');
+  }
+
   /* ---------- Toast e cópia ---------- */
   var toastT = null;
-  function toast(msg){
+  function toast(msg, ms){
     var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("on");
-    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("on"); }, 1900);
+    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("on"); }, ms || 1900);
   }
   function copy(txt, el){
     var ok = function(){ toast("Copiado"); };
@@ -1398,7 +1738,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     else if(ui.view === "lista") renderLista();
     else if(ui.view === "rotulo") renderDieta();
     else if(ui.view === "ofertas") renderOfertas();
-    var tn = document.getElementById("top-note"); if(tn) tn.textContent = state.dieta && state.dieta.ativa ? state.dieta.nome : "";
+    syncPill();
   }
   function show(v, fromHash){
     if(VIEWS.indexOf(v) < 0) v = "inicio";
@@ -1434,12 +1774,31 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "colar-import": sheetColar(); break;
       case "ler-import":
         var rawImp = document.getElementById("f-import").value;
+        var ci = parseCasa(rawImp);
+        if(ci){ if(!syncDisponivel()){ toast("O tempo real ainda não está ligado neste app"); break; } sheetEntrar(ci); break; }
         var oi = parseImport(rawImp);
         if(oi){ sheetImport(oi); break; }
         var oo = parseOfertasCode(rawImp);
         if(oo){ sheetOfertasImport(oo); break; }
         toast("Código inválido. Copie a mensagem inteira"); break;
       case "confirmar-ofertas": confirmOfertas(); break;
+      case "criar-casa": sheetCriarCasa(); break;
+      case "confirmar-casa":
+        var cn = document.getElementById("c-nome").value.trim(), ce = document.getElementById("c-eu").value.trim();
+        if(!cn){ toast("Dê um nome pra casa"); document.getElementById("c-nome").focus(); break; }
+        if(!ce){ toast("Digite seu nome"); document.getElementById("c-eu").focus(); break; }
+        criarCasa(cn, ce); break;
+      case "confirmar-entrar":
+        var en = document.getElementById("e-eu").value.trim();
+        if(!en){ toast("Digite seu nome"); document.getElementById("e-eu").focus(); break; }
+        entrarCasa(ui.sheet.id, en); break;
+      case "casa": sheetCasa(); break;
+      case "convidar": sheetConvite(false); break;
+      case "copiar-convite": copy(conviteTexto(), null); break;
+      case "sair-casa":
+        b.dataset.orig = "Sair da casa neste celular";
+        if(!arm("sair", b, "Toque de novo para sair")) break;
+        sairCasa(); closeSheet(); toast("Tempo real desligado neste celular"); break;
       case "oferta-lista": addOfertaToList(b.dataset.oid); break;
       case "aviso-lido":
         state.avisosLidos = (state.avisosLidos || []).concat([id]).slice(-30); save(); render(); break;
@@ -1548,7 +1907,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(e.key === "Escape" && ui.sheet){ closeSheet(); }
     if(e.key === "Enter" && ui.sheet && e.target.tagName === "INPUT" && e.target.type !== "search"){
       e.preventDefault();
-      var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta"};
+      var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta", "criar-casa":"confirmar-casa", entrar:"confirmar-entrar"};
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
     }
   });
@@ -1574,6 +1933,13 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
       show("inicio", true);
       if(oi) setTimeout(function(){ sheetImport(oi); }, 200); else toast("Código inválido");
+      return;
+    }
+    if(hs.indexOf("#casa=") === 0){
+      var cid = parseCasa(hs);
+      try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
+      show("inicio", true);
+      if(cid && syncDisponivel()) setTimeout(function(){ sheetEntrar(cid); }, 200); else toast(cid ? "O tempo real ainda não está ligado neste app" : "Convite inválido");
       return;
     }
     if(hs.indexOf("#ofertas=") === 0){
@@ -1608,6 +1974,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
       hh = "#inicio";
     }
+    var pendingCasa = null;
+    if(hh.indexOf("#casa=") === 0){
+      pendingCasa = parseCasa(hh);
+      try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
+      hh = "#inicio";
+    }
     if(hh.indexOf("#ofertas=") === 0){
       pendingOfertas = parseOfertasCode(hh);
       try{ history.replaceState(null, "", location.pathname + location.search + "#ofertas"); }catch(e){}
@@ -1624,7 +1996,9 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(state.carta && !state.cartaVista) showWelcome();
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
     else if(pendingOfertas) setTimeout(function(){ sheetOfertasImport(pendingOfertas); }, 350);
+    else if(pendingCasa && syncDisponivel()) setTimeout(function(){ sheetEntrar(pendingCasa); }, 350);
     fetchRemote();
+    syncBoot();
     document.addEventListener("visibilitychange", function(){ if(!document.hidden){ limparOfertasVencidas(); fetchRemote(); } });
   }
   try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot){ window.claude.hot.snapshot(function(){ return JSON.parse(JSON.stringify(state)); }); } }catch(e){}

@@ -1,0 +1,17 @@
+rules_version = '2';
+// Despensa: cada casa é um documento com id aleatório de 27 caracteres.
+// Só quem tem o link da casa (o id) lê e escreve nela. Ninguém consegue listar as casas.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /casas/{casaId} {
+      allow get: if request.auth != null && casaId.size() >= 20;
+      allow create, update: if request.auth != null && casaId.size() >= 20
+        && request.resource.data.keys().hasOnly(['nome', 'criada', 'v', 'criador']);
+      allow delete, list: if false;
+      match /{sub}/{docId} {
+        allow read, write: if request.auth != null && casaId.size() >= 20
+          && sub in ['itens', 'gastos', 'meses', 'config', 'ofertas', 'membros'];
+      }
+    }
+  }
+}
