@@ -183,6 +183,13 @@ h2.title{font-family:var(--font-display);font-weight:600;font-size:30px;line-hei
 .card p{margin:0;font-size:15px}
 ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:15px}
 
+.flag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;background:var(--warn-soft);color:var(--warn);vertical-align:1px}
+.flag-line{font-size:12px;font-weight:700;color:var(--warn);margin-top:4px}
+.warnbox{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
+.warnbox[hidden]{display:none}
+textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-height:1.4}
+.tip .act{align-self:flex-start;background:var(--hero);color:var(--hero-ink);border:0;border-radius:99px;padding:7px 14px;font-weight:700;font-size:13px}
+
 /* ---------- Barra inferior ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -248,38 +255,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   <section class="view" id="view-inicio" aria-label="Início"></section>
   <section class="view" id="view-precos" aria-label="Preços"></section>
   <section class="view" id="view-lista" aria-label="Lista"></section>
-  <section class="view" id="view-rotulo" aria-label="Sem leite">
-    <div>
-      <h2 class="title">Sem leite</h2>
-      <p class="sub">O que olhar no rótulo antes de pôr no carrinho.</p>
-    </div>
-    <div class="alert"><b>Zero lactose não serve</b>Leite e queijo "sem lactose" ainda têm a proteína do leite. Nessa dieta, estão proibidos.</div>
-    <div class="card pad">
-      <h3>Se aparecer, volta pra prateleira</h3>
-      <div class="words">
-        <span class="word">Contém leite e derivados</span><span class="word">Pode conter leite</span><span class="word">Leite</span><span class="word">Leite em pó</span><span class="word">Soro de leite</span><span class="word">Whey</span><span class="word">Caseína</span><span class="word">Caseinato</span><span class="word">Lactoalbumina</span><span class="word">Lactoglobulina</span><span class="word">Lactose</span><span class="word">Gordura láctea</span><span class="word">Composto lácteo</span><span class="word">Manteiga</span><span class="word">Creme de leite</span><span class="word">Nata</span><span class="word">Coalho</span>
-      </div>
-    </div>
-    <div class="card pad">
-      <h3>Parece leite, mas pode</h3>
-      <div class="words">
-        <span class="word ok">Lactato de cálcio</span><span class="word ok">Lactato de sódio</span><span class="word ok">Estearoil-lactil-lactato</span><span class="word ok">Manteiga de cacau</span><span class="word ok">Leite de coco</span><span class="word ok">Creme tártaro</span>
-      </div>
-    </div>
-    <div class="card pad">
-      <h3>Também saem</h3>
-      <p>Requeijão, iogurte, petit suisse, bebida láctea, leite fermentado, ghee, margarina com leite, leite condensado, doce de leite, pudim, chocolate ao leite, molho branco e leite de cabra, ovelha ou búfala.</p>
-    </div>
-    <div class="card pad">
-      <h3>Na hora da compra</h3>
-      <ul class="plain">
-        <li>"Pode conter leite": evite até falar com o pediatra.</li>
-        <li>Nada a granel: sem rótulo, não dá pra conferir.</li>
-        <li>Nada de frio fatiado na hora: a máquina é a mesma do queijo.</li>
-        <li>Leia toda embalagem nova, até da marca de sempre: a receita muda.</li>
-      </ul>
-    </div>
-  </section>
+  <section class="view" id="view-rotulo" aria-label="Dieta"></section>
 </main>
 
 <nav class="tabs" aria-label="Navegação">
@@ -292,7 +268,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   <button class="tab" type="button" data-act="nav" data-view="lista" id="tab-lista">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>Lista</button>
   <button class="tab" type="button" data-act="nav" data-view="rotulo" id="tab-rotulo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>Sem leite</button>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>Dieta</button>
 </nav>
 
 <div class="scrim" id="scrim" data-act="fechar"></div>
@@ -348,7 +324,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     });
     var meses = {};
     meses["2026-11"] = {orc:0, gastos:[{id:"g0", data:BASE_DATE, local:BASE_LOCAL, tipo:"Mercado", valor:0, obs:"Exemplo"}]};
-    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true};
+    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true, dieta:defaultDieta()};
   }
 
   /* ---------- Utilidades ---------- */
@@ -377,6 +353,28 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function prevPrice(it){ return it.hist && it.hist.length > 1 ? it.hist[it.hist.length-2] : null; }
   function variation(it){ var c = cur(it), p = prevPrice(it); if(!c || !p || !p.p) return 0; return (c.p - p.p) / p.p * 100; }
   function initials(s){ return String(s).slice(0,1).toUpperCase(); }
+  function norm(s){ return String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+  function dLong(s){ var p = String(s).split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+  function daysUntil(s){ var p = String(s).split("-"); var t = new Date(+p[0], +p[1]-1, +p[2]); var n = new Date(); n.setHours(0,0,0,0); return Math.round((t - n) / 86400000); }
+  function defaultDieta(){
+    return {ativa:true, nome:"Sem leite",
+      evitar:["Contém leite","Pode conter leite","Leite","Leite em pó","Soro de leite","Whey","Caseína","Caseinato","Lactoalbumina","Lactoglobulina","Lactose","Sem lactose","Zero lactose","Gordura láctea","Composto lácteo","Queijo","Requeijão","Iogurte","Manteiga","Margarina com leite","Creme de leite","Nata","Coalho","Ghee","Petit suisse","Bebida láctea","Leite fermentado","Leite condensado","Doce de leite","Pudim","Chocolate ao leite","Molho branco","Leite de cabra"],
+      pode:["Leite de coco","Leite condensado de coco","Leite de aveia","Lactato de cálcio","Lactato de sódio","Estearoil-lactil-lactato","Manteiga de cacau","Creme tártaro"],
+      cuidados:["Zero lactose e sem lactose não servem: ainda têm a proteína do leite.","\"Pode conter leite\": evite até falar com o pediatra.","Nada a granel: sem rótulo, não dá pra conferir.","Nada de frio fatiado na hora: a máquina é a mesma do queijo.","Leia toda embalagem nova, até da marca de sempre: a receita muda."],
+      obs:"", revisao:""};
+  }
+  function dietFlag(text){
+    var d = state && state.dieta; if(!d || !d.ativa) return null;
+    var t = " " + norm(text) + " ";
+    (d.pode || []).forEach(function(x){ var k = norm(x).trim(); if(k) t = t.split(k).join(" "); });
+    var ev = d.evitar || [];
+    for(var i = 0; i < ev.length; i++){
+      var k = norm(ev[i]).trim(); if(!k) continue;
+      if(new RegExp("(^|[^a-z0-9])" + escRe(k) + "($|[^a-z0-9])").test(t)) return ev[i];
+    }
+    return null;
+  }
 
   /* ---------- Estado ---------- */
   var mem = null;
@@ -427,6 +425,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
     shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/></svg>',
     basket:'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 26h48l-5 26a4 4 0 0 1-4 3H17a4 4 0 0 1-4-3Z"/><path d="m22 26 8-14M42 26l-8-14"/><path d="M24 36v10M32 36v10M40 36v10"/></svg>',
+    edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
     wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>'
   };
 
@@ -450,6 +449,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(ios && state.dicaIos !== false){
       h += '<div class="tip"><b>Deixe como app no iPhone</b><span>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima) e depois em <b>Adicionar à Tela de Início</b>. Assim ele abre igual um aplicativo e os dados ficam guardados.</span>' +
         '<button class="x" type="button" data-act="fechar-ios">Entendi</button></div>';
+    }
+    var dd = state.dieta;
+    if(dd && dd.ativa && dd.revisao){
+      var nd = daysUntil(dd.revisao);
+      if(nd <= 7){
+        h += '<div class="tip"><b>' + (nd > 1 ? 'Faltam ' + nd + ' dias pra rever a dieta' : nd === 1 ? 'Amanhã é dia de rever a dieta' : nd === 0 ? 'Hoje é dia de rever a dieta' : 'A revisão da dieta era em ' + dLong(dd.revisao)) + '</b>' +
+          '<span>Se o médico mudar a orientação, atualize os gatilhos pra o app continuar avisando certo.</span>' +
+          '<button class="act" type="button" data-act="nav" data-view="rotulo">Ver dieta</button></div>';
+      }
     }
     if(state.dica){
       h += '<div class="tip"><b>Como usar, em 3 passos</b><ol>' +
@@ -550,7 +558,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           group.map(function(it){
             var c0 = cur(it), vr = variation(it);
             var vtag = Math.abs(vr) >= 0.5 ? '<span class="var ' + (vr > 0 ? 'up' : 'down') + '">' + (vr > 0 ? '↑ ' : '↓ ') + Math.round(Math.abs(vr)) + '%</span>' : '';
-            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '"><span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + '</span>' +
+            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '"><span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + (dietFlag(it.nome) ? '<span class="flag">fora da dieta</span>' : '') + '</span>' +
               '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + '</span></span>' +
               '<span class="r-val">' + (c0 ? brl(c0.p) : '—') + (isKg(it) && c0 ? '<small>por kg</small>' : '') + '</span></button></li>';
           }).join("") + '</ul></div></div>';
@@ -582,6 +590,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       return '<li><div class="litem' + (it.ok ? ' done' : '') + '">' +
         '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' +
         '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : ' · sem preço') + '</div>' +
+        (dietFlag(it.nome) ? '<div class="flag-line">Fora da dieta: tem “' + esc(dietFlag(it.nome)) + '”</div>' : '') +
         '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
         '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="Corrigir preço de ' + esc(it.nome) + '">' + (c ? brl(lineTotal(it)) : '—') + '<small>corrigir</small></button>' +
         '</div></li>';
@@ -598,7 +607,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var L = ["*Lista de mercado · sem leite*",""];
     items.forEach(function(it){ var c = cur(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (c ? " · ~" + brl(lineTotal(it)) : "")); });
     L.push("", "Estimado: " + brl(items.reduce(function(s,i){ return s + lineTotal(i); }, 0)));
-    L.push("_Zero lactose também não serve._");
+    if(state.dieta && state.dieta.ativa) L.push("_Dieta: " + state.dieta.nome + ". Confira o rótulo._");
     return L.join("\n");
   }
 
@@ -660,6 +669,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var c = cur(it), locs = locais();
     var hist = (it.hist || []).slice().reverse().slice(0,5);
     openSheet('<h3 class="sh-title" id="sh-title">' + esc(it.nome) + '</h3><p class="sh-sub">' + esc(it.por) + ' · ' + esc(it.cat) + '</p>' +
+      (dietFlag(it.nome) ? '<div class="warnbox" style="margin-top:12px">Atenção: “' + esc(dietFlag(it.nome)) + '” está nos gatilhos da dieta.</div>' : '') +
       '<div class="form"><div class="fl"><label for="f-preco">Preço de hoje' + (isKg(it) ? ' (por kg)' : '') + '</label>' +
       '<div class="money"><span>R$</span><input id="f-preco" inputmode="decimal" autocomplete="off" placeholder="0,00" value="' + (c ? fmt(c.p) : '') + '"></div></div>' +
       '<div class="fl"><label for="f-mercado">Mercado</label><input class="inp" id="f-mercado" value="' + esc(c ? c.m : lastLocal()) + '" autocomplete="off">' +
@@ -685,7 +695,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function sheetNovoItem(){
     ui.sheet = {type:"novo"};
     openSheet('<h3 class="sh-title" id="sh-title">Novo item</h3><p class="sh-sub">Cadastre uma vez, depois é só atualizar o preço.</p>' +
-      '<div class="form"><div class="fl"><label for="n-nome">Nome</label><input class="inp" id="n-nome" autocomplete="off" placeholder="Ex.: Sardinha em lata"></div>' +
+      '<div class="form"><div class="fl"><label for="n-nome">Nome</label><input class="inp" id="n-nome" autocomplete="off" placeholder="Ex.: Sardinha em lata"><div class="warnbox" id="n-flag" hidden></div></div>' +
       '<div class="fl"><label>Categoria</label>' + chipGroup("n-cat", CATS, ui.filtro !== "Todos" ? ui.filtro : "Mercearia") + '</div>' +
       '<div class="fl"><label for="n-por">Como é vendido</label><input class="inp" id="n-por" autocomplete="off" placeholder="kg, unidade, pacote 1 kg, lata 125 g">' +
       '<div class="chips"><button class="chip" type="button" data-act="set-por" data-v="kg">kg</button><button class="chip" type="button" data-act="set-por" data-v="unidade">unidade</button><button class="chip" type="button" data-act="set-por" data-v="pacote ">pacote</button><button class="chip" type="button" data-act="set-por" data-v="lata ">lata</button></div></div>' +
@@ -749,6 +759,55 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Restaurar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-restaurar");
   }
 
+  /* ---------- Dieta ---------- */
+  function words(list, cls){
+    if(!list || !list.length) return '<p class="note-sm">Nada cadastrado.</p>';
+    return '<div class="words">' + list.map(function(w){ return '<span class="word' + cls + '">' + esc(w) + '</span>'; }).join("") + '</div>';
+  }
+  function renderDieta(){
+    var d = state.dieta || defaultDieta();
+    var h = '<div class="head-row"><div><h2 class="title">' + esc(d.ativa ? d.nome : 'Dieta desligada') + '</h2><p class="sub">' +
+      (d.ativa ? 'Se um item tiver uma palavra da lista vermelha, o app avisa em Preços e na Lista.' : 'O app não está avisando nada. Toque em Editar para ligar de novo.') + '</p></div>' +
+      '<button class="btn-sm" type="button" data-act="editar-dieta">' + IC.edit + 'Editar</button></div>';
+    if(d.revisao){
+      var n = daysUntil(d.revisao);
+      h += '<div class="tip"><b>Revisão com o médico: ' + dLong(d.revisao) + '</b><span>' + (n > 1 ? 'Faltam ' + n + ' dias.' : n === 1 ? 'É amanhã.' : n === 0 ? 'É hoje.' : 'Já passou. Se a orientação mudou, atualize aqui.') + '</span></div>';
+    }
+    if(d.obs) h += '<div class="card pad"><h3>Orientação do médico</h3><p>' + esc(d.obs).replace(/\n/g,'<br>') + '</p></div>';
+    if(d.ativa){
+      var flagged = state.items.filter(function(i){ return dietFlag(i.nome); });
+      if(flagged.length) h += '<div class="card pad"><h3>Itens cadastrados fora da dieta</h3>' + words(flagged.map(function(i){ return i.nome; }), '') + '</div>';
+      h += '<div class="card pad"><h3>Se aparecer, volta pra prateleira</h3>' + words(d.evitar, '') + '</div>';
+      h += '<div class="card pad"><h3>Parece, mas pode</h3>' + words(d.pode, ' ok') + '</div>';
+      if(d.cuidados && d.cuidados.length) h += '<div class="card pad"><h3>Na hora da compra</h3><ul class="plain">' + d.cuidados.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
+    }
+    document.getElementById("view-rotulo").innerHTML = h;
+  }
+  function sheetDieta(){
+    var d = state.dieta || defaultDieta();
+    ui.sheet = {type:"dieta"};
+    openSheet('<h3 class="sh-title" id="sh-title">Editar dieta</h3><p class="sh-sub">Se o médico mudar a orientação, ajuste aqui. Uma palavra ou frase por linha.</p>' +
+      '<div class="form"><div class="fl"><label>Avisos da dieta</label>' + chipGroup("d-ativa", ["Ligados","Desligados"], d.ativa ? "Ligados" : "Desligados") + '</div>' +
+      '<div class="fl"><label for="d-nome">Nome da dieta</label><input class="inp" id="d-nome" value="' + esc(d.nome) + '" autocomplete="off" placeholder="Ex.: Sem leite e sem soja"></div>' +
+      '<div class="fl"><label for="d-evitar">Gatilhos: se o nome do item tiver uma destas palavras, o app avisa</label><textarea class="inp txt" id="d-evitar" style="height:170px">' + esc((d.evitar || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-pode">Exceções: parecem, mas podem</label><textarea class="inp txt" id="d-pode">' + esc((d.pode || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-cuidados">Cuidados na hora da compra</label><textarea class="inp txt" id="d-cuidados">' + esc((d.cuidados || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-obs">Orientação do médico</label><textarea class="inp txt" id="d-obs" placeholder="Ex.: manter a dieta até o teste de provocação">' + esc(d.obs || "") + '</textarea></div>' +
+      '<div class="fl"><label for="d-revisao">Próxima revisão com o médico</label><input class="inp" id="d-revisao" type="date" value="' + esc(d.revisao || "") + '"></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-dieta">Salvar dieta</button>' +
+      '<button class="quiet" type="button" data-act="dieta-padrao">Voltar ao padrão sem leite</button></div></div>');
+  }
+  function linesOf(id){
+    var seen = {};
+    return document.getElementById(id).value.split(/\n/).map(function(s){ return s.trim(); }).filter(function(s){ var k = norm(s); if(!s || seen[k]) return false; seen[k] = 1; return true; });
+  }
+  function salvarDieta(){
+    state.dieta = {ativa: document.getElementById("d-ativa").value !== "Desligados", nome: document.getElementById("d-nome").value.trim() || "Dieta",
+      evitar: linesOf("d-evitar"), pode: linesOf("d-pode"), cuidados: linesOf("d-cuidados"),
+      obs: document.getElementById("d-obs").value.trim(), revisao: document.getElementById("d-revisao").value || ""};
+    save(); closeSheet(); render(); toast("Dieta salva");
+  }
+
   /* ---------- Toast e cópia ---------- */
   var toastT = null;
   function toast(msg){
@@ -767,6 +826,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(ui.view === "inicio") renderInicio();
     else if(ui.view === "precos") renderPrecos();
     else if(ui.view === "lista") renderLista();
+    else if(ui.view === "rotulo") renderDieta();
+    var tn = document.getElementById("top-note"); if(tn) tn.textContent = state.dieta && state.dieta.ativa ? state.dieta.nome : "";
   }
   function show(v, fromHash){
     if(VIEWS.indexOf(v) < 0) v = "inicio";
@@ -833,13 +894,19 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "toggle-lista":
         it = findItem(ui.sheet.id); if(!it) break;
         it.lista = !it.lista; if(!it.lista){ it.ok = false; it.qtd = 1; }
-        save(); closeSheet(); render(); toast(it.lista ? "Foi pra lista" : "Saiu da lista"); break;
+        save(); closeSheet(); render(); toast(it.lista ? (dietFlag(it.nome) ? "Na lista, mas está fora da dieta" : "Foi pra lista") : "Saiu da lista"); break;
       case "apagar-item":
         b.dataset.orig = "Apagar item";
         if(!arm("item", b, "Toque de novo para apagar")) break;
         state.items = state.items.filter(function(x){ return x.id !== ui.sheet.id; });
         save(); closeSheet(); render(); toast("Item apagado"); break;
       case "novo-item": sheetNovoItem(); break;
+      case "editar-dieta": sheetDieta(); break;
+      case "salvar-dieta": salvarDieta(); break;
+      case "dieta-padrao":
+        b.dataset.orig = "Voltar ao padrão sem leite";
+        if(!arm("dieta", b, "Toque de novo para voltar ao padrão")) break;
+        state.dieta = defaultDieta(); save(); closeSheet(); render(); toast("Dieta padrão restaurada"); break;
       case "salvar-item": salvarItem(); break;
       case "ok": it = findItem(id); if(it){ it.ok = !it.ok; save(); renderLista(); } break;
       case "mais": it = findItem(id); if(it){ it.qtd = Math.round((it.qtd + (isKg(it) ? 0.5 : 1)) * 10) / 10; save(); renderLista(); } break;
@@ -861,6 +928,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           var txt = document.getElementById("f-restaurar").value;
           var pos = txt.indexOf("{"); var s = JSON.parse(txt.slice(pos));
           if(!valid(s)) throw new Error("x");
+          if(!s.dieta) s.dieta = defaultDieta();
           state = s; save(); closeSheet(); show("inicio"); toast("Backup restaurado");
         }catch(err){ toast("Esse texto não é um backup válido"); }
         break;
@@ -868,12 +936,16 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   });
   document.addEventListener("input", function(e){
     if(e.target.id === "busca"){ ui.busca = e.target.value; renderPrecosLista(); }
+    if(e.target.id === "n-nome"){
+      var f = dietFlag(e.target.value), box = document.getElementById("n-flag");
+      if(box){ if(f){ box.hidden = false; box.textContent = "Atenção: “" + f + "” está nos gatilhos da dieta."; } else { box.hidden = true; } }
+    }
   });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && ui.sheet){ closeSheet(); }
     if(e.key === "Enter" && ui.sheet && e.target.tagName === "INPUT" && e.target.type !== "search"){
       e.preventDefault();
-      var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc"};
+      var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta"};
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
     }
   });
@@ -883,6 +955,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function start(data){
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
+    if(!state.dieta) state.dieta = defaultDieta();
     var h = (location.hash || "").replace("#","");
     show(VIEWS.indexOf(h) >= 0 ? h : "inicio", true);
     save();
