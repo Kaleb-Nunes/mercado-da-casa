@@ -1,0 +1,159 @@
+#!/usr/bin/env node
+/* Testes do app Elida. Sem dependências: node tests/rodar-testes.js
+   Sai com código 1 se houver falha crítica (falso negativo, "conferido" indevido,
+   regressão da lista antiga, dado pessoal nos arquivos ou Firebase ligado). */
+"use strict";
+var fs = require("fs");
+var path = require("path");
+var cp = require("child_process");
+var D = require("../dieta.js");
+var casos = require("./casos-alimentares.js");
+
+var RAIZ = path.join(__dirname, "..");
+var HOJE = "2026-11-18";
+var falhas = [], avisos = [], ok = 0;
+function confere(cond, msg, critico) {
+  if (cond) { ok++; return true; }
+  (critico === false ? avisos : falhas).push(msg);
+  return false;
+}
+function dieta() { return D.dietaDoModelo("sem-leite"); }
+function aval(nome, extra) { return D.avaliar(Object.assign({ nome: nome }, extra || {}), dieta(), { hoje: HOJE }); }
+
+/* 1. Bateria de casos */
+function bateria(lista, rotulo) {
+  var r = { total: lista.length, A: 0, S: 0, I: 0, fn: [], fp: [], indevido: [], cautela: [] };
+  lista.forEach(function (c) {
+    var id = c[0], nome = c[1], ref = c[2], res = aval(nome);
+    r[ref]++;
+    if (ref === "A") {
+      if (!confere(res.estado === "evitar", rotulo + " " + id + " \"" + nome + "\": falso negativo (veio " + res.estado + ")")) r.fn.push(id);
+    } else if (ref === "S") {
+      if (res.estado === "evitar") { r.fp.push(id + " [" + res.termo + "]"); }
+      else confere(res.estado === "insuficiente", rotulo + " " + id + " \"" + nome + "\": sem leite deveria ficar insuficiente (veio " + res.estado + ")");
+    } else if (ref === "I") {
+      if (res.estado === "evitar") r.cautela.push(id + " [" + res.termo + "]");
+      else if (!confere(res.estado === "insuficiente", rotulo + " " + id + " \"" + nome + "\": deveria ser insuficiente (veio " + res.estado + ")")) r.indevido.push(id);
+    }
+  });
+  var limiteFp = Math.floor(r.S * 0.2);
+  confere(r.fp.length <= limiteFp, rotulo + ": falsos positivos acima de 20% (" + r.fp.length + " de " + r.S + ")", false);
+  return r;
+}
+var rAud = bateria(casos.auditoria, "auditoria");
+var rCtl = bateria(casos.controle, "controle");
+
+/* 2. Conferência de rótulo */
+function conf(nome, dias) {
+  var d = new Date(Date.UTC(2026, 10, 18 - (dias || 0)));
+  var s = d.getUTCFullYear() + "-" + ("0" + (d.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + d.getUTCDate()).slice(-2);
+  return D.conferir({ nome: nome }, "Teste", s);
+}
+casos.auditoria.concat(casos.controle).forEach(function (c) {
+  var nome = c[1], ref = c[2], res = aval(nome, { conf: conf(nome, 10) });
+  if (ref === "A") confere(res.estado === "evitar", "conferência não pode tirar o alerta: " + c[0] + " \"" + nome + "\" veio " + res.estado);
+});
+confere(aval("Arroz branco", { conf: conf("Arroz branco", 10) }).estado === "conferido", "conferência recente deveria dar \"conferido\"");
+confere(aval("Arroz branco", { conf: conf("Arroz branco", D.VALIDADE_CONFERENCIA_DIAS + 1) }).estado === "insuficiente", "conferência vencida deveria voltar a insuficiente");
+confere(aval("Arroz integral", { conf: conf("Arroz branco", 10) }).estado === "insuficiente", "nome mudou depois da conferência: deveria voltar a insuficiente");
+["Fórmula infantil", "Fórmula extensamente hidrolisada", "Fórmula de aminoácidos", "Granola a granel", "Frios fatiados na hora"].forEach(function (n) {
+  confere(aval(n, { conf: conf(n, 1) }).estado === "insuficiente", "\"" + n + "\" não pode virar conferido");
+});
+confere(aval("Arroz branco", { conf: conf("Arroz branco", -3) }).estado === "insuficiente", "conferência com data futura deveria ser recusada");
+
+/* 3. A lista nova continua pegando tudo o que a antiga pegava */
+D.LEGADO_EVITAR.forEach(function (t) { confere(aval(t).estado === "evitar", "regressão: termo antigo \"" + t + "\" deixou de alertar"); });
+D.LEGADO_PODE.forEach(function (t) { confere(aval(t).estado !== "evitar", "regressão: exceção antiga \"" + t + "\" virou alerta"); });
+
+/* 4. Situações sem avaliação */
+confere(D.avaliar("Leite", D.dietaVazia()).estado === "desligada", "dieta vazia não deveria avaliar");
+var desligada = dieta(); desligada.ativa = false;
+confere(D.avaliar("Leite", desligada).estado === "desligada", "dieta desligada não deveria avaliar");
+confere(D.avaliar({ nome: "Sabão em pó", cat: "Limpeza e casa" }, dieta()).estado === "nao_alimento", "limpeza não deveria ser avaliada");
+var propria = { ativa: true, nome: "Sem soja", modelo: null, evitar: ["soja*"], pode: ["molho de soja light"], cuidados: [] };
+confere(D.avaliar("Óleo de soja", propria).estado === "evitar", "lista própria: termo da pessoa deveria alertar");
+confere(D.avaliar("Leite", propria).estado === "insuficiente", "lista própria sem modelo não deveria usar a lista do leite");
+var comExtra = dieta(); comExtra.evitar = ["soja"];
+confere(D.avaliar("Leite de soja", comExtra).estado === "evitar" && D.avaliar("Proteína de soja", comExtra).estado === "evitar", "modelo + termo extra deveria alertar nos dois");
+
+/* 5. Migração da dieta salva pela versão anterior */
+var antiga = { ativa: true, nome: "Sem leite", evitar: D.LEGADO_EVITAR.slice(), pode: D.LEGADO_PODE.slice(),
+  cuidados: ["Zero lactose e sem lactose não servem: ainda têm a proteína do leite."], obs: "Orientação de teste", revisao: "2026-12-01" };
+var m1 = D.migrar(JSON.parse(JSON.stringify(antiga)));
+confere(m1.modelo === "sem-leite" && m1.evitar.length === 0 && m1.pode.length === 0, "migração: dieta padrão antiga deveria virar o modelo sem extras");
+confere(m1.ativa === true && m1.nome === antiga.nome && m1.obs === antiga.obs && m1.revisao === antiga.revisao, "migração: nome, orientação e revisão deveriam ser mantidos");
+confere(JSON.stringify(m1.anterior) === JSON.stringify(antiga), "migração: a dieta antiga deveria ficar guardada para voltar atrás");
+var comSoja = JSON.parse(JSON.stringify(antiga)); comSoja.evitar.push("Soja");
+var m2 = D.migrar(comSoja);
+confere(m2.modelo === "sem-leite" && m2.evitar.length === 1 && m2.evitar[0] === "Soja", "migração: termo que a pessoa acrescentou deveria virar extra");
+var semManteiga = JSON.parse(JSON.stringify(antiga)); semManteiga.evitar = semManteiga.evitar.filter(function (t) { return t !== "Manteiga"; });
+var m3 = D.migrar(semManteiga);
+confere(m3.modelo === null && m3.evitar.length === 32 && m3.sugerirModelo === true, "migração: se a pessoa tirou um termo, a lista dela fica como está");
+confere(D.migrar(m1) === m1, "migração: dieta já convertida não deveria mudar");
+confere(D.migrar(null).ativa === false && D.migrar(null).modelo === null, "migração: sem dieta, deveria começar vazia e desligada");
+var desl = JSON.parse(JSON.stringify(antiga)); desl.ativa = false;
+confere(D.migrar(desl).ativa === false, "migração: dieta desligada deveria continuar desligada");
+/* Depois da migração, o que alertava continua alertando */
+casos.auditoria.forEach(function (c) {
+  var antes = D.avaliar(c[1], m1, { hoje: HOJE }).estado, novo = D.avaliar(c[1], dieta(), { hoje: HOJE }).estado;
+  confere(antes === novo, "migração: " + c[0] + " deu " + antes + " na dieta migrada e " + novo + " no modelo");
+});
+
+/* 6. Privacidade nos arquivos do repositório */
+function arquivos() {
+  try {
+    return cp.execSync("git ls-files", { cwd: RAIZ, encoding: "utf8" }).split("\n").filter(Boolean);
+  } catch (e) {
+    return ["index.html", "dieta.js", "sw.js", "manifest.webmanifest", "README.md", "ofertas.json"];
+  }
+}
+var termosPrivados = [];
+if (process.env.PRIVACIDADE_TERMOS) termosPrivados = process.env.PRIVACIDADE_TERMOS.split(",");
+var arqLocal = path.join(RAIZ, ".privacidade-local");
+if (fs.existsSync(arqLocal)) termosPrivados = termosPrivados.concat(fs.readFileSync(arqLocal, "utf8").split(/\r?\n/));
+termosPrivados = termosPrivados.map(function (s) { return s.trim(); }).filter(Boolean);
+var lidos = 0;
+arquivos().forEach(function (f) {
+  if (/^vendor\//.test(f) || /\.(png|jpg|jpeg|gif|ico|webp)$/i.test(f)) return;
+  var p = path.join(RAIZ, f); if (!fs.existsSync(p)) return;
+  var txt = fs.readFileSync(p, "utf8"); lidos++;
+  if (/\.svg$/i.test(f)) return; /* desenho vetorial: só números de coordenadas */
+  confere(!/(^|[^0-9])[0-9]{44}([^0-9]|$)/.test(txt), "privacidade: " + f + " tem uma sequência de 44 dígitos (chave de nota fiscal)");
+  confere(!/[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}/.test(txt), "privacidade: " + f + " tem algo com formato de CPF");
+  var baixo = D.normalizar(txt);
+  termosPrivados.forEach(function (t, i) {
+    confere(baixo.indexOf(D.normalizar(t)) < 0, "privacidade: " + f + " tem o termo privado nº " + (i + 1));
+  });
+});
+
+/* 7. Firebase desligado e homologação separada */
+var html = fs.readFileSync(path.join(RAIZ, "index.html"), "utf8");
+confere(/var FB_CONFIG = null;/.test(html), "Firebase: FB_CONFIG de produção deveria continuar null");
+confere(/var FB_CONFIG_HML = null;/.test(html), "Firebase: FB_CONFIG_HML deveria existir e estar null");
+var chamadas = html.match(/localStorage\.(getItem|setItem|removeItem)\(\s*([A-Za-z_]+)/g) || [];
+chamadas.forEach(function (c) {
+  var v = c.replace(/.*\(\s*/, "");
+  confere(["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY"].indexOf(v) >= 0, "homologação: chave de armazenamento fora do padrão (" + v + ")");
+});
+["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY"].forEach(function (k) {
+  confere(new RegExp("\\b" + k + " = PFX \\+ \"").test(html), "homologação: " + k + " deveria usar o prefixo de ambiente");
+});
+confere(/<script src="dieta\.js"><\/script>/.test(html), "o app deveria carregar dieta.js");
+var sw = fs.readFileSync(path.join(RAIZ, "sw.js"), "utf8");
+confere(/"\.\/dieta\.js"/.test(sw), "service worker deveria guardar dieta.js para uso offline");
+
+/* Relatório */
+function linha(r, nome) {
+  return nome + ": " + r.total + " casos (A " + r.A + ", S " + r.S + ", I " + r.I + ") · falsos negativos " + r.fn.length +
+    " · falsos positivos " + r.fp.length + (r.fp.length ? " " + JSON.stringify(r.fp) : "") +
+    " · insuficiente indevido " + r.indevido.length + " · alerta por cautela em I " + r.cautela.length + (r.cautela.length ? " " + JSON.stringify(r.cautela) : "");
+}
+console.log("Referência: " + casos.status + ".");
+console.log(linha(rAud, "Bateria da auditoria"));
+console.log(linha(rCtl, "Conjunto de controle"));
+console.log("Arquivos verificados para privacidade: " + lidos + (termosPrivados.length ? " · termos privados: " + termosPrivados.length : " · sem lista de termos privados (defina PRIVACIDADE_TERMOS ou .privacidade-local)"));
+console.log("Verificações que passaram: " + ok);
+avisos.forEach(function (a) { console.log("AVISO  " + a); });
+falhas.forEach(function (f) { console.log("FALHA  " + f); });
+console.log(falhas.length ? "Resultado: " + falhas.length + " falha(s) crítica(s)." : "Resultado: nenhuma falha crítica.");
+process.exit(falhas.length ? 1 : 0);

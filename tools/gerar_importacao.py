@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Gera o código de importação de um cupom para o app Despensa.
+"""Gera o código de importação de um cupom para o app Elida.
 
 Uso: python3 tools/gerar_importacao.py cupom.json
 O JSON de entrada:
 {
   "id": "chave de acesso da NFC-e (44 dígitos) ou outro identificador único",
-  "mercado": "Koch BC",
-  "data": "2026-11-17",
-  "total": 0,
+  "mercado": "Mercado Exemplo",
+  "data": "2026-11-20",
+  "total": 32.38,
   "itens": [
-    {"nome": "Tomate", "cat": "Hortifruti", "por": "kg", "preco": 21.99, "qtd": 0.7, "id": "s14"},
-    {"nome": "Ovos brancos", "cat": "Proteínas", "por": "bandeja 30 un.", "preco": 16.99, "qtd": 1}
+    {"nome": "Tomate", "cat": "Hortifruti", "por": "kg", "preco": 9.90, "qtd": 0.5, "id": "s14"},
+    {"nome": "Ovos brancos", "cat": "Proteínas", "por": "bandeja 30 un.", "preco": 27.43, "qtd": 1}
   ]
 }
 - "preco" é o preço unitário (por kg quando "por" for "kg").
@@ -27,8 +27,8 @@ def main(path):
                      for it in c["itens"]]}
     raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     code = base64.urlsafe_b64encode(raw).decode().rstrip("=")
-    print("Compra do " + c["mercado"] + " de " + "/".join(reversed(c["data"].split("-"))) + " para a Despensa.")
-    print("Android: toque no link. iPhone: abra o app Despensa, toque em Importar compra do cupom e cole esta mensagem inteira.")
+    print("Compra do " + c["mercado"] + " de " + "/".join(reversed(c["data"].split("-"))) + " para o Elida.")
+    print("Android: toque no link. iPhone: abra o app Elida, toque em Importar compra do cupom e cole esta mensagem inteira.")
     print()
     print("https://kaleb-nunes.github.io/mercado-da-casa/#importar=" + code)
 

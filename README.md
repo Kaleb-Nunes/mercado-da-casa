@@ -1,6 +1,8 @@
-# Despensa
+# Elida
 
-App de bolso pra controlar a comida da casa: preços do mercado, lista de compras, balanço do mês e dieta (editável).
+App de bolso pra controlar a comida da casa: preços do mercado, lista de compras, balanço do mês e lembretes da dieta (editável, com uma lista base sem leite).
+
+Antes se chamava Despensa. As chaves internas de armazenamento continuam com o nome antigo (`despensa-…`, `mercado-casa-v1`) para ninguém perder dados.
 
 Abrir: https://kaleb-nunes.github.io/mercado-da-casa/
 
@@ -11,8 +13,8 @@ Abrir: https://kaleb-nunes.github.io/mercado-da-casa/
 
 ## Marca
 
-Símbolo: um pote de despensa com uma folha dentro, tampa em latão. Cores: Verde Despensa #0F3B2E, Latão #D9B45A, Creme #F4F1E6, Tinta #10261F, Névoa #F1F3EF. Tipos: Fraunces (títulos e valores) e Onest (textos).
-Arquivos em `marca/`.
+Símbolo: um pote de despensa com uma folha dentro, tampa em latão. Cores: Verde #0F3B2E, Latão #D9B45A, Creme #F4F1E6, Tinta #10261F, Névoa #F1F3EF. Tipos: Fraunces (títulos e valores) e Onest (textos).
+Arquivos em `marca/`. Pendente: os logotipos com o nome escrito (`wordmark.svg`, `logo-horizontal*.svg` e os PNG) ainda dizem "Despensa" e precisam ser refeitos com "Elida".
 
 ## Importar compra do cupom
 
@@ -32,7 +34,7 @@ O `ofertas.json` tem:
 - `ofertas`: preços de oferta por produto (`m`, `nome`, `cat`, `por`, `p`, `de`, `ini`, `fim`, `item` opcional).
 - `sem_encarte`: mercados que não publicam encarte na internet.
 
-Preço de oferta por produto também entra por código, igual ao cupom: foto do encarte → Claude lê → `tools/gerar_ofertas.py encarte.json` gera a mensagem com `#ofertas=...`. No app, cada oferta aparece comparada com o último preço pago, marcada se estiver fora da dieta, e o botão **+ Lista** põe o item na lista com o preço da oferta. Ao finalizar a compra no mesmo mercado da oferta, o preço guardado é o da oferta.
+Preço de oferta por produto também entra por código, igual ao cupom: foto do encarte → Claude lê → `tools/gerar_ofertas.py encarte.json` gera a mensagem com `#ofertas=...`. No app, cada oferta aparece comparada com o último preço pago, marcada com "evitar" se tiver um termo da dieta, e o botão **+ Lista** põe o item na lista com o preço da oferta. Ao finalizar a compra no mesmo mercado da oferta, o preço guardado é o da oferta.
 
 ## Tempo real (Firebase)
 
@@ -47,3 +49,37 @@ Dois ou mais celulares na mesma "casa": o que um anota, os outros veem em segund
 - Se o mesmo item estiver nos dois celulares na hora de entrar, vale o da casa. O que só existia no celular de quem entrou vai junto.
 
 Criar o projeto (10 min): console.firebase.google.com → Criar projeto → Authentication → Anônimo → Ativar → Firestore Database → Criar (southamerica-east1, modo produção) → Regras: colar `firestore.rules` → Publicar → Configurações do projeto → Seus apps → Web → copiar o `firebaseConfig`.
+
+## Dieta: três avisos
+
+O motor fica em `dieta.js`, separado da interface, e é o mesmo código que os testes usam.
+
+- **evitar**: o nome do item tem um termo da lista da dieta.
+- **conferir** (informação insuficiente): o padrão de todo item. Só pelo nome não dá para saber.
+- **conferido**: alguém da casa leu o rótulo e marcou no item. Vale 180 dias ou até o nome mudar. Nunca tira um "evitar". Fórmula infantil, granel e frios fatiados na hora não podem ser marcados.
+
+A lista base "sem leite" (versão em `MODELO_SEM_LEITE`) **ainda não foi revisada por profissional de saúde**. Os avisos são lembrete da orientação médica; o app não diz se um alimento é seguro.
+
+Instalação nova começa sem dieta. Quem já usava a versão anterior passa para a lista base automaticamente, sem perder o que escreveu; a lista antiga fica guardada e dá para voltar a ela pela tela Editar dieta.
+
+## Testes
+
+`node tests/rodar-testes.js` (sem dependências). Roda:
+- a bateria de 130 casos da auditoria e 40 de controle (`tests/casos-alimentares.js`). A classificação de referência é **provisória e depende de revisão profissional**;
+- conferência de rótulo, regressão dos 33 termos antigos, migração da dieta antiga;
+- privacidade: nenhuma chave de nota fiscal (44 dígitos) nem CPF nos arquivos. Termos privados extras: variável `PRIVACIDADE_TERMOS` (segredo no GitHub, separado por vírgula) ou arquivo `.privacidade-local` (fora do Git);
+- Firebase de produção desligado e chaves de armazenamento separadas por ambiente.
+
+O GitHub Actions roda os testes a cada push e em todo pull request (`.github/workflows/testes.yml`) e guarda o pacote de homologação como artefato por 14 dias.
+
+## Homologação
+
+Produção é só `https://kaleb-nunes.github.io/mercado-da-casa/`. Em qualquer outro endereço o app entra em homologação:
+- faixa "Homologação" no topo;
+- dados com prefixo `hml:`, separados dos dados da família mesmo no mesmo navegador;
+- Firebase de produção bloqueado (só emulador `demo-…` ou `FB_CONFIG_HML`, um projeto só de teste);
+- cache offline com outro nome.
+
+Prévia no computador: `sh tools/previa-local.sh` e abrir http://localhost:8080.
+
+Fluxo: o Claude trabalha numa branch `claude/…`, abre pull request com o resultado dos testes, e só o fundador aprova o que vai para o `main` (que publica).

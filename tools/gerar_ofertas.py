@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gera o código de ofertas de um encarte para o app Despensa.
+"""Gera o código de ofertas de um encarte para o app Elida.
 
 Uso: python3 tools/gerar_ofertas.py encarte.json
 O JSON de entrada:
@@ -36,8 +36,8 @@ def main(path):
     raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     code = base64.urlsafe_b64encode(raw).decode().rstrip("=")
     fim = "/".join(reversed(c["fim"].split("-")))[:5] if c.get("fim") else ""
-    print("Ofertas do " + c["mercado"] + (" até " + fim if fim else "") + " para a Despensa.")
-    print("Android: toque no link. iPhone: abra o app Despensa, toque em Ofertas da semana, depois em Colar código de ofertas, e cole esta mensagem inteira.")
+    print("Ofertas do " + c["mercado"] + (" até " + fim if fim else "") + " para o Elida.")
+    print("Android: toque no link. iPhone: abra o app Elida, toque em Ofertas da semana, depois em Colar código de ofertas, e cole esta mensagem inteira.")
     print()
     print("https://kaleb-nunes.github.io/mercado-da-casa/#ofertas=" + code)
 

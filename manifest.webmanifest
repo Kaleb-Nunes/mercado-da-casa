@@ -1,7 +1,7 @@
 {
-  "name": "Despensa · Mercado da Casa",
-  "short_name": "Despensa",
-  "description": "Preços, lista e balanço do mês, sem leite.",
+  "name": "Elida · Mercado da Casa",
+  "short_name": "Elida",
+  "description": "Preços, lista, balanço do mês e lembretes da dieta.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

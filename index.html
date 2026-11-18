@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0F3B2E">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Despensa">
+<meta name="apple-mobile-web-app-title" content="Elida">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Despensa</title>
+<title>Elida</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -187,6 +187,25 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;f
 
 .flag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;background:var(--warn-soft);color:var(--warn);vertical-align:1px}
 .flag-line{font-size:12px;font-weight:700;color:var(--warn);margin-top:4px}
+.flag.ok{background:var(--good-soft);color:var(--good)}
+.flag.q{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.diet-line{font-size:12px;font-weight:600;color:var(--muted);margin-top:4px}
+.diet-line.ok{color:var(--good)}
+.dbox{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.dbox b{font-weight:700}
+.dbox span{color:var(--muted);font-size:13px}
+.dbox.no{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.dbox.no span{color:inherit;font-weight:500}
+.dbox.ok{border-color:var(--good)}
+.dbox.ok b{color:var(--good)}
+.dbox .quiet{align-self:flex-start;padding:2px 0}
+.aviso-fixo{font-size:13px;color:var(--muted);border-left:3px solid var(--brass);padding:6px 10px;margin:4px 0 0}
+.estados{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.estados li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.estados .flag{margin-left:0;flex:none;margin-top:2px}
+.g-title{font-size:13px;font-weight:700;color:var(--muted);margin:12px 0 6px}
+.hml-bar{background:#7A2E0E;color:#FFF4EC;font-size:13px;font-weight:700;text-align:center;padding:6px 12px}
+.hml-bar[hidden]{display:none}
 .warnbox{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
 .warnbox[hidden]{display:none}
 textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-height:1.4}
@@ -345,9 +364,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <body>
 
 <div class="top">
-  <div class="brand"><svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="120" fill="#0F3B2E"/><g transform="translate(0 -7)"><rect x="158" y="112" width="196" height="52" rx="17" fill="#D9B45A"/><path d="M174 130.5H338M174 146.5H338" stroke="#B8892B" stroke-width="5" stroke-linecap="round" opacity=".55"/><path d="M168 176H344C344 197 374 203 374 234V350C374 385 346 414 311 414H201C166 414 138 385 138 350V234C138 203 168 197 168 176Z" fill="#F4F1E6"/><g transform="translate(-7 0)"><path d="M256 386C209 362 195 307 222 268C243 239 284 227 318 233C324 291 302 352 256 386Z" fill="#0F3B2E"/><path d="M257 383C263 334 283 285 313 239" stroke="#F4F1E6" stroke-width="9" stroke-linecap="round" fill="none"/></g></g></svg><span class="brand-word">Despensa<span>.</span></span></div>
+  <div class="brand"><svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="120" fill="#0F3B2E"/><g transform="translate(0 -7)"><rect x="158" y="112" width="196" height="52" rx="17" fill="#D9B45A"/><path d="M174 130.5H338M174 146.5H338" stroke="#B8892B" stroke-width="5" stroke-linecap="round" opacity=".55"/><path d="M168 176H344C344 197 374 203 374 234V350C374 385 346 414 311 414H201C166 414 138 385 138 350V234C138 203 168 197 168 176Z" fill="#F4F1E6"/><g transform="translate(-7 0)"><path d="M256 386C209 362 195 307 222 268C243 239 284 227 318 233C324 291 302 352 256 386Z" fill="#0F3B2E"/><path d="M257 383C263 334 283 285 313 239" stroke="#F4F1E6" stroke-width="9" stroke-linecap="round" fill="none"/></g></g></svg><span class="brand-word">Elida<span>.</span></span></div>
   <div class="top-note" id="top-note"></div>
 </div>
+
+<div class="hml-bar" id="hml-bar" role="status" hidden>Homologação · dados de teste, separados do app da família</div>
 
 <main>
   <section class="view" id="view-inicio" aria-label="Início"></section>
@@ -375,16 +396,21 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="w-name"></div>
 
+<script src="dieta.js"></script>
 <script>
 (function(){
   "use strict";
-  var KEY = "mercado-casa-v1";
+  /* Ambiente. Produção é só o endereço publicado. Qualquer outro (prévia, teste local) é homologação:
+     os dados ficam com prefixo próprio e o Firebase de produção não é usado. */
+  var PRODUCAO = location.protocol === "https:" && location.hostname === "kaleb-nunes.github.io" && location.pathname.indexOf("/mercado-da-casa/") === 0;
+  var HML = !PRODUCAO, PFX = HML ? "hml:" : "";
+  var KEY = PFX + "mercado-casa-v1";
   var CATS = ["Mercearia","Proteínas","Hortifruti","Bebidas","Bebê","Limpeza e casa","Outros"];
   var TIPOS = ["Mercado","Feira","Açougue","Farmácia","Bebê","Outros"];
   var MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  var BASE_DATE = "2026-11-17", BASE_LOCAL = "Koch BC";
+  var BASE_DATE = "2026-11-17", BASE_LOCAL = "Referência";
 
-  /* Catálogo inicial de exemplo */
+  /* Catálogo inicial de exemplo: itens comuns, com preço de referência de novembro de 2026 */
   var SEED = [
     ["Mercearia","Arroz branco Kika","pacote 5 kg",19.99,"",1],
     ["Mercearia","Feijão preto Urbano","pacote 1 kg",6.99,"",1],
@@ -423,8 +449,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       return {id:"s"+i, cat:r[0], nome:r[1], por:r[2], hist:[{p:r[3], m:BASE_LOCAL, d:BASE_DATE}], nota:r[4], basico:!!r[5], lista:false, qtd:1, ok:false};
     });
     var meses = {};
-    meses["2026-11"] = {orc:0, gastos:[{id:"g0", data:BASE_DATE, local:BASE_LOCAL, tipo:"Mercado", valor:0, obs:"Exemplo"}]};
-    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true, dieta:defaultDieta(), importados:["CHAVE-REMOVIDA"]};
+    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true, dieta:defaultDieta(), importados:[]};
   }
 
   /* ---------- Utilidades ---------- */
@@ -466,7 +491,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     for(var i = 0; i < ICON_MAP.length; i++){ if(new RegExp("(^|[^a-z0-9])" + escRe(ICON_MAP[i][0])).test(n)) return ICON_MAP[i][1]; }
     return CAT_IC[cat] || "🛒";
   }
-  var FOTO_KEY = "mercado-casa-fotos", fotos = {};
+  var FOTO_KEY = PFX + "mercado-casa-fotos", fotos = {};
   function loadFotos(){ try{ var r = localStorage.getItem(FOTO_KEY); if(r){ var o = JSON.parse(r); if(o && typeof o === "object") fotos = o; } }catch(e){} }
   function saveFotos(){ try{ localStorage.setItem(FOTO_KEY, JSON.stringify(fotos)); return true; }catch(e){ toast("Sem espaço pra mais fotos neste celular"); return false; } }
   function thumb(it, cls, icon, foto){
@@ -514,7 +539,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function byMarket(it){
     var m = {};
-    (it.hist || []).forEach(function(x){ if(x.m) m[x.m] = x; });
+    (it.hist || []).forEach(function(x){ if(x.m && x.m !== BASE_LOCAL) m[x.m] = x; });
     return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a, b){ return a.p - b.p; });
   }
   function cheaperElsewhere(it){
@@ -563,27 +588,39 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     return '<div class="card"><div class="pad" style="padding-bottom:8px">' + titulo + '<div class="s-meta">Sua cesta, comparada ao preço anterior de ' + ch.length + (ch.length === 1 ? ' item' : ' itens') + '</div>' +
       '<div class="cesta ' + (avg > 0 ? 'up' : 'down') + '">' + (avg > 0 ? '+' : '−') + pctTxt(avg) + '</div></div>' + ups.map(row).join("") + downs.map(row).join("") + '</div>';
   }
-  function defaultDieta(){
-    return {ativa:true, nome:"Sem leite",
-      evitar:["Contém leite","Pode conter leite","Leite","Leite em pó","Soro de leite","Whey","Caseína","Caseinato","Lactoalbumina","Lactoglobulina","Lactose","Sem lactose","Zero lactose","Gordura láctea","Composto lácteo","Queijo","Requeijão","Iogurte","Manteiga","Margarina com leite","Creme de leite","Nata","Coalho","Ghee","Petit suisse","Bebida láctea","Leite fermentado","Leite condensado","Doce de leite","Pudim","Chocolate ao leite","Molho branco","Leite de cabra"],
-      pode:["Leite de coco","Leite condensado de coco","Leite de aveia","Lactato de cálcio","Lactato de sódio","Estearoil-lactil-lactato","Manteiga de cacau","Creme tártaro"],
-      cuidados:["Zero lactose e sem lactose não servem: ainda têm a proteína do leite.","\"Pode conter leite\": evite até falar com o pediatra.","Nada a granel: sem rótulo, não dá pra conferir.","Nada de frio fatiado na hora: a máquina é a mesma do queijo.","Leia toda embalagem nova, até da marca de sempre: a receita muda."],
-      obs:"", revisao:""};
+  /* Dieta: o motor fica em dieta.js. Três avisos: evitar, conferido, informação insuficiente (o padrão). */
+  function defaultDieta(){ return DietaMotor.dietaVazia(); }
+  function dietaAval(it){ return DietaMotor.avaliar(typeof it === "string" ? {nome: it} : it, state && state.dieta, {hoje: todayStr()}); }
+  function dietFlag(it){ var r = dietaAval(it); return r.estado === "evitar" ? r.termo : null; }
+  function dietaLinha(it){
+    var r = dietaAval(it);
+    if(r.estado === "evitar") return '<div class="flag-line">Evitar: tem “' + esc(r.termo) + '” · ' + DietaMotor.AVISO_CURTO + '</div>';
+    if(r.estado === "conferido") return '<div class="diet-line ok">Rótulo conferido em ' + dShort(r.conferencia.d) + (r.conferencia.q ? ' por ' + esc(r.conferencia.q) : '') + '</div>';
+    if(r.estado === "insuficiente") return '<div class="diet-line">Informação insuficiente: confira o rótulo</div>';
+    return '';
   }
-  function dietFlag(text){
-    var d = state && state.dieta; if(!d || !d.ativa) return null;
-    var t = " " + norm(text) + " ";
-    (d.pode || []).forEach(function(x){ var k = norm(x).trim(); if(k) t = t.split(k).join(" "); });
-    var ev = d.evitar || [];
-    for(var i = 0; i < ev.length; i++){
-      var k = norm(ev[i]).trim(); if(!k) continue;
-      if(new RegExp("(^|[^a-z0-9])" + escRe(k) + "($|[^a-z0-9])").test(t)) return ev[i];
-    }
-    return null;
+  function dietaChip(it){
+    var r = dietaAval(it);
+    if(r.estado === "evitar") return '<span class="flag">evitar</span>';
+    if(r.estado === "conferido") return '<span class="flag ok">conferido</span>';
+    if(r.estado === "insuficiente") return '<span class="flag q">conferir</span>';
+    return '';
   }
+  function dietaBox(it){
+    var r = dietaAval(it), mod = DietaMotor.modeloPorId(state.dieta && state.dieta.modelo);
+    if(r.estado === "evitar") return '<div class="dbox no" role="alert"><b>Evitar: o nome tem “' + esc(r.termo) + '”, que está na lista da dieta.</b><span>' + esc(DietaMotor.AVISO_FIXO) + '</span></div>';
+    if(r.estado === "conferido") return '<div class="dbox ok"><b>Rótulo conferido em ' + dLong(r.conferencia.d) + (r.conferencia.q ? ' por ' + esc(r.conferencia.q) : '') + '</b>' +
+      '<span>Vale até ' + dLong(r.conferencia.vence) + '. Embalagem nova ou receita nova: leia de novo. ' + esc(DietaMotor.AVISO_FIXO) + '</span>' +
+      '<button class="quiet" type="button" data-act="desconferir" data-id="' + esc(it.id) + '">Desfazer conferência</button></div>';
+    if(r.estado === "insuficiente") return '<div class="dbox"><b>Informação insuficiente</b><span>Só pelo nome não dá para saber.' + (r.dica ? ' ' + esc(r.dica) : '') + (r.motivo ? ' ' + esc(r.motivo) : '') + ' ' + esc(DietaMotor.AVISO_CURTO) + '</span>' +
+      (r.bloqueiaConferencia ? '' : '<button class="btn-sm" type="button" data-act="conferir" data-id="' + esc(it.id) + '">' + esc(mod ? mod.acaoConferir : 'Li o rótulo: está dentro da dieta') + '</button>') + '</div>';
+    return '';
+  }
+  function dietaLigada(){ return !!(state.dieta && state.dieta.ativa && (state.dieta.modelo || (state.dieta.evitar || []).length)); }
+  function avisoFixo(){ return dietaLigada() ? '<p class="aviso-fixo" role="note">' + esc(DietaMotor.AVISO_FIXO) + '</p>' : ''; }
 
   /* ---------- Ofertas: encartes da semana (ofertas.json) e ofertas importadas ---------- */
-  var OF_KEY = "despensa-ofertas", remote = null;
+  var OF_KEY = PFX + "despensa-ofertas", remote = null;
   var DIAS = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
   function addDays(s, n){ var p = String(s).split("-"); var d = new Date(+p[0], +p[1]-1, +p[2] + n); return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
   function weekday(s){ var p = String(s).split("-"); return new Date(+p[0], +p[1]-1, +p[2]).getDay(); }
@@ -704,12 +741,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var all = [];
     Object.keys(state.meses).forEach(function(k){ state.meses[k].gastos.forEach(function(g){ all.push(g); }); });
     all.sort(function(a,b){ return a.data < b.data ? 1 : -1; });
-    return all.length ? all[0].local : BASE_LOCAL;
+    return all.length ? all[0].local : "";
   }
   function locais(){
     var seen = {}, out = [];
     Object.keys(state.meses).forEach(function(k){ state.meses[k].gastos.forEach(function(g){ if(g.local && !seen[g.local]){ seen[g.local] = 1; out.push(g.local); } }); });
-    state.items.forEach(function(it){ var c = cur(it); if(c && c.m && !seen[c.m]){ seen[c.m] = 1; out.push(c.m); } });
+    state.items.forEach(function(it){ var c = cur(it); if(c && c.m && c.m !== BASE_LOCAL && !seen[c.m]){ seen[c.m] = 1; out.push(c.m); } });
     return out.slice(0,6);
   }
 
@@ -861,7 +898,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function listaCount(){ var n = state.items.filter(function(i){ return i.lista; }).length; return n ? n + (n === 1 ? " item" : " itens") + " pra comprar" : "vazia"; }
   function resumoTexto(){
     var k = state.mes, m = mesData(k,false), g = gastoTotal(m);
-    var L = ["*Despensa · " + monthName(k) + "*", "Orçamento: " + brl(m.orc || 0), "Gasto: " + brl(g), ((m.orc||0) - g >= 0 ? "Sobra: " : "Passou: ") + brl(Math.abs((m.orc||0) - g)), ""];
+    var L = ["*Elida · " + monthName(k) + "*", "Orçamento: " + brl(m.orc || 0), "Gasto: " + brl(g), ((m.orc||0) - g >= 0 ? "Sobra: " : "Passou: ") + brl(Math.abs((m.orc||0) - g)), ""];
     m.gastos.slice().sort(function(a,b){ return a.data > b.data ? 1 : -1; }).forEach(function(x){ L.push(dShort(x.data) + " · " + (x.local || x.tipo) + " · " + brl(x.valor)); });
     return L.join("\n");
   }
@@ -901,12 +938,13 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           group.map(function(it){
             var c0 = cur(it), vr = variation(it);
             var vtag = Math.abs(vr) >= 0.5 ? '<span class="var ' + (vr > 0 ? 'up' : 'down') + '">' + (vr > 0 ? '↑ ' : '↓ ') + Math.round(Math.abs(vr)) + '%</span>' : '';
-            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '">' + thumb(it) + '<span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + (dietFlag(it.nome) ? '<span class="flag">fora da dieta</span>' : '') + '</span>' +
+            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '">' + thumb(it) + '<span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + dietaChip(it) + '</span>' +
               '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + (cheaperElsewhere(it) ? '<span class="var down">+ barato no ' + esc(cheaperElsewhere(it).m) + '</span>' : '') + (om[it.id] ? '<span class="var down">oferta ' + brl(om[it.id].p) + ' no ' + esc(om[it.id].m) + '</span>' : '') + '</span></span>' +
               '<span class="r-val">' + (c0 ? brl(c0.p) : '—') + (isKg(it) && c0 ? '<small>por kg</small>' : '') + '</span></button></li>';
           }).join("") + '</ul></div></div>';
       });
     }
+    h += avisoFixo();
     document.getElementById("precos-lista").innerHTML = h;
   }
 
@@ -933,7 +971,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       return '<li><div class="litem' + (it.ok ? ' done' : '') + '">' +
         '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' + thumb(it) +
         '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : (of ? ' · ainda sem preço pago' : ' · sem preço')) + '</div>' +
-        (dietFlag(it.nome) ? '<div class="flag-line">Fora da dieta: tem “' + esc(dietFlag(it.nome)) + '”</div>' : '') +
+        dietaLinha(it) +
         (of ? '<div class="cheap-line">Oferta no ' + esc(of.m) + ': ' + (of.nome && norm(of.nome) !== norm(it.nome) ? esc(of.nome) + ', ' : '') + brl(of.p) + (isKg(it) ? '/kg' : '') + (of.fim ? ' · ' + esc(ateTxt(of.fim)) : '') + '</div>' :
           (cheaperElsewhere(it) ? '<div class="cheap-line">Mais barato no ' + esc(cheaperElsewhere(it).m) + ': ' + brl(cheaperElsewhere(it).p) + '</div>' : '')) +
         '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
@@ -943,16 +981,17 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     h += '<div class="sh-actions"><button class="bigbtn" type="button" data-act="finalizar">' + IC.check + 'Finalizar compra</button>' +
       '<a class="bigbtn wa" id="wa-lista" href="#" target="_blank" rel="noopener">' + IC.wa + 'Enviar lista no WhatsApp</a>' +
       '<button class="quiet' + (ui.armed === "limpar" ? ' armed' : '') + '" type="button" data-act="limpar">' + (ui.armed === "limpar" ? 'Toque de novo para limpar a lista' : 'Limpar lista') + '</button></div>';
+    h += avisoFixo();
     document.getElementById("view-lista").innerHTML = h;
     var a = document.getElementById("wa-lista");
     if(a) a.href = "https://wa.me/?text=" + encodeURIComponent(listaTexto());
   }
   function listaTexto(){
     var items = state.items.filter(function(i){ return i.lista; });
-    var L = ["*Lista de mercado · sem leite*",""];
-    items.forEach(function(it){ var of = ofertaAtiva(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (precoEfetivo(it) ? " · ~" + brl(lineTotal(it)) : "") + (of ? " · oferta no " + of.m : "")); });
+    var L = ["*Lista de mercado*",""];
+    items.forEach(function(it){ var of = ofertaAtiva(it); var fl = dietFlag(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (precoEfetivo(it) ? " · ~" + brl(lineTotal(it)) : "") + (of ? " · oferta no " + of.m : "") + (fl ? " · ⚠️ evitar: tem " + fl : "")); });
     L.push("", "Estimado: " + brl(items.reduce(function(s,i){ return s + lineTotal(i); }, 0)));
-    if(state.dieta && state.dieta.ativa) L.push("_Dieta: " + state.dieta.nome + ". Confira o rótulo._");
+    if(dietaLigada()) L.push("_Dieta: " + (state.dieta.nome || "ligada") + ". Os avisos são lembrete da orientação médica. Leia o rótulo._");
     return L.join("\n");
   }
 
@@ -1016,10 +1055,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var c = cur(it), locs = locais();
     var hist = (it.hist || []).slice().reverse().slice(0,5);
     openSheet('<div class="pic-row"><span id="pic-preview">' + thumb(it, 'lg') + '</span><div><h3 class="sh-title" id="sh-title">' + esc(it.nome) + '</h3><p class="sh-sub">' + esc(it.por) + ' · ' + esc(it.cat) + '</p></div></div>' +
-      (dietFlag(it.nome) ? '<div class="warnbox" style="margin-top:12px">Atenção: “' + esc(dietFlag(it.nome)) + '” está nos gatilhos da dieta.</div>' : '') +
+      dietaBox(it) +
       '<div class="form"><div class="fl"><label for="f-preco">Preço de hoje' + (isKg(it) ? ' (por kg)' : '') + '</label>' +
       '<div class="money"><span>R$</span><input id="f-preco" inputmode="decimal" autocomplete="off" placeholder="0,00" value="' + (c ? fmt(c.p) : '') + '"></div></div>' +
-      '<div class="fl"><label for="f-mercado">Mercado</label><input class="inp" id="f-mercado" value="' + esc(c ? c.m : lastLocal()) + '" autocomplete="off">' +
+      '<div class="fl"><label for="f-mercado">Mercado</label><input class="inp" id="f-mercado" value="' + esc(c && c.m !== BASE_LOCAL ? c.m : lastLocal()) + '" autocomplete="off">' +
       (locs.length ? '<div class="chips">' + locs.map(function(l){ return '<button class="chip" type="button" data-act="set-mercado" data-v="' + esc(l) + '">' + esc(l) + '</button>'; }).join("") + '</div>' : '') + '</div>' +
       (it.nota ? '<p class="note-sm">' + esc(it.nota) + '</p>' : '') +
       picPicker(it.icon || autoIcon(it.nome, it.cat), !!fotos[it.id]) +
@@ -1112,7 +1151,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Guarde este texto no seu WhatsApp. Ele traz tudo de volta se precisar. As fotos dos produtos não entram.</p>' +
       '<div class="form"><textarea class="inp" id="f-backup" readonly>' + esc(data) + '</textarea>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="copiar-backup">Copiar backup</button>' +
-      '<a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent("Backup Despensa " + dShort(todayStr()) + "\n" + data) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar no WhatsApp</a>' +
+      '<a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent("Backup Elida " + dShort(todayStr()) + "\n" + data) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar no WhatsApp</a>' +
       '<button class="quiet" type="button" data-act="fechar">Fechar</button></div></div>');
   }
   function sheetRestaurar(){
@@ -1207,7 +1246,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var c = state.carta; if(!c) return;
     var w = document.getElementById("welcome");
     var paras = String(c.m).split(/\n+/).filter(function(x){ return x.trim(); });
-    var html = '<div class="w-inner"><div class="w-brand reveal" style="animation-delay:0s"><svg class="w-mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="120" fill="#0F3B2E"/><g transform="translate(0 -7)"><rect x="158" y="112" width="196" height="52" rx="17" fill="#D9B45A"/><path d="M174 130.5H338M174 146.5H338" stroke="#B8892B" stroke-width="5" stroke-linecap="round" opacity=".55"/><path d="M168 176H344C344 197 374 203 374 234V350C374 385 346 414 311 414H201C166 414 138 385 138 350V234C138 203 168 197 168 176Z" fill="#F4F1E6"/><g transform="translate(-7 0)"><path d="M256 386C209 362 195 307 222 268C243 239 284 227 318 233C324 291 302 352 256 386Z" fill="#0F3B2E"/><path d="M257 383C263 334 283 285 313 239" stroke="#F4F1E6" stroke-width="9" stroke-linecap="round" fill="none"/></g></g></svg><span>Despensa<b>.</b></span></div>' +
+    var html = '<div class="w-inner"><div class="w-brand reveal" style="animation-delay:0s"><svg class="w-mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="120" fill="#0F3B2E"/><g transform="translate(0 -7)"><rect x="158" y="112" width="196" height="52" rx="17" fill="#D9B45A"/><path d="M174 130.5H338M174 146.5H338" stroke="#B8892B" stroke-width="5" stroke-linecap="round" opacity=".55"/><path d="M168 176H344C344 197 374 203 374 234V350C374 385 346 414 311 414H201C166 414 138 385 138 350V234C138 203 168 197 168 176Z" fill="#F4F1E6"/><g transform="translate(-7 0)"><path d="M256 386C209 362 195 307 222 268C243 239 284 227 318 233C324 291 302 352 256 386Z" fill="#0F3B2E"/><path d="M257 383C263 334 283 285 313 239" stroke="#F4F1E6" stroke-width="9" stroke-linecap="round" fill="none"/></g></g></svg><span>Elida<b>.</b></span></div>' +
       '<h1 class="w-name reveal" id="w-name" style="animation-delay:.2s">' + esc(c.n) + ',</h1><div class="w-text">' +
       paras.map(function(p, i){ return '<p class="reveal" style="animation-delay:' + (0.7 + i * 0.55).toFixed(2) + 's">' + esc(p) + '</p>'; }).join("") + '</div>';
     var t = 0.7 + paras.length * 0.55;
@@ -1224,47 +1263,89 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     return '<div class="words">' + list.map(function(w){ return '<span class="word' + cls + '">' + esc(w) + '</span>'; }).join("") + '</div>';
   }
   function renderDieta(){
-    var d = state.dieta || defaultDieta();
-    var h = '<div class="head-row"><div><h2 class="title">' + esc(d.ativa ? d.nome : 'Dieta desligada') + '</h2><p class="sub">' +
-      (d.ativa ? 'Se um item tiver uma palavra da lista vermelha, o app avisa em Preços e na Lista.' : 'O app não está avisando nada. Toque em Editar para ligar de novo.') + '</p></div>' +
-      '<button class="btn-sm" type="button" data-act="editar-dieta">' + IC.edit + 'Editar</button></div>';
+    var d = state.dieta || defaultDieta(), mod = DietaMotor.modeloPorId(d.modelo);
+    var temLista = !!mod || (d.evitar || []).length > 0, ligada = d.ativa && temLista;
+    var h = '<div class="head-row"><div><h2 class="title">' + esc(ligada ? (d.nome || 'Dieta') : (temLista ? 'Dieta desligada' : 'Nenhuma dieta')) + '</h2><p class="sub">' +
+      (ligada ? 'Cada item da casa recebe um de três avisos.' : temLista ? 'O app não está avisando nada. Toque em Editar para ligar de novo.' : 'Se alguém da casa tem uma restrição orientada pelo médico, monte a lista aqui.') + '</p></div>' +
+      (temLista ? '<button class="btn-sm" type="button" data-act="editar-dieta">' + IC.edit + 'Editar</button>' : '') + '</div>';
+    h += '<p class="aviso-fixo" role="note">' + esc(DietaMotor.AVISO_FIXO) + '</p>';
+    if(!temLista){
+      h += '<div class="card pad"><h3>Começar</h3><p class="note-sm">A lista base sem leite ainda não foi revisada por profissional de saúde. Mostre ao médico ou ao nutricionista antes de confiar nela.</p>' +
+        '<div class="sh-actions"><button class="bigbtn" type="button" data-act="usar-modelo">Usar a lista base sem leite</button>' +
+        '<button class="bigbtn ghost" type="button" data-act="nova-dieta">Montar a minha lista</button></div></div>';
+      document.getElementById("view-rotulo").innerHTML = h;
+      return;
+    }
+    if(d.sugerirModelo && !mod){
+      h += '<div class="tip"><b>Existe uma lista base mais completa</b><span>A sua lista ficou do jeito que você deixou. A lista base sem leite também pega queijos pelo nome, abreviações de cupom e nomes em inglês. Ela ainda não foi revisada por profissional.</span>' +
+        '<button class="act" type="button" data-act="usar-modelo">Usar a lista base</button></div>';
+    }
     if(d.revisao){
       var n = daysUntil(d.revisao);
       h += '<div class="tip"><b>Revisão com o médico: ' + dLong(d.revisao) + '</b><span>' + (n > 1 ? 'Faltam ' + n + ' dias.' : n === 1 ? 'É amanhã.' : n === 0 ? 'É hoje.' : 'Já passou. Se a orientação mudou, atualize aqui.') + '</span></div>';
     }
     if(d.obs) h += '<div class="card pad"><h3>Orientação do médico</h3><p>' + esc(d.obs).replace(/\n/g,'<br>') + '</p></div>';
-    if(d.ativa){
-      var flagged = state.items.filter(function(i){ return dietFlag(i.nome); });
-      if(flagged.length) h += '<div class="card pad"><h3>Itens cadastrados fora da dieta</h3>' + words(flagged.map(function(i){ return i.nome; }), '') + '</div>';
-      h += '<div class="card pad"><h3>Se aparecer, volta pra prateleira</h3>' + words(d.evitar, '') + '</div>';
-      h += '<div class="card pad"><h3>Parece, mas pode</h3>' + words(d.pode, ' ok') + '</div>';
-      if(d.cuidados && d.cuidados.length) h += '<div class="card pad"><h3>Na hora da compra</h3><ul class="plain">' + d.cuidados.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
+    if(ligada){
+      h += '<div class="card pad"><h3>Os três avisos</h3><ul class="estados">' +
+        '<li><span class="flag">evitar</span><span>O nome tem uma palavra da lista. Volta pra prateleira.</span></li>' +
+        '<li><span class="flag q">conferir</span><span>Informação insuficiente: só pelo nome não dá para saber. Todo item começa assim.</span></li>' +
+        '<li><span class="flag ok">conferido</span><span>Alguém da casa leu o rótulo e marcou no item. Vale ' + Math.round(DietaMotor.VALIDADE_CONFERENCIA_DIAS / 30) + ' meses ou até o nome mudar.</span></li></ul></div>';
+      var ev = [], nc = 0, ni = 0;
+      state.items.forEach(function(i){ var r = dietaAval(i); if(r.estado === "evitar") ev.push(i.nome); else if(r.estado === "conferido") nc++; else if(r.estado === "insuficiente") ni++; });
+      h += '<div class="card pad"><h3>Itens da casa</h3><p class="note-sm">' + ev.length + ' para evitar · ' + nc + (nc === 1 ? ' conferido' : ' conferidos') + ' · ' + ni + ' sem informação suficiente</p>' + (ev.length ? words(ev, '') : '') + '</div>';
+      if(mod){
+        h += '<div class="card pad"><h3>Lista base: ' + esc(mod.nome) + '</h3><p class="note-sm">Versão ' + esc(mod.versao) + '. ' +
+          (mod.revisao && mod.revisao.status === "revisada" ? 'Revisada por ' + esc(mod.revisao.profissional) + ' (' + esc(mod.revisao.registro) + ') em ' + dLong(mod.revisao.data) + '.' : '<b>Ainda não revisada por profissional de saúde.</b>') +
+          ' “…” no fim quer dizer que pega o começo da palavra.</p>' +
+          mod.grupos.map(function(g){ return '<h4 class="g-title">' + esc(g.nome) + '</h4>' + words(g.termos.map(DietaMotor.rotuloTermo), ''); }).join("") + '</div>';
+      }
+      if((d.evitar || []).length) h += '<div class="card pad"><h3>' + (mod ? 'Termos que você acrescentou' : 'Se aparecer, volta pra prateleira') + '</h3>' + words(d.evitar.map(DietaMotor.rotuloTermo), '') + '</div>';
+      var pode = (mod ? mod.pode : []).concat(d.pode || []);
+      if(pode.length) h += '<div class="card pad"><h3>Parece, mas pode</h3>' + words(pode, ' ok') + '</div>';
+      var cuid = (mod ? mod.cuidados : []).concat(d.cuidados || []);
+      if(cuid.length) h += '<div class="card pad"><h3>Na hora da compra</h3><ul class="plain">' + cuid.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
     }
     document.getElementById("view-rotulo").innerHTML = h;
   }
-  function sheetDieta(){
-    var d = state.dieta || defaultDieta();
+  function sheetDieta(nova){
+    var d = nova || state.dieta || defaultDieta(), mod = DietaMotor.modeloPorId(d.modelo);
     ui.sheet = {type:"dieta"};
-    openSheet('<h3 class="sh-title" id="sh-title">Editar dieta</h3><p class="sh-sub">Se o médico mudar a orientação, ajuste aqui. Uma palavra ou frase por linha.</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">' + (nova ? 'Montar a dieta' : 'Editar dieta') + '</h3><p class="sh-sub">Se o médico mudar a orientação, ajuste aqui. Uma palavra ou frase por linha. Termine com * para pegar o começo da palavra: leite* pega leitelho.</p>' +
       '<div class="form"><div class="fl"><label>Avisos da dieta</label>' + chipGroup("d-ativa", ["Ligados","Desligados"], d.ativa ? "Ligados" : "Desligados") + '</div>' +
-      '<div class="fl"><label for="d-nome">Nome da dieta</label><input class="inp" id="d-nome" value="' + esc(d.nome) + '" autocomplete="off" placeholder="Ex.: Sem leite e sem soja"></div>' +
-      '<div class="fl"><label for="d-evitar">Gatilhos: se o nome do item tiver uma destas palavras, o app avisa</label><textarea class="inp txt" id="d-evitar" style="height:170px">' + esc((d.evitar || []).join("\n")) + '</textarea></div>' +
-      '<div class="fl"><label for="d-pode">Exceções: parecem, mas podem</label><textarea class="inp txt" id="d-pode">' + esc((d.pode || []).join("\n")) + '</textarea></div>' +
-      '<div class="fl"><label for="d-cuidados">Cuidados na hora da compra</label><textarea class="inp txt" id="d-cuidados">' + esc((d.cuidados || []).join("\n")) + '</textarea></div>' +
-      '<div class="fl"><label for="d-obs">Orientação do médico</label><textarea class="inp txt" id="d-obs" placeholder="Ex.: manter a dieta até o teste de provocação">' + esc(d.obs || "") + '</textarea></div>' +
+      '<div class="fl"><label>Lista base</label>' + chipGroup("d-modelo", ["Sem leite","Só a minha lista"], mod ? "Sem leite" : "Só a minha lista") +
+      '<p class="note-sm">A lista base sem leite tem ' + DietaMotor.termosDoModelo(DietaMotor.MODELO_SEM_LEITE).length + ' termos e ainda não foi revisada por profissional de saúde.</p></div>' +
+      '<div class="fl"><label for="d-nome">Nome da dieta</label><input class="inp" id="d-nome" value="' + esc(d.nome || "") + '" autocomplete="off" placeholder="Ex.: Sem leite e sem soja"></div>' +
+      '<div class="fl"><label for="d-evitar">' + (mod ? 'Termos a mais' : 'Termos') + ': se o nome do item tiver um destes, o app avisa “evitar”</label><textarea class="inp txt" id="d-evitar" style="height:150px">' + esc((d.evitar || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-pode">' + (mod ? 'Exceções a mais' : 'Exceções') + ': parecem, mas podem</label><textarea class="inp txt" id="d-pode">' + esc((d.pode || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-cuidados">' + (mod ? 'Cuidados a mais' : 'Cuidados') + ' na hora da compra</label><textarea class="inp txt" id="d-cuidados">' + esc((d.cuidados || []).join("\n")) + '</textarea></div>' +
+      '<div class="fl"><label for="d-obs">Orientação do médico</label><textarea class="inp txt" id="d-obs" placeholder="Ex.: manter a dieta até a próxima consulta">' + esc(d.obs || "") + '</textarea></div>' +
       '<div class="fl"><label for="d-revisao">Próxima revisão com o médico</label><input class="inp" id="d-revisao" type="date" value="' + esc(d.revisao || "") + '"></div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-dieta">Salvar dieta</button>' +
-      '<button class="quiet" type="button" data-act="dieta-padrao">Voltar ao padrão sem leite</button></div></div>');
+      (state.dieta && state.dieta.anterior ? '<button class="quiet" type="button" data-act="dieta-anterior">Voltar à lista da versão anterior do app</button>' : '') + '</div></div>');
   }
   function linesOf(id){
     var seen = {};
     return document.getElementById(id).value.split(/\n/).map(function(s){ return s.trim(); }).filter(function(s){ var k = norm(s); if(!s || seen[k]) return false; seen[k] = 1; return true; });
   }
   function salvarDieta(){
-    state.dieta = {ativa: document.getElementById("d-ativa").value !== "Desligados", nome: document.getElementById("d-nome").value.trim() || "Dieta",
-      evitar: linesOf("d-evitar"), pode: linesOf("d-pode"), cuidados: linesOf("d-cuidados"),
+    var usaModelo = document.getElementById("d-modelo").value === "Sem leite";
+    var evitar = linesOf("d-evitar"), ativa = document.getElementById("d-ativa").value !== "Desligados";
+    if(ativa && !usaModelo && !evitar.length){ toast("Escreva pelo menos um termo ou use a lista base"); return; }
+    var ant = state.dieta && state.dieta.anterior;
+    state.dieta = {ativa: ativa, nome: document.getElementById("d-nome").value.trim() || (usaModelo ? DietaMotor.MODELO_SEM_LEITE.nome : "Dieta"),
+      modelo: usaModelo ? DietaMotor.MODELO_SEM_LEITE.id : null, evitar: evitar, pode: linesOf("d-pode"), cuidados: linesOf("d-cuidados"),
       obs: document.getElementById("d-obs").value.trim(), revisao: document.getElementById("d-revisao").value || ""};
+    if(ant) state.dieta.anterior = ant;
     save(); closeSheet(); render(); toast("Dieta salva");
+  }
+  function usarModelo(){
+    var atual = state.dieta || defaultDieta(), base = {};
+    DietaMotor.LEGADO_EVITAR.concat(DietaMotor.termosDoModelo(DietaMotor.MODELO_SEM_LEITE)).forEach(function(t){ base[DietaMotor.normalizar(t)] = 1; });
+    var nova = DietaMotor.dietaDoModelo(DietaMotor.MODELO_SEM_LEITE.id, atual);
+    nova.evitar = (atual.evitar || []).filter(function(t){ return !base[DietaMotor.normalizar(t)]; });
+    if(atual.modelo === null && !atual.sugerirModelo) nova.nome = atual.nome || DietaMotor.MODELO_SEM_LEITE.nome;
+    if(atual.anterior) nova.anterior = atual.anterior;
+    state.dieta = nova; save(); render(); toast("Lista base sem leite ligada");
   }
 
   /* ---------- Ofertas da semana ---------- */
@@ -1341,7 +1422,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       else cmp = '<div class="of-cmp">Mesmo preço que você pagou</div>';
     }
     return '<li><div class="ofrow">' + (it ? thumb(it) : '<span class="thumb" aria-hidden="true">' + autoIcon(o.nome, o.cat) + '</span>') +
-      '<div class="r-main"><div class="r-name">' + esc(o.nome) + (r.flag ? '<span class="flag">fora da dieta</span>' : '') + '</div>' +
+      '<div class="r-main"><div class="r-name">' + esc(o.nome) + (r.flag ? '<span class="flag">evitar</span>' : '') + '</div>' +
       '<div class="r-meta">' + mkBadge(o.m, 'sm') + esc(o.m) + (o.por ? ' · ' + esc(o.por) : '') + (o.fim ? ' · ' + esc(ateTxt(o.fim)) : '') + '</div>' + cmp + '</div>' +
       '<div class="of-side"><span class="r-val">' + brl(o.p) + (o.por === "kg" ? '<small>por kg</small>' : '') + '</span>' + (o.de > o.p ? '<span class="of-de">' + brl(o.de) + '</span>' : '') +
       '<button class="of-add' + (inList ? ' on' : '') + '" type="button" data-act="oferta-lista" data-oid="' + esc(o.id) + '" aria-label="' + (inList ? 'Ver na lista: ' : 'Pôr na lista: ') + esc(o.nome) + '">' + (inList ? '✓ Na lista' : '+ Lista') + '</button></div></div></li>';
@@ -1354,7 +1435,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     it.oferta = {p: o.p, m: o.m, fim: o.fim || "", oid: o.id, nome: o.nome};
     it.lista = true; it.ok = false;
     save(); render();
-    toast(dietFlag(o.nome) || dietFlag(it.nome) ? "Na lista, mas está fora da dieta" : "Foi pra lista com o preço da oferta");
+    toast(dietFlag(o.nome) || dietFlag(it) ? "Na lista, mas tem termo da dieta: evitar" : "Foi pra lista com o preço da oferta");
   }
   function parseOfertasCode(text){
     var s = String(text || "").trim(), k = s.indexOf("ofertas=");
@@ -1370,7 +1451,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var ja = !!o.id && (state.ofImportados || []).indexOf(o.id) >= 0, vencido = !!o.fim && o.fim < todayStr();
     var rows = o.i.map(function(r){
       var it = matchItem({nome: r[0], por: r[2], item: r[5] || ""}), c = it && cur(it), e = c ? c.p - (+r[3]) : null;
-      return '<li><span>' + esc(r[0]) + (dietFlag(r[0]) ? ' · <b class="up">fora da dieta</b>' : '') +
+      return '<li><span>' + esc(r[0]) + (dietFlag(r[0]) ? ' · <b class="up">evitar</b>' : '') +
         (e != null ? (e > 0.009 ? ' · <b class="down">' + brl(e) + ' a menos</b>' : (e < -0.009 ? ' · <b class="up">mais caro</b>' : '')) : '') +
         '</span><b class="num">' + brl(+r[3]) + (r[2] === "kg" ? '/kg' : '') + '</b></li>';
     }).join("");
@@ -1405,10 +1486,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
      Só os campos que mudaram são enviados, então duas pessoas mexendo em coisas diferentes não se atropelam.
      Sem internet, o Firestore guarda no celular e envia quando a rede volta. */
   var FB_CONFIG = null; /* {apiKey, authDomain, projectId, appId}: entra aqui quando o projeto do Firebase existir */
-  var CASA_KEY = "despensa-casa";
+  var FB_CONFIG_HML = null; /* projeto Firebase só de teste, com dados falsos; nunca o de produção */
+  var CASA_KEY = PFX + "despensa-casa";
   var COLS = ["itens", "gastos", "meses", "config", "ofertas"];
   var Sync = {casa: null, db: null, auth: null, uid: null, ready: false, loaded: {}, started: {}, shadow: {}, membros: {}, unsub: [], pending: 0, timer: null, rtimer: null, evs: [], etimer: null, err: "", online: navigator.onLine !== false};
-  function fbCfg(){ var t = window.__DESPENSA_FB__; return (t && t.config) || FB_CONFIG; }
+  function fbCfg(){
+    var t = window.__DESPENSA_FB__, inj = t && t.config;
+    if(HML) return (inj && /^demo-/.test(inj.projectId || "")) ? inj : FB_CONFIG_HML; /* homologação: só emulador ou projeto de teste */
+    return inj || FB_CONFIG;
+  }
   function syncDisponivel(){ return !!fbCfg(); }
   function loadCasa(){ try{ var c = JSON.parse(localStorage.getItem(CASA_KEY) || "null"); if(c && c.id && c.id.length >= 20) return c; }catch(e){} return null; }
   function saveCasa(c){ try{ if(c) localStorage.setItem(CASA_KEY, JSON.stringify(c)); else localStorage.removeItem(CASA_KEY); }catch(e){} }
@@ -1506,7 +1592,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     } else if(c === "meses"){
       mesData(id, true).orc = +o.orc || 0;
     } else if(c === "config"){
-      if(id === "dieta" && o.evitar) state.dieta = o;
+      if(id === "dieta" && o && typeof o === "object") state.dieta = DietaMotor.migrar(o);
       if(id === "geral"){ state.importados = uniao(state.importados, o.importados); state.ofImportados = uniao(state.ofImportados, o.ofImportados); }
     } else if(c === "ofertas"){
       o.id = id; state.ofertas = (state.ofertas || []).filter(function(x){ return x.id !== id; }); state.ofertas.push(o);
@@ -1674,8 +1760,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-casa">Criar e ligar</button><button class="quiet" type="button" data-act="fechar">Agora não</button></div></div>', "c-nome");
   }
   function conviteTexto(){
-    return "Entra na nossa Despensa (" + Sync.casa.nome + "). O que um anota, o outro vê na hora.\n\n" +
-      "Android: é só tocar no link.\niPhone: abra o app Despensa pela tela de início, toque em Tenho um convite e cole esta mensagem inteira.\n\n" + linkCasa(Sync.casa.id);
+    return "Entra na nossa casa no app Elida (" + Sync.casa.nome + "). O que um anota, o outro vê na hora.\n\n" +
+      "Android: é só tocar no link.\niPhone: abra o app Elida pela tela de início, toque em Tenho um convite e cole esta mensagem inteira.\n\n" + linkCasa(Sync.casa.id);
   }
   function sheetConvite(primeira){
     if(!Sync.casa) return;
@@ -1691,10 +1777,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var standalone = window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
     var iosSafari = /iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone;
     var ja = Sync.casa && Sync.casa.id === id;
-    openSheet('<h3 class="sh-title" id="sh-title">' + (ja ? 'Você já está nessa casa' : 'Entrar na casa') + '</h3><p class="sh-sub" id="entrar-nome">' + (ja ? esc(Sync.casa.nome) : 'Convite pra usar a Despensa junto, em tempo real.') + '</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">' + (ja ? 'Você já está nessa casa' : 'Entrar na casa') + '</h3><p class="sh-sub" id="entrar-nome">' + (ja ? esc(Sync.casa.nome) : 'Convite pra usar o Elida junto, em tempo real.') + '</p>' +
       (ja ? '<div class="form"><div class="sh-actions"><button class="bigbtn" type="button" data-act="fechar">Ok</button></div></div>' :
       '<div class="form">' +
-      (iosSafari ? '<div class="warnbox">Você abriu no Safari. Se usa a Despensa pelo ícone da tela de início, entre por lá: abra o app, toque em <b>Tenho um convite</b> e cole a mensagem. O iPhone guarda os dois separados.</div>' : '') +
+      (iosSafari ? '<div class="warnbox">Você abriu no Safari. Se usa o Elida pelo ícone da tela de início, entre por lá: abra o app, toque em <b>Tenho um convite</b> e cole a mensagem. O iPhone guarda os dois separados.</div>' : '') +
       '<div class="fl"><label for="e-eu">Seu nome</label><input class="inp" id="e-eu" autocomplete="off" placeholder="Ex.: João"><p class="note-sm">O que já está neste celular vai junto pra casa. Se o mesmo item estiver nos dois, vale o da casa.</p></div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-entrar">Entrar</button><button class="quiet" type="button" data-act="fechar">Agora não</button></div></div>'), ja ? null : "e-eu");
     if(!ja && navigator.onLine !== false) fbReady(function(){
@@ -1847,7 +1933,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "toggle-lista":
         it = findItem(ui.sheet.id); if(!it) break;
         it.lista = !it.lista; if(!it.lista){ it.ok = false; it.qtd = 1; delete it.oferta; }
-        save(); closeSheet(); render(); toast(it.lista ? (dietFlag(it.nome) ? "Na lista, mas está fora da dieta" : "Foi pra lista") : "Saiu da lista"); break;
+        save(); closeSheet(); render(); toast(it.lista ? (dietFlag(it) ? "Na lista, mas tem termo da dieta: evitar" : "Foi pra lista") : "Saiu da lista"); break;
       case "apagar-item":
         b.dataset.orig = "Apagar item";
         if(!arm("item", b, "Toque de novo para apagar")) break;
@@ -1864,10 +1950,22 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         break;
       case "editar-dieta": sheetDieta(); break;
       case "salvar-dieta": salvarDieta(); break;
-      case "dieta-padrao":
-        b.dataset.orig = "Voltar ao padrão sem leite";
-        if(!arm("dieta", b, "Toque de novo para voltar ao padrão")) break;
-        state.dieta = defaultDieta(); save(); closeSheet(); render(); toast("Dieta padrão restaurada"); break;
+      case "usar-modelo": usarModelo(); break;
+      case "nova-dieta": sheetDieta({ativa: true, nome: "", modelo: null, evitar: [], pode: [], cuidados: [], obs: "", revisao: ""}); break;
+      case "dieta-anterior":
+        b.dataset.orig = "Voltar à lista da versão anterior do app";
+        if(!arm("dieta", b, "Toque de novo para voltar à lista anterior")) break;
+        var an = state.dieta && state.dieta.anterior;
+        if(an){ state.dieta = {ativa: !!an.ativa, nome: an.nome || "Dieta", modelo: null, evitar: an.evitar || [], pode: an.pode || [], cuidados: an.cuidados || [], obs: an.obs || "", revisao: an.revisao || "", anterior: an}; save(); }
+        closeSheet(); render(); toast("Lista anterior de volta"); break;
+      case "conferir":
+        it = findItem(id);
+        if(it){ it.conf = DietaMotor.conferir(it, Sync.casa && Sync.casa.eu || "", todayStr()); save(); sheetItem(it); render(); toast("Conferência anotada"); }
+        break;
+      case "desconferir":
+        it = findItem(id);
+        if(it){ delete it.conf; save(); sheetItem(it); render(); toast("Conferência desfeita"); }
+        break;
       case "salvar-item": salvarItem(); break;
       case "ok": it = findItem(id); if(it){ it.ok = !it.ok; save(); renderLista(); } break;
       case "mais": it = findItem(id); if(it){ it.qtd = Math.round((it.qtd + (isKg(it) ? 0.5 : 1)) * 10) / 10; save(); renderLista(); } break;
@@ -1889,7 +1987,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           var txt = document.getElementById("f-restaurar").value;
           var pos = txt.indexOf("{"); var s = JSON.parse(txt.slice(pos));
           if(!valid(s)) throw new Error("x");
-          if(!s.dieta) s.dieta = defaultDieta();
+          s.dieta = DietaMotor.migrar(s.dieta);
           state = s; save(); closeSheet(); show("inicio"); toast("Backup restaurado");
         }catch(err){ toast("Esse texto não é um backup válido"); }
         break;
@@ -1900,7 +1998,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(e.target.id === "n-nome"){ novoPreview(); }
     if(e.target.id === "n-nome"){
       var f = dietFlag(e.target.value), box = document.getElementById("n-flag");
-      if(box){ if(f){ box.hidden = false; box.textContent = "Atenção: “" + f + "” está nos gatilhos da dieta."; } else { box.hidden = true; } }
+      if(box){ if(f){ box.hidden = false; box.textContent = "Evitar: tem “" + f + "”, que está na lista da dieta. " + DietaMotor.AVISO_CURTO; } else { box.hidden = true; } }
     }
   });
   document.addEventListener("keydown", function(e){
@@ -1965,7 +2063,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     try{ if("serviceWorker" in navigator && location.protocol === "https:" && location.hostname.indexOf("claude") < 0){ navigator.serviceWorker.register("sw.js").catch(function(){}); } }catch(e){}
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
-    if(!state.dieta) state.dieta = defaultDieta();
+    state.dieta = DietaMotor.migrar(state.dieta);
+    if(HML){ var hb = document.getElementById("hml-bar"); if(hb) hb.hidden = false; document.documentElement.setAttribute("data-ambiente", "homologacao"); }
     if(!state.importados) state.importados = [];
     loadRemote(); limparOfertasVencidas();
     var hh = location.hash || "", pendingImport = null, pendingOfertas = null;
