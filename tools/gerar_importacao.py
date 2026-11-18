@@ -5,12 +5,12 @@ Uso: python3 tools/gerar_importacao.py cupom.json
 O JSON de entrada:
 {
   "id": "chave de acesso da NFC-e (44 dígitos) ou outro identificador único",
-  "mercado": "Koch BC",
-  "data": "2026-11-17",
-  "total": 0,
+  "mercado": "Mercado Exemplo",
+  "data": "2026-11-20",
+  "total": 32.38,
   "itens": [
-    {"nome": "Tomate", "cat": "Hortifruti", "por": "kg", "preco": 21.99, "qtd": 0.7, "id": "s14"},
-    {"nome": "Ovos brancos", "cat": "Proteínas", "por": "bandeja 30 un.", "preco": 16.99, "qtd": 1}
+    {"nome": "Tomate", "cat": "Hortifruti", "por": "kg", "preco": 9.90, "qtd": 0.5, "id": "s14"},
+    {"nome": "Ovos brancos", "cat": "Proteínas", "por": "bandeja 30 un.", "preco": 27.43, "qtd": 1}
   ]
 }
 - "preco" é o preço unitário (por kg quando "por" for "kg").

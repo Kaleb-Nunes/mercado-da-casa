@@ -1,6 +1,6 @@
 # Despensa
 
-App de bolso pra controlar a comida da casa: preços do mercado, lista de compras, balanço do mês e dieta (editável).
+App de bolso pra controlar a comida da casa: preços do mercado, lista de compras, balanço do mês e dieta (sem leite, editável).
 
 Abrir: https://kaleb-nunes.github.io/mercado-da-casa/
 
