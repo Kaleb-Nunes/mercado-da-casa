@@ -1,5 +1,5 @@
 rules_version = '2';
-// Despensa: cada casa é um documento com id aleatório de 27 caracteres.
+// Elida: cada casa é um documento com id aleatório de 27 caracteres.
 // Só quem tem o link da casa (o id) lê e escreve nela. Ninguém consegue listar as casas.
 service cloud.firestore {
   match /databases/{database}/documents {

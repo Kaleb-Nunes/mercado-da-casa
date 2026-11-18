@@ -167,12 +167,32 @@
     (mod && mod.grupos || []).forEach(function (g) { out = out.concat(g.termos); });
     return out;
   }
+  /* Exceção da pessoa que anularia um aviso inteiro (ex.: "leite", "queijo") é ignorada.
+     Regra: se a exceção, sozinha, já seria "evitar" e é uma palavra só, ou é igual a um
+     termo da lista, ela apagaria todos os produtos com aquele termo. Fica guardada, mas
+     o motor não usa e a tela mostra que foi ignorada. As exceções do modelo são curadas. */
+  function validarExcecoes(dieta) {
+    var mod = modeloPorId(dieta && dieta.modelo);
+    var evitar = termosDoModelo(mod).concat(dieta && dieta.evitar || []);
+    var base = {};
+    evitar.forEach(function (t) { base[normalizar(String(t).replace(/\*+$/, "")).trim()] = 1; });
+    var validas = [], ignoradas = [];
+    (dieta && dieta.pode || []).forEach(function (x) {
+      var n = normalizar(String(x).replace(/\*+$/, "")).trim();
+      if (!n) return;
+      var bate = procurar(" " + n + " ", evitar);
+      if (bate && (base[n] || n.split(" ").length < 2 || /\*$/.test(String(x).trim()))) {
+        ignoradas.push({ termo: x, motivo: "anularia o aviso de “" + rotuloTermo(bate.regra) + "” em todos os produtos" });
+      } else validas.push(x);
+    });
+    return { validas: validas, ignoradas: ignoradas };
+  }
   function listasDaDieta(dieta) {
     var mod = modeloPorId(dieta && dieta.modelo);
     return {
       modelo: mod,
       evitar: termosDoModelo(mod).concat(dieta && dieta.evitar || []),
-      pode: (mod ? mod.pode : []).concat(dieta && dieta.pode || [])
+      pode: (mod ? mod.pode : []).concat(validarExcecoes(dieta).validas)
     };
   }
 
@@ -209,9 +229,11 @@
       if (procurar(base, DICAS[i].termos)) dica = DICAS[i];
     }
     var res = { estado: "insuficiente", dica: dica ? dica.texto : "", bloqueiaConferencia: !!(dica && dica.bloqueia) };
+    /* O item já teve "evitar" com outro nome: o aviso não some só porque o nome mudou. */
+    if (it.ev && it.ev.n && it.ev.n !== base) res.avisoAnterior = { termo: it.ev.t || "", nome: it.ev.nome || "" };
 
     var c = it.conf;
-    if (c && c.d && !res.bloqueiaConferencia) {
+    if (c && c.d && !res.bloqueiaConferencia && !res.avisoAnterior) {
       if (c.n != null && c.n !== base) { res.motivo = "O nome mudou depois da conferência."; return res; }
       var idade = diasEntre(c.d, hoje);
       if (idade > VALIDADE_CONFERENCIA_DIAS) { res.motivo = "A conferência de " + c.d + " venceu. Confira de novo."; return res; }
@@ -262,6 +284,16 @@
     return out;
   }
 
+  /* Marca que o item teve "evitar", para o aviso sobreviver a uma troca de nome.
+     Devolve o novo valor de item.ev (ou undefined para apagar). */
+  function marcaEvitar(item, dieta) {
+    var r = avaliar({ nome: item.nome, cat: item.cat }, dieta);
+    var base = normalizar(item.nome);
+    if (r.estado === "evitar") return { t: r.termo, n: base, nome: item.nome };
+    if (item.ev && item.ev.n === base) return undefined;
+    return item.ev;
+  }
+
   /* Texto de cada termo para a tela da dieta. */
   function rotuloTermo(t) { return /\*$/.test(t) ? t.replace(/\*+$/, "") + "…" : t; }
 
@@ -280,6 +312,8 @@
     modeloPorId: modeloPorId,
     termosDoModelo: termosDoModelo,
     migrar: migrar,
+    validarExcecoes: validarExcecoes,
+    marcaEvitar: marcaEvitar,
     rotuloTermo: rotuloTermo
   };
 });

@@ -21,7 +21,7 @@
   --bg:#F1F3EF;
   --surface:#FFFFFF;
   --ink:#10261F;
-  --muted:#66746E;
+  --muted:#5F6C66;
   --line:#E1E6E0;
   --hero:#0F3B2E;
   --hero-ink:#F4F1E6;
@@ -30,7 +30,7 @@
   --brass-hero:#D9B45A;
   --good:#2F7D57;
   --good-soft:#E3F1E8;
-  --warn:#B4531A;
+  --warn:#A94E18;
   --warn-soft:#FBE8DC;
   --shadow:0 1px 2px rgba(16,38,31,.06),0 8px 24px rgba(16,38,31,.06);
   --font-display:"Fraunces",Georgia,"Times New Roman",serif;
@@ -127,13 +127,13 @@ h2.title{font-family:var(--font-display);font-weight:600;font-size:30px;line-hei
 .bar-row .t i{display:block;height:100%;border-radius:99px;background:var(--brass)}
 .tip{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brass);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 .tip ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
-.tip .x{align-self:flex-end;background:none;border:0;color:var(--muted);font-size:13px;font-weight:600;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
+.tip .x{align-self:flex-end;background:none;border:0;color:var(--muted);font-size:13px;font-weight:600;padding:0 4px;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:flex-end;text-decoration:underline;text-underline-offset:3px}
 .safe{display:flex;gap:12px;align-items:flex-start}
 .safe svg{width:22px;height:22px;color:var(--good);flex:none;margin-top:2px}
 .safe p{margin:0;font-size:14px;color:var(--muted)}
 .safe b{color:var(--ink)}
 .links{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
-.link{background:none;border:0;padding:0;color:var(--good);font-weight:600;font-size:14px;text-decoration:none}
+.link{background:none;border:0;padding:0 2px;min-height:44px;display:inline-flex;align-items:center;color:var(--good);font-weight:600;font-size:14px;text-decoration:none}
 
 /* ---------- Preços ---------- */
 .searchbox{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0 4px;display:flex;flex-direction:column;gap:10px}
@@ -171,7 +171,7 @@ h2.title{font-family:var(--font-display);font-weight:600;font-size:30px;line-hei
 .bigbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;border-radius:16px;border:0;background:var(--hero);color:var(--hero-ink);font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 8px 20px rgba(15,59,46,.22)}
 .bigbtn svg{width:20px;height:20px}
 .bigbtn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:none}
-.bigbtn.wa{background:#1F8F57;color:#fff;box-shadow:none}
+.bigbtn.wa{background:#1B7F4D;color:#fff;box-shadow:none}
 .quiet{background:none;border:0;color:var(--muted);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px;align-self:center}
 .quiet.armed{color:var(--warn)}
 
@@ -590,12 +590,17 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   /* Dieta: o motor fica em dieta.js. Três avisos: evitar, conferido, informação insuficiente (o padrão). */
   function defaultDieta(){ return DietaMotor.dietaVazia(); }
+  function atualizarMarcas(){
+    if(!state || !state.dieta || !state.dieta.ativa) return;
+    state.items.forEach(function(it){ var ev = DietaMotor.marcaEvitar(it, state.dieta); if(ev) it.ev = ev; else delete it.ev; });
+  }
   function dietaAval(it){ return DietaMotor.avaliar(typeof it === "string" ? {nome: it} : it, state && state.dieta, {hoje: todayStr()}); }
   function dietFlag(it){ var r = dietaAval(it); return r.estado === "evitar" ? r.termo : null; }
   function dietaLinha(it){
     var r = dietaAval(it);
     if(r.estado === "evitar") return '<div class="flag-line">Evitar: tem “' + esc(r.termo) + '” · ' + DietaMotor.AVISO_CURTO + '</div>';
     if(r.estado === "conferido") return '<div class="diet-line ok">Rótulo conferido em ' + dShort(r.conferencia.d) + (r.conferencia.q ? ' por ' + esc(r.conferencia.q) : '') + '</div>';
+    if(r.estado === "insuficiente" && r.avisoAnterior) return '<div class="flag-line">O nome mudou: antes tinha “' + esc(r.avisoAnterior.termo) + '”. Confira o rótulo</div>';
     if(r.estado === "insuficiente") return '<div class="diet-line">Informação insuficiente: confira o rótulo</div>';
     return '';
   }
@@ -603,6 +608,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var r = dietaAval(it);
     if(r.estado === "evitar") return '<span class="flag">evitar</span>';
     if(r.estado === "conferido") return '<span class="flag ok">conferido</span>';
+    if(r.estado === "insuficiente" && r.avisoAnterior) return '<span class="flag">nome mudou</span>';
     if(r.estado === "insuficiente") return '<span class="flag q">conferir</span>';
     return '';
   }
@@ -612,6 +618,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(r.estado === "conferido") return '<div class="dbox ok"><b>Rótulo conferido em ' + dLong(r.conferencia.d) + (r.conferencia.q ? ' por ' + esc(r.conferencia.q) : '') + '</b>' +
       '<span>Isto registra a leitura de vocês, não diz que o produto é seguro. Vale até ' + dLong(r.conferencia.vence) + '. Embalagem nova ou receita nova: leia de novo. ' + esc(DietaMotor.AVISO_FIXO) + '</span>' +
       '<button class="quiet" type="button" data-act="desconferir" data-id="' + esc(it.id) + '">Desfazer conferência</button></div>';
+    if(r.estado === "insuficiente" && r.avisoAnterior) return '<div class="dbox no" role="alert"><b>O nome deste item mudou. Antes ele era “' + esc(r.avisoAnterior.nome) + '” e tinha “' + esc(r.avisoAnterior.termo) + '”, que está na lista da dieta.</b><span>Trocar o nome não muda o produto. Leia o rótulo antes de comprar. ' + esc(DietaMotor.AVISO_FIXO) + '</span>' +
+      '<button class="btn-sm" type="button" data-act="conferir" data-id="' + esc(it.id) + '">Li o rótulo deste produto</button></div>';
     if(r.estado === "insuficiente") return '<div class="dbox"><b>Informação insuficiente</b><span>Só pelo nome não dá para saber.' + (r.dica ? ' ' + esc(r.dica) : '') + (r.motivo ? ' ' + esc(r.motivo) : '') + ' ' + esc(DietaMotor.AVISO_CURTO) + '</span>' +
       (r.bloqueiaConferencia ? '' : '<button class="btn-sm" type="button" data-act="conferir" data-id="' + esc(it.id) + '">' + esc(mod ? mod.acaoConferir : 'Li o rótulo: não tem nada da lista') + '</button>') + '</div>';
     return '';
@@ -720,6 +728,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     return mem;
   }
   function save(){
+    atualizarMarcas();
     mem = state;
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
     agendarEnvio();
@@ -975,7 +984,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         (of ? '<div class="cheap-line">Oferta no ' + esc(of.m) + ': ' + (of.nome && norm(of.nome) !== norm(it.nome) ? esc(of.nome) + ', ' : '') + brl(of.p) + (isKg(it) ? '/kg' : '') + (of.fim ? ' · ' + esc(ateTxt(of.fim)) : '') + '</div>' :
           (cheaperElsewhere(it) ? '<div class="cheap-line">Mais barato no ' + esc(cheaperElsewhere(it).m) + ': ' + brl(cheaperElsewhere(it).p) + '</div>' : '')) +
         '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
-        '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="Corrigir preço de ' + esc(it.nome) + '">' + (precoEfetivo(it) ? brl(lineTotal(it)) : '—') + '<small>corrigir</small></button>' +
+        '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="' + (precoEfetivo(it) ? brl(lineTotal(it)) : 'Sem preço') + ' corrigir preço de ' + esc(it.nome) + '">' + (precoEfetivo(it) ? brl(lineTotal(it)) : '<span aria-hidden="true">—</span>') + '<small> corrigir</small></button>' +
         '</div></li>';
     }).join("") + '</ul></div>';
     h += '<div class="sh-actions"><button class="bigbtn" type="button" data-act="finalizar">' + IC.check + 'Finalizar compra</button>' +
@@ -1300,7 +1309,9 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           mod.grupos.map(function(g){ return '<h4 class="g-title">' + esc(g.nome) + '</h4>' + words(g.termos.map(DietaMotor.rotuloTermo), ''); }).join("") + '</div>';
       }
       if((d.evitar || []).length) h += '<div class="card pad"><h3>' + (mod ? 'Termos que você acrescentou' : 'Se aparecer, volta pra prateleira') + '</h3>' + words(d.evitar.map(DietaMotor.rotuloTermo), '') + '</div>';
-      var pode = (mod ? mod.pode : []).concat(d.pode || []);
+      var vx = DietaMotor.validarExcecoes(d);
+      if(vx.ignoradas.length) h += '<div class="tip"><b>Exceções ignoradas</b><span>' + vx.ignoradas.map(function(x){ return '“' + esc(x.termo) + '” ' + esc(x.motivo); }).join('. ') + '. Elas ficam guardadas, mas o app não usa. Para liberar um produto, escreva o nome completo dele, como “leite de coco”.</span></div>';
+      var pode = (mod ? mod.pode : []).concat(vx.validas);
       if(pode.length) h += '<div class="card pad"><h3>Exceções: não entram no aviso</h3><p class="note-sm">Só quer dizer que essas palavras sozinhas não disparam “evitar”. Não quer dizer que o produto pode.</p>' + words(pode, ' neutro') + '</div>';
       var cuid = (mod ? mod.cuidados : []).concat(d.cuidados || []);
       if(cuid.length) h += '<div class="card pad"><h3>Na hora da compra</h3><ul class="plain">' + cuid.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
@@ -1336,7 +1347,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       modelo: usaModelo ? DietaMotor.MODELO_SEM_LEITE.id : null, evitar: evitar, pode: linesOf("d-pode"), cuidados: linesOf("d-cuidados"),
       obs: document.getElementById("d-obs").value.trim(), revisao: document.getElementById("d-revisao").value || ""};
     if(ant) state.dieta.anterior = ant;
-    save(); closeSheet(); render(); toast("Dieta salva");
+    var ign = DietaMotor.validarExcecoes(state.dieta).ignoradas.length;
+    save(); closeSheet(); render(); toast(ign ? "Dieta salva. " + ign + (ign === 1 ? " exceção ignorada" : " exceções ignoradas") + ": anulariam o aviso" : "Dieta salva");
   }
   function usarModelo(){
     var atual = state.dieta || defaultDieta(), base = {};
@@ -1584,8 +1596,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function aplicar(c, id, d){
     var o = semMeta(d);
     if(c === "itens"){
-      o.id = id; var it = findItem(id);
-      if(it){ Object.keys(it).forEach(function(k){ if(!(k in o)) delete it[k]; }); for(var k in o) it[k] = o[k]; }
+      o.id = id; var it = findItem(id), evLocal = it && it.ev;
+      if(it){ Object.keys(it).forEach(function(k){ if(!(k in o)) delete it[k]; }); for(var k in o) it[k] = o[k]; if(!it.ev && evLocal) it.ev = evLocal; }
       else { state.items.push(Object.assign({hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false, icon: ""}, o)); }
     } else if(c === "gastos"){
       o.id = id; tiraGasto(id); if(o.data) mesData(monthKey(o.data), true).gastos.push(o);
@@ -1960,7 +1972,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         closeSheet(); render(); toast("Lista anterior de volta"); break;
       case "conferir":
         it = findItem(id);
-        if(it){ it.conf = DietaMotor.conferir(it, Sync.casa && Sync.casa.eu || "", todayStr()); save(); sheetItem(it); render(); toast("Conferência anotada"); }
+        if(it){ var tinha = DietaMotor.avaliar(it, state.dieta).avisoAnterior; delete it.ev; it.conf = tinha ? null : DietaMotor.conferir(it, Sync.casa && Sync.casa.eu || "", todayStr()); if(!it.conf) delete it.conf; save(); sheetItem(it); render(); toast(tinha ? "Anotado. Agora o item segue a regra normal" : "Conferência anotada"); }
         break;
       case "desconferir":
         it = findItem(id);
@@ -1988,6 +2000,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
           var pos = txt.indexOf("{"); var s = JSON.parse(txt.slice(pos));
           if(!valid(s)) throw new Error("x");
           s.dieta = DietaMotor.migrar(s.dieta);
+          var marcas = {}; (state.items || []).forEach(function(x){ if(x.ev) marcas[x.id] = x.ev; });
+          s.items.forEach(function(x){ if(!x.ev && marcas[x.id]) x.ev = marcas[x.id]; });
           state = s; save(); closeSheet(); show("inicio"); toast("Backup restaurado");
         }catch(err){ toast("Esse texto não é um backup válido"); }
         break;
@@ -2064,6 +2078,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
     state.dieta = DietaMotor.migrar(state.dieta);
+    atualizarMarcas();
     if(HML){ var hb = document.getElementById("hml-bar"); if(hb) hb.hidden = false; document.documentElement.setAttribute("data-ambiente", "homologacao"); }
     if(!state.importados) state.importados = [];
     loadRemote(); limparOfertasVencidas();

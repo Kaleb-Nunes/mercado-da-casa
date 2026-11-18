@@ -109,8 +109,15 @@ function arquivos() {
 }
 var termosPrivados = [];
 if (process.env.PRIVACIDADE_TERMOS) termosPrivados = process.env.PRIVACIDADE_TERMOS.split(",");
-var arqLocal = path.join(RAIZ, ".privacidade-local");
-if (fs.existsSync(arqLocal)) termosPrivados = termosPrivados.concat(fs.readFileSync(arqLocal, "utf8").split(/\r?\n/));
+/* A lista de termos privados fica FORA do repositório (variável PRIVACIDADE_TERMOS ou
+   arquivo indicado em PRIVACIDADE_ARQUIVO). Nunca dentro da pasta do projeto. */
+var arqFora = process.env.PRIVACIDADE_ARQUIVO;
+if (arqFora && path.resolve(arqFora).indexOf(path.resolve(RAIZ) + path.sep) === 0) {
+  confere(false, "privacidade: a lista de termos privados não pode ficar dentro do repositório");
+} else if (arqFora && fs.existsSync(arqFora)) termosPrivados = termosPrivados.concat(fs.readFileSync(arqFora, "utf8").split(/\r?\n/));
+var rastreados = arquivos();
+confere(!rastreados.some(function (f) { return /(^|\/)\.privacidade-local$/.test(f); }), "privacidade: .privacidade-local está no git");
+confere(!fs.existsSync(path.join(RAIZ, ".privacidade-local")), "privacidade: existe .privacidade-local dentro do repositório; mova para fora", true);
 termosPrivados = termosPrivados.map(function (s) { return s.trim(); }).filter(Boolean);
 var lidos = 0;
 arquivos().forEach(function (f) {
@@ -151,6 +158,59 @@ var proibidas = /(é seguro para|seguro para aplv|pode consumir|liberado para|se
 [html, fs.readFileSync(path.join(RAIZ, "dieta.js"), "utf8")].forEach(function (t, i) {
   confere(!proibidas.test(t), "texto que apresenta produto como seguro em " + (i ? "dieta.js" : "index.html"));
 });
+
+/* 9. P1: exceções que anulariam um aviso inteiro são ignoradas */
+var dx = D.dietaDoModelo("sem-leite", { pode: ["leite", "Queijo", "requeij*", "leite de coco", "pão"] });
+var vx = D.validarExcecoes(dx);
+confere(vx.ignoradas.length === 3, "exceções 'leite', 'Queijo' e 'requeij*' deveriam ser ignoradas (foram " + vx.ignoradas.length + ")");
+confere(vx.validas.indexOf("leite de coco") >= 0 && vx.validas.indexOf("pão") >= 0, "exceções específicas deveriam continuar valendo");
+["Leite integral", "Queijo prato", "Requeijão cremoso", "Leite em pó"].forEach(function (n) {
+  confere(D.avaliar(n, dx, { hoje: HOJE }).estado === "evitar", "exceção perigosa não pode apagar o aviso de " + n);
+});
+confere(D.avaliar("Leite de coco", dx, { hoje: HOJE }).estado === "insuficiente", "exceção 'leite de coco' deveria continuar funcionando");
+confere(dx.pode.length === 5, "exceções ignoradas ficam guardadas, não são apagadas");
+var dp = { ativa: true, nome: "Sem soja", modelo: null, evitar: ["soja*"], pode: ["soja", "molho de soja light"], cuidados: [] };
+confere(D.avaliar("Soja em grão", dp, { hoje: HOJE }).estado === "evitar", "dieta própria: exceção igual ao termo não pode anular o aviso");
+confere(D.avaliar("Molho de soja light", dp, { hoje: HOJE }).estado === "insuficiente", "dieta própria: exceção específica continua valendo");
+
+/* 10. P1: trocar o nome não apaga o aviso */
+var dr = dieta(), itR = { nome: "Leite condensado" };
+itR.ev = D.marcaEvitar(itR, dr);
+confere(itR.ev && itR.ev.t === "Leite", "item com 'evitar' deveria ganhar a marca");
+itR.nome = "Doce de arroz";
+var rR = D.avaliar(itR, dr, { hoje: HOJE });
+confere(rR.estado === "insuficiente" && rR.avisoAnterior && rR.avisoAnterior.termo === "Leite", "depois de trocar o nome o aviso anterior deveria aparecer");
+itR.ev = D.marcaEvitar(itR, dr);
+confere(!!itR.ev, "a marca não pode sumir só porque o nome mudou");
+itR.conf = D.conferir(itR, "", HOJE);
+confere(D.avaliar(itR, dr, { hoje: HOJE }).estado !== "conferido", "com nome trocado, conferência antiga não pode virar 'conferido' sem tirar a marca");
+delete itR.ev;
+confere(D.avaliar(itR, dr, { hoje: HOJE }).estado === "conferido", "depois de ler o rótulo, segue a regra normal");
+var itS = { nome: "Leite integral" }; itS.ev = D.marcaEvitar(itS, dr);
+var drx = dieta(); drx.ativa = true; drx.modelo = null;
+confere(D.marcaEvitar(itS, drx) === undefined, "se a dieta mudou e o mesmo nome deixou de ser 'evitar', a marca sai");
+confere(/delete it\[k\]; \}\); for\(var k in o\) it\[k\] = o\[k\]; if\(!it\.ev && evLocal\) it\.ev = evLocal;/.test(html), "sincronização deveria manter a marca local quando o outro celular não manda");
+confere(/marcas\[x\.id\]/.test(html), "restaurar backup deveria manter as marcas por id");
+confere(/function save\(\)\{\s*atualizarMarcas\(\);/.test(html), "save deveria atualizar as marcas");
+
+/* 11. P1: service worker só apaga caches do próprio app e ambiente */
+(function () {
+  var m = sw.match(/const meu = \(k\) => (.+?);\n/);
+  confere(!!m, "service worker deveria filtrar os caches pelo prefixo do app");
+  if (!m) return;
+  var corpo = m[1];
+  function filtro(producao) { return new Function("PRODUCAO", "return (k) => " + corpo)(producao); }
+  var chaves = ["despensa-v6", "despensa-v7", "despensa-hml-v6", "despensa-hml-v7", "outro-app-v1", "workbox-precache-v2", "despensa-fotos"];
+  var p = filtro(true), h = filtro(false);
+  var apagaP = chaves.filter(function (k) { return k !== "despensa-v7" && p(k); });
+  var apagaH = chaves.filter(function (k) { return k !== "despensa-hml-v7" && h(k); });
+  confere(JSON.stringify(apagaP) === '["despensa-v6"]', "produção deveria apagar só despensa-v6 (apagou " + JSON.stringify(apagaP) + ")");
+  confere(JSON.stringify(apagaH) === '["despensa-hml-v6"]', "homologação deveria apagar só despensa-hml-v6 (apagou " + JSON.stringify(apagaH) + ")");
+})();
+
+/* 12. P1: contraste e área de toque */
+confere(/--muted:#5F6C66;/.test(html) && /--warn:#A94E18;/.test(html), "cores do tema claro deveriam ter contraste 4,5:1 (muted #5F6C66, warn #A94E18)");
+confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height:44px/.test(html), "links pequenos deveriam ter 44px de área de toque");
 
 /* Relatório */
 function linha(r, nome) {
