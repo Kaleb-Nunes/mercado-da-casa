@@ -223,6 +223,19 @@ textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-h
 @keyframes rise{to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none} }
 
+.mk{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#F4F1E6;font-family:var(--font-display);font-weight:600;font-size:17px;flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+.mk.sm{width:22px;height:22px;font-size:12px;display:inline-grid;vertical-align:-6px;margin-right:6px}
+.chg{display:flex;justify-content:space-between;gap:12px;padding:10px 18px;border-top:1px solid var(--line);font-size:15px}
+.chg b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.up{color:var(--warn)}
+.down{color:var(--good)}
+.cesta{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.tips{list-style:none;margin:0;padding:6px 0}
+.tips li{display:flex;gap:12px;padding:12px 18px;border-top:1px solid var(--line);font-size:14px;line-height:1.45}
+.tips li:first-child{border-top:0}
+.tips .ti{font-size:20px;flex:none;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.cheap-line{font-size:12px;font-weight:700;color:var(--good);margin-top:4px}
+
 /* ---------- Barra inferior ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -429,6 +442,64 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         return '<button class="emo' + (e === current ? ' on' : '') + '" type="button" role="radio" aria-checked="' + (e === current ? 'true' : 'false') + '" data-act="set-icone" data-v="' + e + '">' + e + '</button>';
       }).join("") + '</div><p class="note-sm">A foto fica só neste celular e não entra no backup.</p></div>';
   }
+  var MK_COLORS = ["#0F3B2E","#B4531A","#2F5D8A","#7A3E6A","#8A6A1F","#3B6E4F","#9C2F3B","#36507A"];
+  function mkColor(name){ var n = norm(name), x = 0; for(var i = 0; i < n.length; i++){ x = (x * 31 + n.charCodeAt(i)) >>> 0; } return MK_COLORS[x % MK_COLORS.length]; }
+  function mkInitial(name){ var w = String(name || "?").trim().split(/\s+/)[0] || "?"; return w.charAt(0).toUpperCase(); }
+  function mkBadge(name, cls){ if(!name) return ""; return '<span class="mk ' + (cls || "") + '" style="background:' + mkColor(name) + '" aria-hidden="true">' + esc(mkInitial(name)) + '</span>'; }
+  function priceInMonth(it, key){ var r = null; (it.hist || []).forEach(function(x){ if(String(x.d).slice(0,7) === key) r = x; }); return r; }
+  function priceBefore(it, key){ var r = null; (it.hist || []).forEach(function(x){ if(String(x.d).slice(0,7) < key) r = x; }); return r; }
+  function monthChanges(key){
+    var out = [];
+    state.items.forEach(function(it){
+      var b = priceInMonth(it, key), a = priceBefore(it, key);
+      if(a && b && a.p > 0) out.push({it: it, a: a, b: b, pct: (b.p - a.p) / a.p * 100});
+    });
+    out.sort(function(x, y){ return y.pct - x.pct; });
+    return out;
+  }
+  function byMarket(it){
+    var m = {};
+    (it.hist || []).forEach(function(x){ if(x.m) m[x.m] = x; });
+    return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a, b){ return a.p - b.p; });
+  }
+  function cheaperElsewhere(it){
+    var c = cur(it); if(!c) return null;
+    var list = byMarket(it); if(list.length < 2) return null;
+    var best = list[0];
+    return (best.m !== c.m && best.p < c.p * 0.98) ? best : null;
+  }
+  function pctTxt(v){ return (Math.round(Math.abs(v) * 10) / 10).toLocaleString("pt-BR") + "%"; }
+  function mesNome(k){ return MESES[parseInt(k.slice(5),10)-1].toLowerCase(); }
+  function dicas(k){
+    var out = [], m = mesData(k, false), gasto = gastoTotal(m), orc = m.orc || 0, nowKey = monthKey(todayStr());
+    if(k === nowKey && orc > 0){
+      var day = new Date().getDate(), dim = daysInMonth(k);
+      var left = dim - day + 1, sobra = orc - gasto;
+      if(sobra < 0) out.push(["⚠️", "O mês já passou " + brl(-sobra) + " do orçamento. Até o dia " + dim + ", só o essencial da lista."]);
+      else if(gasto > 0 && sobra / left < 8) out.push(["⚠️", "Sobram " + brl(sobra) + " pra " + left + (left === 1 ? " dia" : " dias") + " (" + brl(sobra / left) + " por dia). Priorize proteína e o básico da lista."]);
+    }
+    var ch = monthChanges(k).filter(function(c){ return c.pct >= 8; });
+    if(ch.length){ var c0 = ch[0]; out.push(["📈", c0.it.nome + " subiu " + pctTxt(c0.pct) + " (de " + brl(c0.a.p) + " pra " + brl(c0.b.p) + "). Compare em outro mercado antes de levar."]); }
+    var pool = state.items.filter(function(i){ return i.lista; }), fromList = pool.length > 0; if(!fromList) pool = state.items;
+    var cnt = {}, eco = {};
+    pool.forEach(function(it){ var b = cheaperElsewhere(it), c = cur(it); if(b){ cnt[b.m] = (cnt[b.m] || 0) + 1; eco[b.m] = (eco[b.m] || 0) + (c.p - b.p) * (fromList ? (it.qtd || 1) : 1); } });
+    var bm = Object.keys(cnt).sort(function(a, b){ return eco[b] - eco[a]; })[0];
+    if(bm) out.push(["🏷️", cnt[bm] + (cnt[bm] === 1 ? " item" : " itens") + (fromList ? " da sua lista" : "") + (cnt[bm] === 1 ? " sai" : " saem") + " mais barato no " + bm + ": uns " + brl(eco[bm]) + " a menos pelos últimos preços."]);
+    var mercados = {}; state.items.forEach(function(it){ (it.hist || []).forEach(function(x){ if(x.m) mercados[norm(x.m)] = 1; }); });
+    if(out.length < 3 && Object.keys(mercados).length < 2) out.push(["💡", "Quando comprar em outro mercado, corrija os preços lá. Com dois mercados, o app mostra onde cada item sai mais barato."]);
+    if(out.length < 3 && !monthChanges(k).length) out.push(["📅", "Em " + mesNome(shiftMonth(k, 1)) + " o app começa a comparar sozinho e mostra o que subiu. Os preços de " + mesNome(k) + " já estão guardados."]);
+    return out.slice(0, 3);
+  }
+  function mudancasHtml(){
+    var k = monthKey(todayStr()), ch = monthChanges(k);
+    var titulo = '<h3 style="margin:0 0 6px;font-family:var(--font-display);font-weight:600;font-size:19px">O que subiu no mês</h3>';
+    if(!ch.length) return '<div class="card pad">' + titulo + '<p class="note-sm">A comparação aparece quando um item tiver preço de dois meses. Os preços de ' + mesNome(k) + ' já estão guardados, então em ' + mesNome(shiftMonth(k, 1)) + ' ela começa sozinha.</p></div>';
+    var avg = ch.reduce(function(s, c){ return s + c.pct; }, 0) / ch.length;
+    var ups = ch.filter(function(c){ return c.pct >= 0.5; }).slice(0, 4), downs = ch.filter(function(c){ return c.pct <= -0.5; }).reverse().slice(0, 3);
+    var row = function(c){ return '<div class="chg"><span>' + esc(c.it.nome) + '</span><b class="' + (c.pct > 0 ? 'up' : 'down') + '">' + (c.pct > 0 ? '↑ ' : '↓ ') + pctTxt(c.pct) + ' · ' + brl(c.b.p) + '</b></div>'; };
+    return '<div class="card"><div class="pad" style="padding-bottom:8px">' + titulo + '<div class="s-meta">Sua cesta, comparada ao preço anterior de ' + ch.length + (ch.length === 1 ? ' item' : ' itens') + '</div>' +
+      '<div class="cesta ' + (avg > 0 ? 'up' : 'down') + '">' + (avg > 0 ? '+' : '−') + pctTxt(avg) + '</div></div>' + ups.map(row).join("") + downs.map(row).join("") + '</div>';
+  }
   function defaultDieta(){
     return {ativa:true, nome:"Sem leite",
       evitar:["Contém leite","Pode conter leite","Leite","Leite em pó","Soro de leite","Whey","Caseína","Caseinato","Lactoalbumina","Lactoglobulina","Lactose","Sem lactose","Zero lactose","Gordura láctea","Composto lácteo","Queijo","Requeijão","Iogurte","Manteiga","Margarina com leite","Creme de leite","Nata","Coalho","Ghee","Petit suisse","Bebida láctea","Leite fermentado","Leite condensado","Doce de leite","Pudim","Chocolate ao leite","Molho branco","Leite de cabra"],
@@ -557,6 +628,9 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     h += '<div class="quick">' +
       '<button class="qbtn" type="button" data-act="novo-gasto"><span class="ic">' + IC.plus + '</span><span>Anotar gasto<small>leva 10 segundos</small></span></button>' +
       '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button></div>';
+    var dc = dicas(k);
+    if(dc.length) h += '<div class="section"><div class="s-head"><span class="s-title">Dicas pra economizar</span></div><div class="card"><ul class="tips">' +
+      dc.map(function(d){ return '<li><span class="ti" aria-hidden="true">' + d[0] + '</span><span>' + esc(d[1]) + '</span></li>'; }).join("") + '</ul></div></div>';
 
     var gs = m.gastos.slice().sort(function(a,b){ return a.data < b.data ? 1 : (a.data > b.data ? -1 : 0); });
     h += '<div class="section"><div class="s-head"><span class="s-title">Gastos de ' + esc(MESES[parseInt(k.slice(5),10)-1].toLowerCase()) + '</span><span class="s-meta">' + gs.length + (gs.length === 1 ? ' compra' : ' compras') + '</span></div><div class="card">';
@@ -564,7 +638,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       h += '<div class="empty"><b>Nenhum gasto ainda</b>Toque no + para anotar a primeira compra do mês.</div>';
     } else {
       h += '<ul class="rows">' + gs.map(function(g){
-        return '<li><button class="row" type="button" data-act="editar-gasto" data-id="' + esc(g.id) + '"><span class="avatar emoji" aria-hidden="true">' + (TIPO_IC[g.tipo] || '🛒') + '</span>' +
+        return '<li><button class="row" type="button" data-act="editar-gasto" data-id="' + esc(g.id) + '">' + (g.local ? mkBadge(g.local) : '<span class="avatar emoji" aria-hidden="true">' + (TIPO_IC[g.tipo] || '🛒') + '</span>') +
           '<span class="r-main"><span class="r-name">' + esc(g.local || g.tipo) + '</span><span class="r-meta">' + dShort(g.data) + ' · ' + esc(g.tipo) + (g.obs ? ' · ' + esc(g.obs) : '') + '</span></span>' +
           '<span class="r-val">' + brl(g.valor) + '</span></button></li>';
       }).join("") + '</ul>';
@@ -579,6 +653,13 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         '</div></div></div>';
     }
 
+    if(gs.length){
+      var bmk = {}; gs.forEach(function(g){ var l = g.local || g.tipo; bmk[l] = (bmk[l] || 0) + g.valor; });
+      var mks = Object.keys(bmk).sort(function(a, b){ return bmk[b] - bmk[a]; });
+      h += '<div class="section"><div class="s-head"><span class="s-title">Por mercado</span></div><div class="card"><ul class="rows">' +
+        mks.map(function(l){ return '<li><div class="row">' + mkBadge(l) + '<span class="r-main"><span class="r-name">' + esc(l) + '</span><span class="r-meta">' + Math.round(bmk[l] / gasto * 100) + '% do mês</span></span><span class="r-val">' + brl(bmk[l]) + '</span></div></li>'; }).join("") +
+        '</ul></div></div>';
+    }
     var past = Object.keys(state.meses).filter(function(x){ return x !== k && state.meses[x].gastos.length; }).sort().reverse().slice(0,6);
     if(past.length){
       h += '<div class="section"><div class="s-head"><span class="s-title">Outros meses</span></div><div class="card"><ul class="rows">' +
@@ -610,11 +691,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var v = document.getElementById("view-precos");
     if(!v.dataset.built){
       v.innerHTML = '<div class="head-row"><div><h2 class="title">Preços</h2><p class="sub">O último valor pago em cada item.</p></div>' +
-        '<button class="btn-sm" type="button" data-act="novo-item">' + IC.plus + 'Novo</button></div>' +
+        '<button class="btn-sm" type="button" data-act="novo-item">' + IC.plus + 'Novo</button></div>' + '<div id="precos-mudancas"></div>' +
         '<div class="searchbox"><label class="search" for="busca">' + IC.search + '<input id="busca" type="search" placeholder="Buscar item" autocomplete="off" enterkeyhint="search"></label>' +
         '<div class="chips" id="chips-cat"></div></div><div id="precos-lista" class="section"></div>';
       v.dataset.built = "1";
     }
+    document.getElementById("precos-mudancas").innerHTML = mudancasHtml();
     var cats = ["Todos"].concat(CATS.filter(function(c){ return state.items.some(function(i){ return i.cat === c; }); }));
     document.getElementById("chips-cat").innerHTML = cats.map(function(c){
       return '<button class="chip' + (ui.filtro === c ? ' on' : '') + '" type="button" data-act="filtro" data-v="' + esc(c) + '">' + esc(c) + '</button>';
@@ -640,7 +722,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
             var c0 = cur(it), vr = variation(it);
             var vtag = Math.abs(vr) >= 0.5 ? '<span class="var ' + (vr > 0 ? 'up' : 'down') + '">' + (vr > 0 ? '↑ ' : '↓ ') + Math.round(Math.abs(vr)) + '%</span>' : '';
             return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '">' + thumb(it) + '<span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + (dietFlag(it.nome) ? '<span class="flag">fora da dieta</span>' : '') + '</span>' +
-              '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + '</span></span>' +
+              '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + (cheaperElsewhere(it) ? '<span class="var down">+ barato no ' + esc(cheaperElsewhere(it).m) + '</span>' : '') + '</span></span>' +
               '<span class="r-val">' + (c0 ? brl(c0.p) : '—') + (isKg(it) && c0 ? '<small>por kg</small>' : '') + '</span></button></li>';
           }).join("") + '</ul></div></div>';
       });
@@ -672,6 +754,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' + thumb(it) +
         '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : ' · sem preço') + '</div>' +
         (dietFlag(it.nome) ? '<div class="flag-line">Fora da dieta: tem “' + esc(dietFlag(it.nome)) + '”</div>' : '') +
+        (cheaperElsewhere(it) ? '<div class="cheap-line">Mais barato no ' + esc(cheaperElsewhere(it).m) + ': ' + brl(cheaperElsewhere(it).p) + '</div>' : '') +
         '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
         '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="Corrigir preço de ' + esc(it.nome) + '">' + (c ? brl(lineTotal(it)) : '—') + '<small>corrigir</small></button>' +
         '</div></li>';
@@ -757,6 +840,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       (locs.length ? '<div class="chips">' + locs.map(function(l){ return '<button class="chip" type="button" data-act="set-mercado" data-v="' + esc(l) + '">' + esc(l) + '</button>'; }).join("") + '</div>' : '') + '</div>' +
       (it.nota ? '<p class="note-sm">' + esc(it.nota) + '</p>' : '') +
       picPicker(it.icon || autoIcon(it.nome, it.cat), !!fotos[it.id]) +
+      (byMarket(it).length > 1 ? '<div class="fl"><label>Por mercado (último preço)</label><ul class="hist">' + byMarket(it).map(function(x, i){ return '<li><span>' + mkBadge(x.m, 'sm') + esc(x.m) + ' · ' + dShort(x.d) + (i === 0 ? ' · <b class="down">mais barato</b>' : '') + '</span><b class="num">' + brl(x.p) + '</b></li>'; }).join("") + '</ul></div>' : '') +
       (hist.length ? '<div class="fl"><label>Últimos preços</label><ul class="hist">' + hist.map(function(h){ return '<li><span>' + dShort(h.d) + ' · ' + esc(h.m || '') + '</span><b class="num">' + brl(h.p) + '</b></li>'; }).join("") + '</ul></div>' : '') +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-preco">Salvar preço</button>' +
       '<button class="bigbtn ghost" type="button" data-act="toggle-lista">' + (it.lista ? 'Tirar da lista' : 'Pôr na lista') + '</button>' +
@@ -804,7 +888,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var all = state.items.filter(function(i){ return i.lista; });
     var total = (items.length ? items : all).reduce(function(s,i){ return s + lineTotal(i); }, 0);
     ui.sheet = {type:"finalizar"};
-    openSheet('<h3 class="sh-title" id="sh-title">Finalizar compra</h3><p class="sh-sub">Confira com o valor da nota. Os itens marcados saem da lista.</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">Finalizar compra</h3><p class="sh-sub">Confira com o valor da nota. Os itens marcados saem da lista e os preços deles ficam guardados nesse mercado.</p>' +
       '<div class="form"><div class="money"><span>R$</span><input id="f-valor" inputmode="decimal" autocomplete="off" value="' + fmt(total) + '" aria-label="Valor da nota"></div>' +
       '<div class="fl"><label for="f-local">Onde</label><input class="inp" id="f-local" value="' + esc(lastLocal()) + '" autocomplete="off"></div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-compra">Anotar no mês</button><button class="quiet" type="button" data-act="fechar">Voltar</button></div></div>', "f-valor");
@@ -813,7 +897,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var v = parseMoney(document.getElementById("f-valor").value);
     if(v === null || v <= 0){ toast("Digite o valor da nota"); return; }
     var data = todayStr(), m = mesData(monthKey(data), true);
-    m.gastos.push({id: uid(), data: data, local: document.getElementById("f-local").value.trim(), tipo: "Mercado", valor: v, obs: "Lista"});
+    var loc = document.getElementById("f-local").value.trim();
+    m.gastos.push({id: uid(), data: data, local: loc, tipo: "Mercado", valor: v, obs: "Lista"});
+    state.items.forEach(function(i){
+      if(i.lista && i.ok){ var c = cur(i); if(c && loc && !(c.d === data && c.m === loc)){ i.hist.push({p: c.p, m: loc, d: data}); if(i.hist.length > 24) i.hist = i.hist.slice(-24); } }
+    });
     state.items.forEach(function(i){ if(i.lista && i.ok){ i.lista = false; i.ok = false; i.qtd = 1; } });
     state.mes = monthKey(data);
     save(); closeSheet(); show("inicio"); toast("Compra anotada no mês");

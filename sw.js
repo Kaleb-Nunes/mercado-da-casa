@@ -1,5 +1,5 @@
 /* Despensa: funciona sem internet no mercado. Rede primeiro, cópia guardada se cair. */
-const CACHE = "despensa-v2";
+const CACHE = "despensa-v3";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
