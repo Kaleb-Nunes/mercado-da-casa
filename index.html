@@ -372,7 +372,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     });
     var meses = {};
     meses["2026-11"] = {orc:0, gastos:[{id:"g0", data:BASE_DATE, local:BASE_LOCAL, tipo:"Mercado", valor:0, obs:"Exemplo"}]};
-    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true, dieta:defaultDieta()};
+    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true, dieta:defaultDieta(), importados:["CHAVE-REMOVIDA"]};
   }
 
   /* ---------- Utilidades ---------- */
@@ -569,6 +569,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
     shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/></svg>',
     basket:'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 26h48l-5 26a4 4 0 0 1-4 3H17a4 4 0 0 1-4-3Z"/><path d="m22 26 8-14M42 26l-8-14"/><path d="M24 36v10M32 36v10M40 36v10"/></svg>',
+    receipt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>',
     edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
     wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>'
   };
@@ -627,7 +628,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<div class="h-foot"><span class="h-tip">' + esc(tip) + '</span><button class="h-edit" type="button" data-act="orcamento">Alterar orçamento</button></div></div>';
     h += '<div class="quick">' +
       '<button class="qbtn" type="button" data-act="novo-gasto"><span class="ic">' + IC.plus + '</span><span>Anotar gasto<small>leva 10 segundos</small></span></button>' +
-      '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button></div>';
+      '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button>' +
+      '<button class="qbtn" type="button" data-act="colar-import" style="grid-column:1/-1"><span class="ic">' + IC.receipt + '</span><span>Importar compra do cupom<small>cole o código que chegou no WhatsApp</small></span></button></div>';
     var dc = dicas(k);
     if(dc.length) h += '<div class="section"><div class="s-head"><span class="s-title">Dicas pra economizar</span></div><div class="card"><ul class="tips">' +
       dc.map(function(d){ return '<li><span class="ti" aria-hidden="true">' + d[0] + '</span><span>' + esc(d[1]) + '</span></li>'; }).join("") + '</ul></div></div>';
@@ -787,6 +789,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function closeSheet(){
     sheet.classList.remove("on"); scrim.classList.remove("on"); ui.sheet = null; ui.armed = null;
+    setTimeout(function(){ if(!sheet.classList.contains("on")) sheet.innerHTML = ""; }, 350);
     document.body.style.overflow = "";
     if(lastFocus && lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
   }
@@ -809,7 +812,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<div class="fl"><label for="f-data">Data</label><input class="inp" id="f-data" type="date" value="' + esc(g.data) + '"></div>' +
       '<div class="fl"><label for="f-obs">Observação (opcional)</label><input class="inp" id="f-obs" value="' + esc(g.obs || '') + '" autocomplete="off" placeholder="Ex.: compra da semana"></div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-gasto">' + (editing ? 'Salvar alterações' : 'Anotar') + '</button>' +
-      (editing ? '<button class="quiet" type="button" data-act="apagar-gasto" id="btn-apagar">Apagar este gasto</button>' : '<button class="quiet" type="button" data-act="fechar">Cancelar</button>') +
+      (editing ? '<button class="quiet" type="button" data-act="apagar-gasto" id="btn-apagar">Apagar este gasto</button>' : '<button class="quiet" type="button" data-act="colar-import">Tenho o código de um cupom</button>') +
       '</div></div>', "f-valor");
   }
   function salvarGasto(){
@@ -944,15 +947,72 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     sheet.querySelectorAll(".emo").forEach(function(b){ var on = b.dataset.v === icon; b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
   }
 
-  function decodeCarta(s){
+  function decodePayload(s){
     try{
+      s = String(s).replace(/\s+/g, "");
       s = s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length % 4) s += "=";
       var bin = atob(s), bytes = new Uint8Array(bin.length);
       for(var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      var o = JSON.parse(new TextDecoder().decode(bytes));
-      if(o && o.n && o.m) return o;
+      return JSON.parse(new TextDecoder().decode(bytes));
     }catch(e){}
     return null;
+  }
+  function decodeCarta(s){ var o = decodePayload(s); return (o && o.n && o.m) ? o : null; }
+  function parseImport(text){
+    var s = String(text || "").trim(), k = s.indexOf("importar=");
+    if(k >= 0) s = s.slice(k + 9);
+    var mt = s.match(/[A-Za-z0-9_-]{40,}/); if(!mt) return null;
+    var o = decodePayload(mt[0]);
+    if(!o || o.v !== 1 || !o.m || !/^\d{4}-\d{2}-\d{2}$/.test(o.d || "") || typeof o.t !== "number" || !Array.isArray(o.i)) return null;
+    return o;
+  }
+  function findByName(nome){
+    var n = norm(nome).trim();
+    for(var i = 0; i < state.items.length; i++){ if(norm(state.items[i].nome).trim() === n) return state.items[i]; }
+    return null;
+  }
+  function sheetColar(){
+    ui.sheet = {type:"colar"};
+    openSheet('<h3 class="sh-title" id="sh-title">Importar compra</h3><p class="sh-sub">Cole aqui a mensagem com o código do cupom. Pode colar a mensagem inteira.</p>' +
+      '<div class="form"><textarea class="inp" id="f-import" placeholder="Cole aqui"></textarea>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="ler-import">Ler código</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-import");
+  }
+  function sheetImport(o){
+    ui.sheet = {type:"import", data:o};
+    var ja = (state.importados || []).indexOf(o.id) >= 0;
+    var rows = o.i.map(function(r){
+      var it = (r[5] && findItem(r[5])) || findByName(r[0]);
+      var qtxt = (r[2] === "kg" ? String(r[4]).replace(".", ",") + " kg" : (r[4] || 1) + " ×");
+      return '<li><span>' + esc(r[0]) + ' · ' + qtxt + (it ? '' : ' · <b class="down">novo</b>') + '</span><b class="num">' + brl(+r[3]) + (r[2] === "kg" ? '/kg' : '') + '</b></li>';
+    }).join("");
+    openSheet('<div class="pic-row">' + mkBadge(o.m) + '<div><h3 class="sh-title" id="sh-title">' + esc(o.m) + '</h3><p class="sh-sub">' + dLong(o.d) + ' · ' + o.i.length + ' itens</p></div></div>' +
+      '<div class="form"><div class="money"><span>R$</span><input id="f-imp-total" inputmode="decimal" value="' + fmt(o.t) + '" aria-label="Total da nota" readonly></div>' +
+      (ja ? '<div class="warnbox">Essa compra já foi importada. Importar de novo contaria o gasto duas vezes.</div>' : '') +
+      '<div class="fl"><label>Itens e preço unitário</label><ul class="hist">' + rows + '</ul></div>' +
+      '<p class="note-sm">Ao importar: o total entra nos gastos de ' + mesNome(monthKey(o.d)) + ', os preços ficam guardados no ' + esc(o.m) + ' e os itens comprados saem da lista.</p>' +
+      '<div class="sh-actions">' + (ja ? '' : '<button class="bigbtn" type="button" data-act="confirmar-import">Importar compra</button>') + '<button class="quiet" type="button" data-act="fechar">' + (ja ? 'Fechar' : 'Cancelar') + '</button></div></div>');
+  }
+  function confirmImport(){
+    var o = ui.sheet && ui.sheet.data; if(!o) return;
+    state.importados = state.importados || [];
+    if(o.id && state.importados.indexOf(o.id) >= 0){ toast("Essa compra já foi importada"); return; }
+    mesData(monthKey(o.d), true).gastos.push({id: uid(), data: o.d, local: o.m, tipo: o.tp || "Mercado", valor: o.t, obs: "Cupom importado"});
+    var novos = 0, atual = 0;
+    o.i.forEach(function(r){
+      var p = +r[3]; if(!(p > 0)) return;
+      var it = (r[5] && findItem(r[5])) || findByName(r[0]);
+      if(!it){ it = {id: uid(), cat: CATS.indexOf(r[1]) >= 0 ? r[1] : "Outros", nome: r[0], por: r[2] || "unidade", hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false, icon: ""}; state.items.push(it); novos++; }
+      else atual++;
+      var same = null; it.hist.forEach(function(x){ if(x.d === o.d && norm(x.m) === norm(o.m)) same = x; });
+      if(same) same.p = p; else it.hist.push({p: p, m: o.m, d: o.d});
+      it.hist.sort(function(a, b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
+      if(it.hist.length > 24) it.hist = it.hist.slice(-24);
+      if(it.lista){ it.lista = false; it.ok = false; it.qtd = 1; }
+    });
+    if(o.id) state.importados.push(o.id);
+    state.mes = monthKey(o.d);
+    save(); closeSheet(); show("inicio");
+    toast(atual + (atual === 1 ? " preço atualizado" : " preços atualizados") + (novos ? ", " + novos + (novos === 1 ? " item novo" : " itens novos") : ""));
   }
   function showWelcome(){
     var c = state.carta; if(!c) return;
@@ -1070,6 +1130,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "fechar-dica": state.dica = false; save(); renderInicio(); break;
       case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
       case "ver-carta": showWelcome(); break;
+      case "colar-import": sheetColar(); break;
+      case "ler-import":
+        var oi = parseImport(document.getElementById("f-import").value);
+        if(!oi){ toast("Código inválido. Copie a mensagem inteira"); break; }
+        sheetImport(oi); break;
+      case "confirmar-import": confirmImport(); break;
       case "fechar-carta":
         state.cartaVista = true; save();
         var wl = document.getElementById("welcome"); wl.hidden = true; wl.innerHTML = ""; document.body.style.overflow = "";
@@ -1193,7 +1259,24 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     e.target.value = "";
   });
   window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); installEvt = e; if(state && ui.view === "inicio") renderInicio(); });
-  window.addEventListener("hashchange", function(){ show((location.hash || "").replace("#",""), true); });
+  window.addEventListener("hashchange", function(){
+    var hs = location.hash || "";
+    if(hs.indexOf("#importar=") === 0){
+      var oi = parseImport(hs);
+      try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
+      show("inicio", true);
+      if(oi) setTimeout(function(){ sheetImport(oi); }, 200); else toast("Código inválido");
+      return;
+    }
+    if(hs.indexOf("#para=") === 0){
+      var c = decodeCarta(hs.slice(6));
+      try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
+      if(c){ state.carta = c; state.cartaVista = false; save(); showWelcome(); }
+      show("inicio", true);
+      return;
+    }
+    show(hs.replace("#",""), true);
+  });
 
   /* ---------- Início ---------- */
   function start(data){
@@ -1202,7 +1285,13 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
     if(!state.dieta) state.dieta = defaultDieta();
-    var hh = location.hash || "";
+    if(!state.importados) state.importados = [];
+    var hh = location.hash || "", pendingImport = null;
+    if(hh.indexOf("#importar=") === 0){
+      pendingImport = parseImport(hh);
+      try{ history.replaceState(null, "", location.pathname + location.search + "#inicio"); }catch(e){}
+      hh = "#inicio";
+    }
     if(hh.indexOf("#para=") === 0){
       var carta = decodeCarta(hh.slice(6));
       if(carta){ state.carta = carta; state.cartaVista = false; }
@@ -1212,6 +1301,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     show(VIEWS.indexOf(h) >= 0 ? h : "inicio", true);
     save();
     if(state.carta && !state.cartaVista) showWelcome();
+    else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
   }
   try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot){ window.claude.hot.snapshot(function(){ return JSON.parse(JSON.stringify(state)); }); } }catch(e){}
   if(window.claude && window.claude.hot && window.claude.hot.ready){ window.claude.hot.ready(start); }
