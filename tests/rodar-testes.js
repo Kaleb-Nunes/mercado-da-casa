@@ -118,7 +118,12 @@ if (arqFora && path.resolve(arqFora).indexOf(path.resolve(RAIZ) + path.sep) === 
 var rastreados = arquivos();
 confere(!rastreados.some(function (f) { return /(^|\/)\.privacidade-local$/.test(f); }), "privacidade: .privacidade-local está no git");
 confere(!fs.existsSync(path.join(RAIZ, ".privacidade-local")), "privacidade: existe .privacidade-local dentro do repositório; mova para fora", true);
-termosPrivados = termosPrivados.map(function (s) { return s.trim(); }).filter(Boolean);
+/* Aceita linhas no formato do git-filter-repo (literal:X==>Y, regex:X==>Y) ou termo puro. */
+var regexPrivadas = [];
+termosPrivados = termosPrivados.map(function (s) { return s.replace(/==>.*$/, "").trim(); }).filter(Boolean).filter(function (s) {
+  if (/^regex:/.test(s)) { regexPrivadas.push(new RegExp(s.slice(6), "i")); return false; }
+  return true;
+}).map(function (s) { return s.replace(/^literal:/, ""); });
 var lidos = 0;
 arquivos().forEach(function (f) {
   if (/^vendor\//.test(f) || /\.(png|jpg|jpeg|gif|ico|webp)$/i.test(f)) return;
@@ -131,6 +136,9 @@ arquivos().forEach(function (f) {
   termosPrivados.forEach(function (t, i) {
     confere(baixo.indexOf(D.normalizar(t)) < 0, "privacidade: " + f + " tem o termo privado nº " + (i + 1));
   });
+  regexPrivadas.forEach(function (r, i) {
+    confere(!r.test(txt), "privacidade: " + f + " bate com o padrão privado nº " + (i + 1));
+  });
 });
 
 /* 7. Firebase desligado e homologação separada */
@@ -140,7 +148,7 @@ confere(/var FB_CONFIG_HML = null;/.test(html), "Firebase: FB_CONFIG_HML deveria
 var chamadas = html.match(/localStorage\.(getItem|setItem|removeItem)\(\s*([A-Za-z_]+)/g) || [];
 chamadas.forEach(function (c) {
   var v = c.replace(/.*\(\s*/, "");
-  confere(["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY"].indexOf(v) >= 0, "homologação: chave de armazenamento fora do padrão (" + v + ")");
+  confere(["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY", "BK_ANTES", "BK_ULTIMO"].indexOf(v) >= 0, "homologação: chave de armazenamento fora do padrão (" + v + ")");
 });
 ["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY"].forEach(function (k) {
   confere(new RegExp("\\b" + k + " = PFX \\+ \"").test(html), "homologação: " + k + " deveria usar o prefixo de ambiente");
@@ -151,6 +159,8 @@ confere(/"\.\/dieta\.js"/.test(sw), "service worker deveria guardar dieta.js par
 
 confere(aval("Requeijão cremoso").termo === "Requeijão", "o alerta deveria mostrar a palavra como foi escrita (Requeijão)");
 confere(aval("Pão de queijo congelado").termo === "queijo" && aval("LEITE-EM-PO").termo === "LEITE", "o alerta deveria mostrar o trecho original do nome");
+
+confere(/var BK_ANTES = PFX \+ "[a-z-]+", BK_ULTIMO = PFX \+ "[a-z-]+"/.test(html), "chaves do backup deveriam usar o prefixo da homologação");
 
 /* 8. Textos: deixar claro que o app só olha o nome e nunca chamar produto de seguro */
 confere(/não lê os ingredientes/.test(D.AVISO_FIXO), "o aviso fixo deveria dizer que o app não lê os ingredientes");
@@ -212,6 +222,19 @@ confere(/function save\(\)\{\s*atualizarMarcas\(\);/.test(html), "save deveria a
 confere(/--muted:#5F6C66;/.test(html) && /--warn:#A94E18;/.test(html), "cores do tema claro deveriam ter contraste 4,5:1 (muted #5F6C66, warn #A94E18)");
 confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height:44px/.test(html), "links pequenos deveriam ter 44px de área de toque");
 
+/* 13. Backup: arquivo completo, prévia antes de trocar, cópia para desfazer, sem WhatsApp */
+(function () {
+  var ini = html.indexOf("function sheetBackup()"), fim = html.indexOf("function novoPreview()");
+  var bk = html.slice(ini, fim);
+  confere(ini > 0 && fim > ini, "bloco de backup encontrado");
+  confere(!/wa\.me/.test(bk), "backup não pode oferecer envio pelo WhatsApp");
+  confere(/formato: "elida-backup"/.test(html) && /fotos: fotos/.test(html), "arquivo de backup deveria levar estado e fotos");
+  confere(/function previaRestaurar/.test(html) && /data-act="aplicar-restaurar"/.test(html), "restauração deveria mostrar o conteúdo antes de trocar");
+  confere(/BK_ANTES/.test(html) && /function desfazerRestauracao/.test(html), "restauração deveria guardar cópia para desfazer");
+  confere(/não mande em grupo/.test(bk), "tela de backup deveria avisar que o arquivo não tem senha");
+  confere(/case "hml-dados":\s*if\(!HML\) break;/.test(html), "dados de teste só podem existir na homologação");
+})();
+
 /* Relatório */
 function linha(r, nome) {
   return nome + ": " + r.total + " casos (A " + r.A + ", S " + r.S + ", I " + r.I + ") · falsos negativos " + r.fn.length +
@@ -221,7 +244,7 @@ function linha(r, nome) {
 console.log("Referência: " + casos.status + ".");
 console.log(linha(rAud, "Bateria da auditoria"));
 console.log(linha(rCtl, "Conjunto de controle"));
-console.log("Arquivos verificados para privacidade: " + lidos + (termosPrivados.length ? " · termos privados: " + termosPrivados.length : " · sem lista de termos privados (defina PRIVACIDADE_TERMOS ou .privacidade-local)"));
+console.log("Arquivos verificados para privacidade: " + lidos + (termosPrivados.length ? " · termos privados: " + termosPrivados.length + " · padrões: " + regexPrivadas.length : " · sem lista de termos privados (defina PRIVACIDADE_TERMOS ou .privacidade-local)"));
 console.log("Verificações que passaram: " + ok);
 avisos.forEach(function (a) { console.log("AVISO  " + a); });
 falhas.forEach(function (f) { console.log("FALHA  " + f); });

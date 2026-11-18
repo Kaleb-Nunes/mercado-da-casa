@@ -206,6 +206,7 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;f
 .g-title{font-size:13px;font-weight:700;color:var(--muted);margin:12px 0 6px}
 .hml-bar{background:#7A2E0E;color:#FFF4EC;font-size:13px;font-weight:700;text-align:center;padding:6px 12px}
 .hml-bar[hidden]{display:none}
+.hml-btn{background:none;border:0;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 4px}
 .warnbox{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
 .warnbox[hidden]{display:none}
 textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-height:1.4}
@@ -368,7 +369,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   <div class="top-note" id="top-note"></div>
 </div>
 
-<div class="hml-bar" id="hml-bar" role="status" hidden>Homologação · dados de teste, separados do app da família</div>
+<div class="hml-bar" id="hml-bar" role="status" hidden>Homologação · dados de teste, separados do app da família · <button type="button" class="hml-btn" data-act="hml-dados">Carregar dados de teste</button></div>
 
 <main>
   <section class="view" id="view-inicio" aria-label="Início"></section>
@@ -444,6 +445,23 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     ["Bebidas","Energético Baly","lata 473 ml",6.79,"",0]
   ];
 
+  /* Só na homologação: cenário fictício para testar no celular (nenhum dado da família). */
+  function dadosDeTeste(){
+    var s = seedState(), hoje = todayStr(), k = monthKey(hoje);
+    var add = function(id, cat, nome, por, preco, lista){ s.items.push({id:id, cat:cat, nome:nome, por:por, hist: preco ? [{p:preco, m:"Mercado Teste", d:hoje}] : [], nota:"", basico:false, lista:!!lista, qtd:1, ok:false}); };
+    add("t1", "Mercearia", "Leite condensado (teste)", "lata 395 g", 6.49, true);
+    add("t2", "Mercearia", "Qjo mussarela fatiado (teste)", "pacote 150 g", 9.9, true);
+    add("t3", "Mercearia", "Biscoito recheado (teste)", "pacote 130 g", 3.79, true);
+    add("t4", "Bebê", "Fórmula infantil (teste)", "lata 800 g", 89.9, true);
+    add("t5", "Limpeza e casa", "Detergente (teste)", "frasco 500 ml", 2.49, true);
+    add("t6", "Mercearia", "Bebida de arroz (teste)", "caixa 1 L", 12.9, false);
+    s.dieta = DietaMotor.dietaDoModelo("sem-leite");
+    s.meses[k] = {orc: 1500, gastos: [
+      {id:"g1", valor: 214.37, local:"Mercado Teste", tipo:"Mercado", data: hoje, obs:"compra de teste"},
+      {id:"g2", valor: 38.5, local:"Feira Teste", tipo:"Feira", data: hoje, obs:""}]};
+    s.mes = k; s.dica = false;
+    return s;
+  }
   function seedState(){
     var items = SEED.map(function(r,i){
       return {id:"s"+i, cat:r[0], nome:r[1], por:r[2], hist:[{p:r[3], m:BASE_LOCAL, d:BASE_DATE}], nota:r[4], basico:!!r[5], lista:false, qtd:1, ok:false};
@@ -873,7 +891,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         '</ul></div></div>';
     }
 
-    h += '<div class="card pad"><div class="safe">' + IC.shield + '<div><p><b>Seus dados ficam só neste celular.</b> Uma vez por mês, faça um backup e mande no seu WhatsApp. Se trocar de celular ou limpar o navegador, é só restaurar.</p>' +
+    h += '<div class="card pad"><div class="safe">' + IC.shield + '<div><p><b>Seus dados ficam só neste celular.</b> Uma vez por mês, faça um backup e guarde o arquivo no seu Drive ou nos Arquivos do celular. Se trocar de celular ou limpar o navegador, é só restaurar.</p>' +
       '<div class="links"><button class="link" type="button" data-act="backup">Fazer backup</button><button class="link" type="button" data-act="restaurar">Restaurar</button>' +
       '<a class="link" id="wa-resumo" href="#" target="_blank" rel="noopener">Enviar resumo do mês</a>' +
       (state.carta ? '<button class="link" type="button" data-act="ver-carta">Ler a mensagem</button>' : '') + '</div></div></div></div>';
@@ -1154,20 +1172,84 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-orc">Salvar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-orc");
   }
 
+  /* ---------- Backup ----------
+     Arquivo .json com tudo o que o app guarda: itens, preços, lista, gastos, orçamentos,
+     dieta, ofertas anotadas e fotos dos produtos. Não vai criptografado: guarde em lugar
+     privado (Drive, Arquivos) e não mande em grupo. O texto copiado não leva as fotos. */
+  var BK_ANTES = PFX + "elida-antes-restaurar", BK_ULTIMO = PFX + "elida-ultimo-backup";
+  function resumoEstado(st, ft){
+    var g = 0, ms = 0; Object.keys(st.meses || {}).forEach(function(k){ ms++; g += ((st.meses[k] || {}).gastos || []).length; });
+    var nf = ft ? Object.keys(ft).length : 0;
+    return (st.items || []).length + " itens, " + g + " gastos em " + ms + (ms === 1 ? " mês" : " meses") + (ft ? ", " + nf + (nf === 1 ? " foto" : " fotos") : ", sem fotos");
+  }
+  function pacoteBackup(){ return {formato: "elida-backup", versao: 2, criado: new Date().toISOString(), estado: state, fotos: fotos}; }
+  function lerBackup(txt){
+    var pos = String(txt || "").indexOf("{"); if(pos < 0) throw new Error("vazio");
+    var o = JSON.parse(String(txt).slice(pos)), st, ft = null, criado = "";
+    if(o && o.formato === "elida-backup"){ st = o.estado; if(o.fotos && typeof o.fotos === "object") ft = o.fotos; criado = String(o.criado || "").slice(0, 10); }
+    else st = o;
+    if(!valid(st)) throw new Error("invalido");
+    return {estado: st, fotos: ft, criado: criado};
+  }
   function sheetBackup(){
     ui.sheet = {type:"backup"};
-    var data = JSON.stringify(state);
-    openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Guarde este texto no seu WhatsApp. Ele traz tudo de volta se precisar. As fotos dos produtos não entram.</p>' +
-      '<div class="form"><textarea class="inp" id="f-backup" readonly>' + esc(data) + '</textarea>' +
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="copiar-backup">Copiar backup</button>' +
-      '<a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent("Backup Elida " + dShort(todayStr()) + "\n" + data) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar no WhatsApp</a>' +
-      '<button class="quiet" type="button" data-act="fechar">Fechar</button></div></div>');
+    var ult = ""; try{ ult = localStorage.getItem(BK_ULTIMO) || ""; }catch(e){}
+    openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Salva um arquivo com ' + esc(resumoEstado(state, fotos)) + '. Guarde no seu Drive ou nos Arquivos do celular. Ele não tem senha: não mande em grupo.' + (ult ? ' Último backup: ' + esc(dShort(ult)) + '.' : '') + '</p>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-backup">Salvar arquivo de backup</button>' +
+      '<button class="quiet" type="button" data-act="copiar-backup">Copiar como texto (sem fotos)</button>' +
+      '<button class="quiet" type="button" data-act="fechar">Fechar</button></div>' +
+      '<textarea class="inp" id="f-backup" readonly hidden aria-hidden="true"></textarea>');
+  }
+  function salvarArquivoBackup(){
+    var nome = "elida-backup-" + todayStr() + ".json", txt = JSON.stringify(pacoteBackup());
+    var feito = function(){ try{ localStorage.setItem(BK_ULTIMO, todayStr()); }catch(e){} toast("Backup pronto. Confira se o arquivo foi salvo"); };
+    var blob = new Blob([txt], {type: "application/json"});
+    try{
+      var f = new File([blob], nome, {type: "application/json"});
+      if(navigator.canShare && navigator.canShare({files: [f]})){ navigator.share({files: [f]}).then(feito, function(){}); return; }
+    }catch(e){}
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500); feito();
   }
   function sheetRestaurar(){
     ui.sheet = {type:"restaurar"};
-    openSheet('<h3 class="sh-title" id="sh-title">Restaurar backup</h3><p class="sh-sub">Cole o texto do backup. Isso substitui o que está no app agora.</p>' +
-      '<div class="form"><textarea class="inp" id="f-restaurar" placeholder="Cole aqui o texto que começa com {&quot;v&quot;:1"></textarea>' +
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Restaurar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-restaurar");
+    var antes = null; try{ antes = JSON.parse(localStorage.getItem(BK_ANTES) || "null"); }catch(e){}
+    openSheet('<h3 class="sh-title" id="sh-title">Restaurar backup</h3><p class="sh-sub">Escolha o arquivo do backup ou cole o texto. Antes de trocar, o app mostra o que tem no backup.</p>' +
+      '<div class="form"><label class="bigbtn" for="f-arquivo" style="cursor:pointer">Escolher arquivo</label><input type="file" id="f-arquivo" accept=".json,application/json,text/plain" style="position:absolute;width:1px;height:1px;opacity:0">' +
+      '<div class="fl"><label for="f-restaurar">Ou cole o texto do backup</label><textarea class="inp" id="f-restaurar"></textarea></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Ver o que tem no backup</button>' +
+      (antes && antes.estado ? '<button class="quiet" type="button" data-act="desfazer-restaurar">Desfazer a última restauração (' + esc(dShort(antes.em || "")) + ')</button>' : '') +
+      '<button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>');
+  }
+  function previaRestaurar(txt){
+    var b;
+    try{ b = lerBackup(txt); }catch(err){ toast("Esse arquivo ou texto não é um backup válido"); return; }
+    ui.sheet = {type:"restaurar-previa", backup: b};
+    openSheet('<h3 class="sh-title" id="sh-title">Restaurar este backup?</h3>' +
+      '<div class="warnbox" role="alert"><b>Backup' + (b.criado ? ' de ' + esc(dShort(b.criado)) : '') + ':</b> ' + esc(resumoEstado(b.estado, b.fotos)) + '.<br>' +
+      '<b>Agora no app:</b> ' + esc(resumoEstado(state, fotos)) + '.<br>O que está no app será trocado pelo backup. O app guarda uma cópia do que está aqui agora para você poder desfazer.</div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="aplicar-restaurar">Restaurar este backup</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div>');
+  }
+  function aplicarRestauracao(b){
+    var copia = {em: todayStr(), estado: state, fotos: fotos}, guardou = false;
+    try{ localStorage.setItem(BK_ANTES, JSON.stringify(copia)); guardou = true; }catch(e){
+      try{ localStorage.setItem(BK_ANTES, JSON.stringify({em: copia.em, estado: state})); guardou = true; }catch(e2){}
+    }
+    var s = b.estado;
+    s.dieta = DietaMotor.migrar(s.dieta);
+    var marcas = {}; (state.items || []).forEach(function(x){ if(x.ev) marcas[x.id] = x.ev; });
+    s.items.forEach(function(x){ if(!x.ev && marcas[x.id]) x.ev = marcas[x.id]; });
+    state = s;
+    if(b.fotos){ fotos = b.fotos; saveFotos(); }
+    save(); closeSheet(); show("inicio");
+    toast(guardou ? "Backup restaurado" : "Backup restaurado. Sem espaço para guardar a cópia de antes");
+  }
+  function desfazerRestauracao(){
+    var c = null; try{ c = JSON.parse(localStorage.getItem(BK_ANTES) || "null"); }catch(e){}
+    if(!c || !valid(c.estado)){ toast("Não há restauração para desfazer"); return; }
+    state = c.estado; if(c.fotos){ fotos = c.fotos; saveFotos(); }
+    save(); try{ localStorage.removeItem(BK_ANTES); }catch(e){}
+    closeSheet(); show("inicio"); toast("Voltou ao que estava antes da restauração");
   }
 
   function novoPreview(){
@@ -1992,19 +2074,16 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         state.items.forEach(function(x){ x.lista = false; x.ok = false; x.qtd = 1; delete x.oferta; });
         ui.armed = null; save(); renderLista(); toast("Lista limpa"); break;
       case "backup": sheetBackup(); break;
-      case "copiar-backup": copy(JSON.stringify(state), document.getElementById("f-backup")); break;
+      case "hml-dados":
+        if(!HML) break;
+        if(ui.armed !== "hml-dados"){ ui.armed = "hml-dados"; toast("Toque de novo para trocar tudo pelos dados de teste"); break; }
+        ui.armed = null; state = dadosDeTeste(); fotos = {}; saveFotos(); save(); show("inicio"); toast("Dados de teste carregados"); break;
+      case "salvar-backup": salvarArquivoBackup(); break;
+      case "copiar-backup": var fb = document.getElementById("f-backup"); if(fb){ fb.value = JSON.stringify(state); } copy(JSON.stringify(state), fb); break;
+      case "aplicar-restaurar": if(ui.sheet && ui.sheet.backup) aplicarRestauracao(ui.sheet.backup); break;
+      case "desfazer-restaurar": desfazerRestauracao(); break;
       case "restaurar": sheetRestaurar(); break;
-      case "confirmar-restaurar":
-        try{
-          var txt = document.getElementById("f-restaurar").value;
-          var pos = txt.indexOf("{"); var s = JSON.parse(txt.slice(pos));
-          if(!valid(s)) throw new Error("x");
-          s.dieta = DietaMotor.migrar(s.dieta);
-          var marcas = {}; (state.items || []).forEach(function(x){ if(x.ev) marcas[x.id] = x.ev; });
-          s.items.forEach(function(x){ if(!x.ev && marcas[x.id]) x.ev = marcas[x.id]; });
-          state = s; save(); closeSheet(); show("inicio"); toast("Backup restaurado");
-        }catch(err){ toast("Esse texto não é um backup válido"); }
-        break;
+      case "confirmar-restaurar": previaRestaurar((document.getElementById("f-restaurar") || {}).value || ""); break;
     }
   });
   document.addEventListener("input", function(e){
@@ -2024,6 +2103,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     }
   });
   document.addEventListener("change", function(e){
+    if(e.target.id === "f-arquivo" && e.target.files && e.target.files[0]){
+      var rd = new FileReader(); rd.onload = function(){ previaRestaurar(String(rd.result || "")); };
+      rd.onerror = function(){ toast("Não deu para ler o arquivo"); }; rd.readAsText(e.target.files[0]); return;
+    }
     if(e.target.id !== "foto-input" || !e.target.files || !e.target.files[0] || !ui.sheet) return;
     var file = e.target.files[0], tipo = ui.sheet.type, id = ui.sheet.id;
     fileToThumb(file, function(url){
