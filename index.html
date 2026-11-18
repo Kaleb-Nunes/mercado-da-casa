@@ -465,7 +465,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<div class="h-big' + (saldo < 0 ? ' neg' : '') + '"><small>R$</small>' + fmt(Math.abs(saldo)) + '</div>' +
       '<div class="h-line">Gasto <b>' + brl(gasto) + '</b> de <b>' + brl(orc) + '</b></div>' +
       '<div class="h-bar' + (saldo < 0 ? ' over' : '') + '"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="h-foot"><span class="h-tip">' + esc(tip) + '</span><button class="h-edit" type="button" data-act="orcamento">Orçamento</button></div></div>';
+      '<div class="h-foot"><span class="h-tip">' + esc(tip) + '</span><button class="h-edit" type="button" data-act="orcamento">Alterar orçamento</button></div></div>';
     h += '<div class="quick">' +
       '<button class="qbtn" type="button" data-act="novo-gasto"><span class="ic">' + IC.plus + '</span><span>Anotar gasto<small>leva 10 segundos</small></span></button>' +
       '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button></div>';
@@ -728,7 +728,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function sheetOrcamento(){
     var m = mesData(state.mes, false);
     ui.sheet = {type:"orc"};
-    openSheet('<h3 class="sh-title" id="sh-title">Orçamento de ' + esc(monthName(state.mes).toLowerCase()) + '</h3><p class="sh-sub">Quanto a casa pode gastar com comida neste mês.</p>' +
+    openSheet('<h3 class="sh-title" id="sh-title">Orçamento de ' + esc(monthName(state.mes).toLowerCase()) + '</h3><p class="sh-sub">Quanto a casa pode gastar com comida neste mês. Os próximos meses começam com esse valor, e dá pra mudar quando quiser.</p>' +
       '<div class="form"><div class="money"><span>R$</span><input id="f-orc" inputmode="decimal" autocomplete="off" value="' + fmt(m.orc || 0) + '"></div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-orc">Salvar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-orc");
   }
