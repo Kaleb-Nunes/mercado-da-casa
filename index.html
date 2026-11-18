@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F3B2E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mercado">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Mercado da Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: cartão-saldo verde no topo, listas limpas em superfícies claras, barra inferior com botão + central */
+  --bg:#F1F3EF;
+  --surface:#FFFFFF;
+  --ink:#10261F;
+  --muted:#66746E;
+  --line:#E1E6E0;
+  --hero:#0F3B2E;
+  --hero-ink:#F4F1E6;
+  --hero-muted:#A9BDB3;
+  --brass:#B8892B;
+  --brass-hero:#D9B45A;
+  --good:#2F7D57;
+  --good-soft:#E3F1E8;
+  --warn:#B4531A;
+  --warn-soft:#FBE8DC;
+  --shadow:0 1px 2px rgba(16,38,31,.06),0 8px 24px rgba(16,38,31,.06);
+  --font-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --font-body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1411; --surface:#121D19; --ink:#E9EEE9; --muted:#93A39B; --line:#22302A;
+    --hero:#143D30; --hero-ink:#F4F1E6; --hero-muted:#9DB5A9; --brass:#D9B45A; --brass-hero:#E2C06A;
+    --good:#5CC08D; --good-soft:#163024; --warn:#F08A4B; --warn-soft:#3A2116;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.25); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1411; --surface:#121D19; --ink:#E9EEE9; --muted:#93A39B; --line:#22302A;
+  --hero:#143D30; --hero-ink:#F4F1E6; --hero-muted:#9DB5A9; --brass:#D9B45A; --brass-hero:#E2C06A;
+  --good:#5CC08D; --good-soft:#163024; --warn:#F08A4B; --warn-soft:#3A2116;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top) 0 calc(96px + env(safe-area-inset-bottom));
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px;border-radius:10px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Estrutura ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px 4px;max-width:640px;margin:0 auto}
+.brand{font-family:var(--font-display);font-weight:600;font-size:19px;letter-spacing:-.01em}
+.brand span{color:var(--brass)}
+.top-note{font-size:12px;color:var(--muted)}
+main{max-width:640px;margin:0 auto;padding:8px 16px 24px}
+.view{display:none;flex-direction:column;gap:20px}
+.view.on{display:flex;animation:fade .25s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2.title{font-family:var(--font-display);font-weight:600;font-size:30px;line-height:1.1;letter-spacing:-.015em;margin:4px 0 0;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 0}
+.section{display:flex;flex-direction:column;gap:10px}
+.s-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 4px}
+.s-title{font-weight:700;font-size:15px}
+.s-meta{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.pad{padding:16px 18px}
+
+/* ---------- Mês ---------- */
+.mnav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mnav b{font-family:var(--font-display);font-weight:600;font-size:22px;letter-spacing:-.01em}
+.round{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.round svg{width:18px;height:18px}
+.round:disabled{opacity:.35;cursor:default}
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:24px;padding:22px 22px 20px;position:relative;overflow:hidden;box-shadow:0 12px 32px rgba(15,59,46,.25)}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;border:1px solid rgba(217,180,90,.25)}
+.hero::before{content:"";position:absolute;right:-20px;top:-100px;width:200px;height:200px;border-radius:50%;border:1px solid rgba(217,180,90,.15)}
+.h-label{font-size:13px;color:var(--hero-muted);letter-spacing:.02em}
+.h-big{font-family:var(--font-display);font-weight:600;font-size:52px;line-height:1.02;letter-spacing:-.025em;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.h-big small{font-size:24px;font-weight:500;margin-right:4px;color:var(--hero-muted)}
+.h-big.neg{color:#F6B48C}
+.h-line{font-size:14px;color:var(--hero-muted)}
+.h-line b{color:var(--hero-ink);font-weight:600}
+.h-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);margin:16px 0 12px;overflow:hidden}
+.h-bar i{display:block;height:100%;border-radius:99px;background:var(--brass-hero);transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.h-bar.over i{background:#F08A4B}
+.h-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.h-tip{font-size:14px;color:var(--hero-ink)}
+.h-edit{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:var(--hero-ink);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qbtn{display:flex;align-items:center;gap:10px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:15px;text-align:left;box-shadow:var(--shadow)}
+.qbtn .ic{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--good-soft);color:var(--good);flex:none}
+.qbtn .ic svg{width:20px;height:20px}
+.qbtn small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+
+.rows{list-style:none;margin:0;padding:6px 0}
+.row{display:flex;align-items:center;gap:12px;padding:12px 18px;width:100%;background:none;border:0;text-align:left;border-top:1px solid var(--line)}
+.rows li:first-child .row{border-top:0}
+.avatar{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none;background:var(--good-soft);color:var(--good)}
+.r-main{flex:1;min-width:0}
+.r-name{display:block;font-weight:600;font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+.r-meta{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.r-val{font-family:var(--font-display);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.r-val small{font-family:var(--font-body);font-weight:500;font-size:11px;color:var(--muted);display:block}
+.empty{padding:22px 18px;text-align:center;color:var(--muted);font-size:14px}
+.empty svg{width:56px;height:56px;color:var(--brass);margin-bottom:6px}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.bars{display:flex;flex-direction:column;gap:12px;padding:16px 18px}
+.bar-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.bar-row .t{height:6px;border-radius:99px;background:var(--line);grid-column:1/-1;overflow:hidden}
+.bar-row .t i{display:block;height:100%;border-radius:99px;background:var(--brass)}
+.tip{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brass);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.tip ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.tip .x{align-self:flex-end;background:none;border:0;color:var(--muted);font-size:13px;font-weight:600;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
+.safe{display:flex;gap:12px;align-items:flex-start}
+.safe svg{width:22px;height:22px;color:var(--good);flex:none;margin-top:2px}
+.safe p{margin:0;font-size:14px;color:var(--muted)}
+.safe b{color:var(--ink)}
+.links{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.link{background:none;border:0;padding:0;color:var(--good);font-weight:600;font-size:14px;text-decoration:none}
+
+/* ---------- Preços ---------- */
+.searchbox{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0 4px;display:flex;flex-direction:column;gap:10px}
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px;height:48px}
+.search svg{width:18px;height:18px;color:var(--muted);flex:none}
+.search input{border:0;background:transparent;outline:none;flex:1;font-size:16px;min-width:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 14px;font-size:14px;font-weight:600;color:var(--muted)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.btn-sm{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
+.btn-sm svg{width:16px;height:16px}
+.var{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:1px}
+.var.up{background:var(--warn-soft);color:var(--warn)}
+.var.down{background:var(--good-soft);color:var(--good)}
+.in-list{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brass);margin-left:6px;vertical-align:1px}
+
+/* ---------- Lista ---------- */
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+.sum div{background:var(--surface);padding:14px 16px}
+.sum span{font-size:12px;color:var(--muted);display:block}
+.sum b{font-family:var(--font-display);font-weight:600;font-size:26px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.sum .cart b{color:var(--good)}
+.litem{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.rows li:first-child .litem{border-top:0}
+.check{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;transition:all .2s ease}
+.check svg{width:16px;height:16px;opacity:0;color:#fff}
+.check.on{background:var(--good);border-color:var(--good)}
+.check.on svg{opacity:1}
+.litem.done .r-name{text-decoration:line-through;color:var(--muted)}
+.stepper{display:inline-flex;align-items:center;gap:2px;margin-top:6px;border:1px solid var(--line);border-radius:99px;padding:2px}
+.stepper button{width:28px;height:28px;border-radius:50%;border:0;background:var(--bg);font-weight:700;font-size:16px;line-height:1}
+.stepper span{min-width:44px;text-align:center;font-size:13px;font-weight:600}
+.bigbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;border-radius:16px;border:0;background:var(--hero);color:var(--hero-ink);font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 8px 20px rgba(15,59,46,.22)}
+.bigbtn svg{width:20px;height:20px}
+.bigbtn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.bigbtn.wa{background:#1F8F57;color:#fff;box-shadow:none}
+.quiet{background:none;border:0;color:var(--muted);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px;align-self:center}
+.quiet.armed{color:var(--warn)}
+
+/* ---------- Rótulo ---------- */
+.alert{background:var(--warn);color:#fff;border-radius:20px;padding:18px}
+.alert b{display:block;font-family:var(--font-display);font-size:22px;font-weight:600;margin-bottom:4px}
+.words{display:flex;flex-wrap:wrap;gap:6px}
+.word{font-size:14px;font-weight:600;padding:6px 11px;border-radius:10px;background:var(--warn-soft);color:var(--warn)}
+.word.ok{background:var(--good-soft);color:var(--good)}
+.card h3{margin:0 0 10px;font-family:var(--font-display);font-weight:600;font-size:19px}
+.card p{margin:0;font-size:15px}
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+
+/* ---------- Barra inferior ---------- */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);background:color-mix(in srgb,var(--surface) 92%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding:6px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);align-items:end
+}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:11px;font-weight:600;color:var(--muted)}
+.tab svg{width:24px;height:24px}
+.tab[aria-current="page"]{color:var(--ink)}
+.tab[aria-current="page"] svg{color:var(--good)}
+.fab{justify-self:center;width:58px;height:58px;border-radius:20px;border:0;background:var(--hero);color:var(--hero-ink);display:grid;place-items:center;margin-bottom:6px;box-shadow:0 10px 24px rgba(15,59,46,.35);transform:translateY(-8px)}
+.fab svg{width:26px;height:26px}
+
+/* ---------- Folha (bottom sheet) ---------- */
+.scrim{position:fixed;inset:0;background:rgba(6,14,11,.5);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:640px;margin:0 auto;background:var(--surface);
+  border-radius:24px 24px 0 0;padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);max-height:92vh;overflow-y:auto;
+  box-shadow:0 -12px 40px rgba(0,0,0,.2)
+}
+.sheet.on{transform:none}
+.grab{width:40px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 14px}
+.sh-title{font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-.01em;margin:0}
+.sh-sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+.form{display:flex;flex-direction:column;gap:16px;margin-top:18px}
+.money{display:flex;align-items:baseline;gap:8px;border-bottom:2px solid var(--line);padding-bottom:6px}
+.money:focus-within{border-color:var(--brass)}
+.money span{font-family:var(--font-display);font-size:24px;color:var(--muted)}
+.money input{border:0;outline:none;background:transparent;font-family:var(--font-display);font-weight:600;font-size:44px;width:100%;min-width:0;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.fl{display:flex;flex-direction:column;gap:6px}
+.fl > label{font-size:13px;font-weight:600;color:var(--muted)}
+.inp{height:48px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 14px;font-size:16px;width:100%;outline:none}
+.inp:focus{border-color:var(--brass)}
+textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+.sh-actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.hist li{display:flex;justify-content:space-between;gap:12px;color:var(--muted)}
+.hist li b{color:var(--ink);font-weight:600}
+.note-sm{font-size:13px;color:var(--muted)}
+
+.toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translate(-50%,16px);opacity:0;z-index:60;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:99px;font-size:14px;font-weight:600;transition:all .25s ease;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+@media (max-width:360px){
+  .h-big{font-size:44px}
+  h2.title{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">Mercado <span>da Casa</span></div>
+  <div class="top-note" id="top-note"></div>
+</div>
+
+<main>
+  <section class="view" id="view-inicio" aria-label="Início"></section>
+  <section class="view" id="view-precos" aria-label="Preços"></section>
+  <section class="view" id="view-lista" aria-label="Lista"></section>
+  <section class="view" id="view-rotulo" aria-label="Sem leite">
+    <div>
+      <h2 class="title">Sem leite</h2>
+      <p class="sub">O que olhar no rótulo antes de pôr no carrinho.</p>
+    </div>
+    <div class="alert"><b>Zero lactose não serve</b>Leite e queijo "sem lactose" ainda têm a proteína do leite. Nessa dieta, estão proibidos.</div>
+    <div class="card pad">
+      <h3>Se aparecer, volta pra prateleira</h3>
+      <div class="words">
+        <span class="word">Contém leite e derivados</span><span class="word">Pode conter leite</span><span class="word">Leite</span><span class="word">Leite em pó</span><span class="word">Soro de leite</span><span class="word">Whey</span><span class="word">Caseína</span><span class="word">Caseinato</span><span class="word">Lactoalbumina</span><span class="word">Lactoglobulina</span><span class="word">Lactose</span><span class="word">Gordura láctea</span><span class="word">Composto lácteo</span><span class="word">Manteiga</span><span class="word">Creme de leite</span><span class="word">Nata</span><span class="word">Coalho</span>
+      </div>
+    </div>
+    <div class="card pad">
+      <h3>Parece leite, mas pode</h3>
+      <div class="words">
+        <span class="word ok">Lactato de cálcio</span><span class="word ok">Lactato de sódio</span><span class="word ok">Estearoil-lactil-lactato</span><span class="word ok">Manteiga de cacau</span><span class="word ok">Leite de coco</span><span class="word ok">Creme tártaro</span>
+      </div>
+    </div>
+    <div class="card pad">
+      <h3>Também saem</h3>
+      <p>Requeijão, iogurte, petit suisse, bebida láctea, leite fermentado, ghee, margarina com leite, leite condensado, doce de leite, pudim, chocolate ao leite, molho branco e leite de cabra, ovelha ou búfala.</p>
+    </div>
+    <div class="card pad">
+      <h3>Na hora da compra</h3>
+      <ul class="plain">
+        <li>"Pode conter leite": evite até falar com o pediatra.</li>
+        <li>Nada a granel: sem rótulo, não dá pra conferir.</li>
+        <li>Nada de frio fatiado na hora: a máquina é a mesma do queijo.</li>
+        <li>Leia toda embalagem nova, até da marca de sempre: a receita muda.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Navegação">
+  <button class="tab" type="button" data-act="nav" data-view="inicio" id="tab-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg>Início</button>
+  <button class="tab" type="button" data-act="nav" data-view="precos" id="tab-precos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Preços</button>
+  <button class="fab" type="button" data-act="novo-gasto" aria-label="Anotar um gasto">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="tab" type="button" data-act="nav" data-view="lista" id="tab-lista">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>Lista</button>
+  <button class="tab" type="button" data-act="nav" data-view="rotulo" id="tab-rotulo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>Sem leite</button>
+</nav>
+
+<div class="scrim" id="scrim" data-act="fechar"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "mercado-casa-v1";
+  var CATS = ["Mercearia","Proteínas","Hortifruti","Bebidas","Bebê","Limpeza e casa","Outros"];
+  var TIPOS = ["Mercado","Feira","Açougue","Farmácia","Bebê","Outros"];
+  var MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  var BASE_DATE = "2026-11-17", BASE_LOCAL = "Koch BC";
+
+  /* Catálogo inicial de exemplo */
+  var SEED = [
+    ["Mercearia","Arroz branco Kika","pacote 5 kg",19.99,"",1],
+    ["Mercearia","Feijão preto Urbano","pacote 1 kg",6.99,"",1],
+    ["Mercearia","Tapioca Tupã","pacote 1 kg",8.99,"",1],
+    ["Mercearia","Aveia em flocos Vitão","pacote 400 g",8.69,"",0],
+    ["Mercearia","Macarrão parafuso MariMassas","pacote 500 g",2.29,"",0],
+    ["Mercearia","Milho de pipoca Kanty","pacote 400 g",4.49,"",0],
+    ["Mercearia","Molho de tomate Paladori","sachê 300 g",0.99,"Com CPF no caixa. Sem CPF: R$ 1,29",1],
+    ["Mercearia","Flocão de milho Sinhá","pacote 400 g",2.59,"",1],
+    ["Proteínas","Ovos brancos","bandeja 30 un.",16.99,"",1],
+    ["Proteínas","Frango passarinho Pioneiro","pacote 750 g",7.99,"Na promoção de 2 pacotes. Normal: R$ 8,99",1],
+    ["Proteínas","Filé de peito de frango Canção","pacote 1 kg",21.99,"",0],
+    ["Proteínas","Carne moída de primeira","kg",54.90,"Músculo moído sai mais barato",0],
+    ["Proteínas","Músculo moído","kg",44.90,"",0],
+    ["Proteínas","Atum sólido natural Gomes da Costa","lata 170 g",12.49,"",0],
+    ["Hortifruti","Tomate","kg",21.99,"",1],
+    ["Hortifruti","Cebola","kg",9.99,"",1],
+    ["Hortifruti","Alho","kg",26.99,"",0],
+    ["Hortifruti","Batata lavada","kg",6.49,"",1],
+    ["Hortifruti","Batata rosa","kg",8.99,"",0],
+    ["Hortifruti","Cenoura","kg",5.49,"",0],
+    ["Hortifruti","Abóbora cabotiá","kg",4.99,"",0],
+    ["Hortifruti","Repolho verde","unidade",4.49,"",0],
+    ["Hortifruti","Banana prata orgânica","pacote 800 g",6.29,"",1],
+    ["Hortifruti","Laranja","kg",6.99,"",0],
+    ["Hortifruti","Maçã gala","kg",9.99,"",0],
+    ["Hortifruti","Mamão papaia","kg",9.99,"",0],
+    ["Hortifruti","Manga Tommy","kg",6.79,"",0],
+    ["Hortifruti","Limão taiti","kg",15.49,"",0],
+    ["Bebidas","Água de coco Mais Coco","caixa 1 L",8.99,"",0],
+    ["Bebidas","Energético Baly","lata 473 ml",6.79,"",0]
+  ];
+
+  function seedState(){
+    var items = SEED.map(function(r,i){
+      return {id:"s"+i, cat:r[0], nome:r[1], por:r[2], hist:[{p:r[3], m:BASE_LOCAL, d:BASE_DATE}], nota:r[4], basico:!!r[5], lista:false, qtd:1, ok:false};
+    });
+    var meses = {};
+    meses["2026-11"] = {orc:0, gastos:[{id:"g0", data:BASE_DATE, local:BASE_LOCAL, tipo:"Mercado", valor:0, obs:"Exemplo"}]};
+    return {v:1, items:items, meses:meses, mes:monthKey(todayStr()), dica:true};
+  }
+
+  /* ---------- Utilidades ---------- */
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function todayStr(){ var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function monthKey(s){ return String(s).slice(0,7); }
+  function monthName(k){ var p = k.split("-"); return MESES[parseInt(p[1],10)-1] + " " + p[0]; }
+  function monthShort(k){ var p = k.split("-"); return MESES[parseInt(p[1],10)-1].slice(0,3).toLowerCase() + "/" + p[0].slice(2); }
+  function shiftMonth(k, n){ var p = k.split("-"); var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1+n, 1); return d.getFullYear() + "-" + pad(d.getMonth()+1); }
+  function dShort(s){ var p = String(s).split("-"); return p[2] + "/" + p[1]; }
+  function daysInMonth(k){ var p = k.split("-"); return new Date(parseInt(p[0],10), parseInt(p[1],10), 0).getDate(); }
+  function fmt(n){ return (Math.round(n*100)/100).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function brl(n){ return "R$ " + fmt(n); }
+  function parseMoney(v){
+    if(v == null) return null;
+    var s = String(v).trim().replace(/[^\d,.]/g,"");
+    if(!s) return null;
+    if(s.indexOf(",") >= 0){ s = s.replace(/\./g,"").replace(",","."); }
+    var n = parseFloat(s);
+    return isFinite(n) && n >= 0 ? Math.round(n*100)/100 : null;
+  }
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+  function isKg(it){ return it.por === "kg"; }
+  function cur(it){ return it.hist && it.hist.length ? it.hist[it.hist.length-1] : null; }
+  function prevPrice(it){ return it.hist && it.hist.length > 1 ? it.hist[it.hist.length-2] : null; }
+  function variation(it){ var c = cur(it), p = prevPrice(it); if(!c || !p || !p.p) return 0; return (c.p - p.p) / p.p * 100; }
+  function initials(s){ return String(s).slice(0,1).toUpperCase(); }
+
+  /* ---------- Estado ---------- */
+  var mem = null;
+  var state = null;
+  var ui = {view:"inicio", filtro:"Todos", busca:"", sheet:null, armed:null};
+
+  function load(){
+    try{ var raw = localStorage.getItem(KEY); if(raw){ var s = JSON.parse(raw); if(valid(s)) return s; } }catch(e){}
+    return mem;
+  }
+  function save(){
+    mem = state;
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function valid(s){ return s && typeof s === "object" && Array.isArray(s.items) && s.meses && typeof s.meses === "object"; }
+  function latestOrc(beforeKey){
+    var keys = Object.keys(state.meses).sort(), orc = 0;
+    keys.forEach(function(k){ if(!beforeKey || k <= beforeKey){ if(state.meses[k].orc) orc = state.meses[k].orc; } });
+    return orc;
+  }
+  function mesData(k, create){
+    if(state.meses[k]) return state.meses[k];
+    var m = {orc: latestOrc(k), gastos: []};
+    if(create) state.meses[k] = m;
+    return m;
+  }
+  function gastoTotal(m){ return m.gastos.reduce(function(a,g){ return a + (g.valor || 0); }, 0); }
+  function lastLocal(){
+    var all = [];
+    Object.keys(state.meses).forEach(function(k){ state.meses[k].gastos.forEach(function(g){ all.push(g); }); });
+    all.sort(function(a,b){ return a.data < b.data ? 1 : -1; });
+    return all.length ? all[0].local : BASE_LOCAL;
+  }
+  function locais(){
+    var seen = {}, out = [];
+    Object.keys(state.meses).forEach(function(k){ state.meses[k].gastos.forEach(function(g){ if(g.local && !seen[g.local]){ seen[g.local] = 1; out.push(g.local); } }); });
+    state.items.forEach(function(it){ var c = cur(it); if(c && c.m && !seen[c.m]){ seen[c.m] = 1; out.push(c.m); } });
+    return out.slice(0,6);
+  }
+
+  /* ---------- Ícones ---------- */
+  var IC = {
+    left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+    right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+    plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>',
+    search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6Z"/></svg>',
+    basket:'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 26h48l-5 26a4 4 0 0 1-4 3H17a4 4 0 0 1-4-3Z"/><path d="m22 26 8-14M42 26l-8-14"/><path d="M24 36v10M32 36v10M40 36v10"/></svg>',
+    wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>'
+  };
+
+  /* ---------- Início ---------- */
+  function renderInicio(){
+    var k = state.mes, m = mesData(k, false), gasto = gastoTotal(m), orc = m.orc || 0;
+    var saldo = orc - gasto, pct = orc > 0 ? Math.min(100, gasto / orc * 100) : 0;
+    var nowKey = monthKey(todayStr()), isNow = k === nowKey;
+    var tip = "";
+    if(orc > 0){
+      if(saldo < 0){ tip = "Passou " + brl(-saldo) + " do orçamento"; }
+      else if(isNow){
+        var left = daysInMonth(k) - new Date().getDate() + 1;
+        tip = "Dá " + brl(saldo / left) + " por dia até " + daysInMonth(k) + "/" + k.slice(5);
+      } else if(k < nowKey){ tip = "Mês fechado com " + brl(saldo) + " de sobra"; }
+      else { tip = "Mês ainda não começou"; }
+    } else { tip = "Defina quanto pode gastar no mês"; }
+
+    var h = '';
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone;
+    if(ios && state.dicaIos !== false){
+      h += '<div class="tip"><b>Deixe como app no iPhone</b><span>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima) e depois em <b>Adicionar à Tela de Início</b>. Assim ele abre igual um aplicativo e os dados ficam guardados.</span>' +
+        '<button class="x" type="button" data-act="fechar-ios">Entendi</button></div>';
+    }
+    if(state.dica){
+      h += '<div class="tip"><b>Como usar, em 3 passos</b><ol>' +
+        '<li>Toque no <b>+</b> sempre que comprar alguma coisa.</li>' +
+        '<li>Em <b>Preços</b>, toque num item e corrija o valor quando estiver diferente no mercado.</li>' +
+        '<li>Monte a <b>Lista</b> antes de sair de casa e vá marcando no carrinho.</li></ol>' +
+        '<button class="x" type="button" data-act="fechar-dica">Entendi</button></div>';
+    }
+    h += '<div class="mnav"><button class="round" type="button" data-act="mes-ant" aria-label="Mês anterior">' + IC.left + '</button>' +
+      '<b>' + esc(monthName(k)) + '</b>' +
+      '<button class="round" type="button" data-act="mes-prox" aria-label="Próximo mês">' + IC.right + '</button></div>';
+    h += '<div class="hero"><div class="h-label">' + (saldo < 0 ? "Acima do orçamento" : "Ainda dá pra gastar") + '</div>' +
+      '<div class="h-big' + (saldo < 0 ? ' neg' : '') + '"><small>R$</small>' + fmt(Math.abs(saldo)) + '</div>' +
+      '<div class="h-line">Gasto <b>' + brl(gasto) + '</b> de <b>' + brl(orc) + '</b></div>' +
+      '<div class="h-bar' + (saldo < 0 ? ' over' : '') + '"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="h-foot"><span class="h-tip">' + esc(tip) + '</span><button class="h-edit" type="button" data-act="orcamento">Orçamento</button></div></div>';
+    h += '<div class="quick">' +
+      '<button class="qbtn" type="button" data-act="novo-gasto"><span class="ic">' + IC.plus + '</span><span>Anotar gasto<small>leva 10 segundos</small></span></button>' +
+      '<button class="qbtn" type="button" data-act="nav" data-view="lista"><span class="ic">' + IC.list + '</span><span>Lista<small>' + listaCount() + '</small></span></button></div>';
+
+    var gs = m.gastos.slice().sort(function(a,b){ return a.data < b.data ? 1 : (a.data > b.data ? -1 : 0); });
+    h += '<div class="section"><div class="s-head"><span class="s-title">Gastos de ' + esc(MESES[parseInt(k.slice(5),10)-1].toLowerCase()) + '</span><span class="s-meta">' + gs.length + (gs.length === 1 ? ' compra' : ' compras') + '</span></div><div class="card">';
+    if(!gs.length){
+      h += '<div class="empty"><b>Nenhum gasto ainda</b>Toque no + para anotar a primeira compra do mês.</div>';
+    } else {
+      h += '<ul class="rows">' + gs.map(function(g){
+        return '<li><button class="row" type="button" data-act="editar-gasto" data-id="' + esc(g.id) + '"><span class="avatar">' + esc(initials(g.tipo)) + '</span>' +
+          '<span class="r-main"><span class="r-name">' + esc(g.local || g.tipo) + '</span><span class="r-meta">' + dShort(g.data) + ' · ' + esc(g.tipo) + (g.obs ? ' · ' + esc(g.obs) : '') + '</span></span>' +
+          '<span class="r-val">' + brl(g.valor) + '</span></button></li>';
+      }).join("") + '</ul>';
+    }
+    h += '</div></div>';
+
+    if(gs.length){
+      var by = {}; gs.forEach(function(g){ by[g.tipo] = (by[g.tipo] || 0) + g.valor; });
+      var keys = Object.keys(by).sort(function(a,b){ return by[b] - by[a]; });
+      h += '<div class="section"><div class="s-head"><span class="s-title">Para onde foi o dinheiro</span></div><div class="card"><div class="bars">' +
+        keys.map(function(t){ return '<div class="bar-row"><span>' + esc(t) + '</span><b class="num">' + brl(by[t]) + '</b><span class="t"><i style="width:' + (by[t] / gasto * 100) + '%"></i></span></div>'; }).join("") +
+        '</div></div></div>';
+    }
+
+    var past = Object.keys(state.meses).filter(function(x){ return x !== k && state.meses[x].gastos.length; }).sort().reverse().slice(0,6);
+    if(past.length){
+      h += '<div class="section"><div class="s-head"><span class="s-title">Outros meses</span></div><div class="card"><ul class="rows">' +
+        past.map(function(x){ var mm = state.meses[x], g = gastoTotal(mm), s = (mm.orc || 0) - g;
+          return '<li><button class="row" type="button" data-act="ir-mes" data-k="' + x + '"><span class="r-main"><span class="r-name">' + esc(monthName(x)) + '</span><span class="r-meta">orçamento ' + brl(mm.orc || 0) + '</span></span>' +
+            '<span class="r-val">' + brl(g) + '<small>' + (s >= 0 ? 'sobrou ' + brl(s) : 'passou ' + brl(-s)) + '</small></span></button></li>'; }).join("") +
+        '</ul></div></div>';
+    }
+
+    h += '<div class="card pad"><div class="safe">' + IC.shield + '<div><p><b>Seus dados ficam só neste celular.</b> Uma vez por mês, faça um backup e mande no seu WhatsApp. Se trocar de celular ou limpar o navegador, é só restaurar.</p>' +
+      '<div class="links"><button class="link" type="button" data-act="backup">Fazer backup</button><button class="link" type="button" data-act="restaurar">Restaurar</button>' +
+      '<a class="link" id="wa-resumo" href="#" target="_blank" rel="noopener">Enviar resumo do mês</a></div></div></div></div>';
+
+    document.getElementById("view-inicio").innerHTML = h;
+    var a = document.getElementById("wa-resumo");
+    if(a) a.href = "https://wa.me/?text=" + encodeURIComponent(resumoTexto());
+  }
+  function listaCount(){ var n = state.items.filter(function(i){ return i.lista; }).length; return n ? n + (n === 1 ? " item" : " itens") + " pra comprar" : "vazia"; }
+  function resumoTexto(){
+    var k = state.mes, m = mesData(k,false), g = gastoTotal(m);
+    var L = ["*Mercado da Casa · " + monthName(k) + "*", "Orçamento: " + brl(m.orc || 0), "Gasto: " + brl(g), ((m.orc||0) - g >= 0 ? "Sobra: " : "Passou: ") + brl(Math.abs((m.orc||0) - g)), ""];
+    m.gastos.slice().sort(function(a,b){ return a.data > b.data ? 1 : -1; }).forEach(function(x){ L.push(dShort(x.data) + " · " + (x.local || x.tipo) + " · " + brl(x.valor)); });
+    return L.join("\n");
+  }
+
+  /* ---------- Preços ---------- */
+  function renderPrecos(){
+    var v = document.getElementById("view-precos");
+    if(!v.dataset.built){
+      v.innerHTML = '<div class="head-row"><div><h2 class="title">Preços</h2><p class="sub">O último valor pago em cada item.</p></div>' +
+        '<button class="btn-sm" type="button" data-act="novo-item">' + IC.plus + 'Novo</button></div>' +
+        '<div class="searchbox"><label class="search" for="busca">' + IC.search + '<input id="busca" type="search" placeholder="Buscar item" autocomplete="off" enterkeyhint="search"></label>' +
+        '<div class="chips" id="chips-cat"></div></div><div id="precos-lista" class="section"></div>';
+      v.dataset.built = "1";
+    }
+    var cats = ["Todos"].concat(CATS.filter(function(c){ return state.items.some(function(i){ return i.cat === c; }); }));
+    document.getElementById("chips-cat").innerHTML = cats.map(function(c){
+      return '<button class="chip' + (ui.filtro === c ? ' on' : '') + '" type="button" data-act="filtro" data-v="' + esc(c) + '">' + esc(c) + '</button>';
+    }).join("");
+    renderPrecosLista();
+  }
+  function renderPrecosLista(){
+    var q = ui.busca.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+    var list = state.items.filter(function(it){
+      if(ui.filtro !== "Todos" && it.cat !== ui.filtro) return false;
+      if(!q) return true;
+      return it.nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").indexOf(q) >= 0;
+    });
+    var h = "";
+    if(!list.length){
+      h = '<div class="card"><div class="empty"><b>Nada encontrado</b>Toque em "Novo" para cadastrar esse item.</div></div>';
+    } else {
+      CATS.forEach(function(c){
+        var group = list.filter(function(i){ return i.cat === c; }).sort(function(a,b){ return a.nome.localeCompare(b.nome,"pt-BR"); });
+        if(!group.length) return;
+        h += '<div class="section"><div class="s-head"><span class="s-title">' + esc(c) + '</span><span class="s-meta">' + group.length + '</span></div><div class="card"><ul class="rows">' +
+          group.map(function(it){
+            var c0 = cur(it), vr = variation(it);
+            var vtag = Math.abs(vr) >= 0.5 ? '<span class="var ' + (vr > 0 ? 'up' : 'down') + '">' + (vr > 0 ? '↑ ' : '↓ ') + Math.round(Math.abs(vr)) + '%</span>' : '';
+            return '<li><button class="row" type="button" data-act="item" data-id="' + esc(it.id) + '"><span class="r-main"><span class="r-name">' + esc(it.nome) + (it.lista ? '<span class="in-list" title="Na lista"></span>' : '') + '</span>' +
+              '<span class="r-meta">' + esc(it.por) + (c0 ? ' · ' + esc(c0.m || '') + ' ' + dShort(c0.d) : ' · sem preço') + vtag + '</span></span>' +
+              '<span class="r-val">' + (c0 ? brl(c0.p) : '—') + (isKg(it) && c0 ? '<small>por kg</small>' : '') + '</span></button></li>';
+          }).join("") + '</ul></div></div>';
+      });
+    }
+    document.getElementById("precos-lista").innerHTML = h;
+  }
+
+  /* ---------- Lista ---------- */
+  function lineTotal(it){ var c = cur(it); return c ? c.p * (it.qtd || 1) : 0; }
+  function qtdLabel(it){ return isKg(it) ? String(it.qtd).replace(".",",") + " kg" : it.qtd + " ×"; }
+  function renderLista(){
+    var items = state.items.filter(function(i){ return i.lista; });
+    items.sort(function(a,b){ return (a.ok === b.ok) ? CATS.indexOf(a.cat) - CATS.indexOf(b.cat) || a.nome.localeCompare(b.nome,"pt-BR") : (a.ok ? 1 : -1); });
+    var est = items.reduce(function(s,i){ return s + lineTotal(i); }, 0);
+    var cart = items.filter(function(i){ return i.ok; }).reduce(function(s,i){ return s + lineTotal(i); }, 0);
+    var done = items.filter(function(i){ return i.ok; }).length;
+    var h = '<div><h2 class="title">Lista</h2><p class="sub">Monte antes de sair. No mercado, toque no círculo quando pôr no carrinho.</p></div>';
+    if(!items.length){
+      h += '<div class="card"><div class="empty">' + IC.basket + '<b>Sua lista está vazia</b>Comece com o básico da casa ou escolha os itens em Preços.' +
+        '<div class="sh-actions" style="margin-top:14px"><button class="bigbtn" type="button" data-act="basico">Começar com o básico</button>' +
+        '<button class="bigbtn ghost" type="button" data-act="nav" data-view="precos">Escolher em Preços</button></div></div></div>';
+      document.getElementById("view-lista").innerHTML = h;
+      return;
+    }
+    h += '<div class="sum"><div><span>Estimado</span><b>' + brl(est) + '</b></div><div class="cart"><span>No carrinho · ' + done + ' de ' + items.length + '</span><b>' + brl(cart) + '</b></div></div>';
+    h += '<div class="card"><ul class="rows">' + items.map(function(it){
+      var c = cur(it);
+      return '<li><div class="litem' + (it.ok ? ' done' : '') + '">' +
+        '<button class="check' + (it.ok ? ' on' : '') + '" type="button" data-act="ok" data-id="' + esc(it.id) + '" aria-pressed="' + (it.ok ? 'true' : 'false') + '" aria-label="' + esc(it.nome) + ' no carrinho">' + IC.check + '</button>' +
+        '<div class="r-main"><div class="r-name">' + esc(it.nome) + '</div><div class="r-meta">' + esc(it.por) + (c ? ' · ' + brl(c.p) + (isKg(it) ? '/kg' : '') : ' · sem preço') + '</div>' +
+        '<div class="stepper"><button type="button" data-act="menos" data-id="' + esc(it.id) + '" aria-label="Menos">−</button><span>' + qtdLabel(it) + '</span><button type="button" data-act="mais" data-id="' + esc(it.id) + '" aria-label="Mais">+</button></div></div>' +
+        '<button class="r-val" type="button" data-act="item" data-id="' + esc(it.id) + '" style="background:none;border:0;padding:0" aria-label="Corrigir preço de ' + esc(it.nome) + '">' + (c ? brl(lineTotal(it)) : '—') + '<small>corrigir</small></button>' +
+        '</div></li>';
+    }).join("") + '</ul></div>';
+    h += '<div class="sh-actions"><button class="bigbtn" type="button" data-act="finalizar">' + IC.check + 'Finalizar compra</button>' +
+      '<a class="bigbtn wa" id="wa-lista" href="#" target="_blank" rel="noopener">' + IC.wa + 'Enviar lista no WhatsApp</a>' +
+      '<button class="quiet' + (ui.armed === "limpar" ? ' armed' : '') + '" type="button" data-act="limpar">' + (ui.armed === "limpar" ? 'Toque de novo para limpar a lista' : 'Limpar lista') + '</button></div>';
+    document.getElementById("view-lista").innerHTML = h;
+    var a = document.getElementById("wa-lista");
+    if(a) a.href = "https://wa.me/?text=" + encodeURIComponent(listaTexto());
+  }
+  function listaTexto(){
+    var items = state.items.filter(function(i){ return i.lista; });
+    var L = ["*Lista de mercado · sem leite*",""];
+    items.forEach(function(it){ var c = cur(it); L.push((it.ok ? "✅ " : "⬜ ") + it.nome + " (" + qtdLabel(it) + " " + it.por + ")" + (c ? " · ~" + brl(lineTotal(it)) : "")); });
+    L.push("", "Estimado: " + brl(items.reduce(function(s,i){ return s + lineTotal(i); }, 0)));
+    L.push("_Zero lactose também não serve._");
+    return L.join("\n");
+  }
+
+  /* ---------- Folhas ---------- */
+  var sheet = document.getElementById("sheet"), scrim = document.getElementById("scrim");
+  var lastFocus = null;
+  function openSheet(html, focusId){
+    lastFocus = document.activeElement;
+    sheet.innerHTML = '<div class="grab" aria-hidden="true"></div>' + html;
+    sheet.classList.add("on"); scrim.classList.add("on");
+    document.body.style.overflow = "hidden";
+    setTimeout(function(){ var f = focusId && document.getElementById(focusId); if(f){ try{ f.focus(); if(f.select) f.select(); }catch(e){} } }, 280);
+  }
+  function closeSheet(){
+    sheet.classList.remove("on"); scrim.classList.remove("on"); ui.sheet = null; ui.armed = null;
+    document.body.style.overflow = "";
+    if(lastFocus && lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
+  }
+  function chipGroup(name, options, value){
+    return '<div class="chips" role="radiogroup">' + options.map(function(o){
+      return '<button class="chip' + (o === value ? ' on' : '') + '" type="button" role="radio" aria-checked="' + (o === value ? 'true' : 'false') + '" data-act="pick" data-g="' + name + '" data-v="' + esc(o) + '">' + esc(o) + '</button>';
+    }).join("") + '</div><input type="hidden" id="' + name + '" value="' + esc(value) + '">';
+  }
+
+  function sheetGasto(g){
+    var editing = !!g;
+    g = g || {data: todayStr(), local: lastLocal(), tipo: "Mercado", valor: null, obs: ""};
+    ui.sheet = {type:"gasto", id: editing ? g.id : null, mes: editing ? monthKey(g.data) : null};
+    var locs = locais();
+    openSheet('<h3 class="sh-title" id="sh-title">' + (editing ? 'Editar gasto' : 'Anotar gasto') + '</h3><p class="sh-sub">Quanto saiu no total da nota?</p>' +
+      '<div class="form"><div class="money"><span>R$</span><input id="f-valor" inputmode="decimal" autocomplete="off" placeholder="0,00" value="' + (g.valor != null ? fmt(g.valor) : '') + '" aria-label="Valor"></div>' +
+      '<div class="fl"><label for="f-local">Onde</label><input class="inp" id="f-local" value="' + esc(g.local) + '" autocomplete="off" placeholder="Ex.: Koch, feira, farmácia">' +
+      (locs.length ? '<div class="chips">' + locs.map(function(l){ return '<button class="chip" type="button" data-act="set-local" data-v="' + esc(l) + '">' + esc(l) + '</button>'; }).join("") + '</div>' : '') + '</div>' +
+      '<div class="fl"><label>Tipo</label>' + chipGroup("f-tipo", TIPOS, g.tipo) + '</div>' +
+      '<div class="fl"><label for="f-data">Data</label><input class="inp" id="f-data" type="date" value="' + esc(g.data) + '"></div>' +
+      '<div class="fl"><label for="f-obs">Observação (opcional)</label><input class="inp" id="f-obs" value="' + esc(g.obs || '') + '" autocomplete="off" placeholder="Ex.: compra da semana"></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-gasto">' + (editing ? 'Salvar alterações' : 'Anotar') + '</button>' +
+      (editing ? '<button class="quiet" type="button" data-act="apagar-gasto" id="btn-apagar">Apagar este gasto</button>' : '<button class="quiet" type="button" data-act="fechar">Cancelar</button>') +
+      '</div></div>', "f-valor");
+  }
+  function salvarGasto(){
+    var v = parseMoney(document.getElementById("f-valor").value);
+    if(v === null || v <= 0){ toast("Digite o valor"); document.getElementById("f-valor").focus(); return; }
+    var data = document.getElementById("f-data").value || todayStr();
+    var g = {id: ui.sheet.id || uid(), data: data, local: document.getElementById("f-local").value.trim(), tipo: document.getElementById("f-tipo").value || "Outros", valor: v, obs: document.getElementById("f-obs").value.trim()};
+    if(ui.sheet.id){
+      var old = mesData(ui.sheet.mes, true);
+      old.gastos = old.gastos.filter(function(x){ return x.id !== ui.sheet.id; });
+    }
+    var m = mesData(monthKey(data), true);
+    m.gastos.push(g);
+    state.mes = monthKey(data);
+    var wasEdit = !!ui.sheet.id;
+    save(); closeSheet(); show("inicio"); toast(wasEdit ? "Gasto atualizado" : "Gasto anotado");
+  }
+
+  function sheetItem(it){
+    ui.sheet = {type:"item", id: it.id};
+    var c = cur(it), locs = locais();
+    var hist = (it.hist || []).slice().reverse().slice(0,5);
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(it.nome) + '</h3><p class="sh-sub">' + esc(it.por) + ' · ' + esc(it.cat) + '</p>' +
+      '<div class="form"><div class="fl"><label for="f-preco">Preço de hoje' + (isKg(it) ? ' (por kg)' : '') + '</label>' +
+      '<div class="money"><span>R$</span><input id="f-preco" inputmode="decimal" autocomplete="off" placeholder="0,00" value="' + (c ? fmt(c.p) : '') + '"></div></div>' +
+      '<div class="fl"><label for="f-mercado">Mercado</label><input class="inp" id="f-mercado" value="' + esc(c ? c.m : lastLocal()) + '" autocomplete="off">' +
+      (locs.length ? '<div class="chips">' + locs.map(function(l){ return '<button class="chip" type="button" data-act="set-mercado" data-v="' + esc(l) + '">' + esc(l) + '</button>'; }).join("") + '</div>' : '') + '</div>' +
+      (it.nota ? '<p class="note-sm">' + esc(it.nota) + '</p>' : '') +
+      (hist.length ? '<div class="fl"><label>Últimos preços</label><ul class="hist">' + hist.map(function(h){ return '<li><span>' + dShort(h.d) + ' · ' + esc(h.m || '') + '</span><b class="num">' + brl(h.p) + '</b></li>'; }).join("") + '</ul></div>' : '') +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-preco">Salvar preço</button>' +
+      '<button class="bigbtn ghost" type="button" data-act="toggle-lista">' + (it.lista ? 'Tirar da lista' : 'Pôr na lista') + '</button>' +
+      '<button class="quiet" type="button" data-act="apagar-item" id="btn-apagar">Apagar item</button></div></div>', "f-preco");
+  }
+  function findItem(id){ for(var i = 0; i < state.items.length; i++){ if(state.items[i].id === id) return state.items[i]; } return null; }
+  function salvarPreco(){
+    var it = findItem(ui.sheet.id); if(!it) return closeSheet();
+    var p = parseMoney(document.getElementById("f-preco").value);
+    if(p === null || p <= 0){ toast("Digite o preço"); return; }
+    var mk = document.getElementById("f-mercado").value.trim();
+    var c = cur(it), today = todayStr();
+    if(c && c.d === today && c.m === mk){ c.p = p; } else { it.hist.push({p:p, m:mk, d:today}); }
+    if(it.hist.length > 24) it.hist = it.hist.slice(-24);
+    save(); closeSheet(); render(); toast("Preço atualizado");
+  }
+
+  function sheetNovoItem(){
+    ui.sheet = {type:"novo"};
+    openSheet('<h3 class="sh-title" id="sh-title">Novo item</h3><p class="sh-sub">Cadastre uma vez, depois é só atualizar o preço.</p>' +
+      '<div class="form"><div class="fl"><label for="n-nome">Nome</label><input class="inp" id="n-nome" autocomplete="off" placeholder="Ex.: Sardinha em lata"></div>' +
+      '<div class="fl"><label>Categoria</label>' + chipGroup("n-cat", CATS, ui.filtro !== "Todos" ? ui.filtro : "Mercearia") + '</div>' +
+      '<div class="fl"><label for="n-por">Como é vendido</label><input class="inp" id="n-por" autocomplete="off" placeholder="kg, unidade, pacote 1 kg, lata 125 g">' +
+      '<div class="chips"><button class="chip" type="button" data-act="set-por" data-v="kg">kg</button><button class="chip" type="button" data-act="set-por" data-v="unidade">unidade</button><button class="chip" type="button" data-act="set-por" data-v="pacote ">pacote</button><button class="chip" type="button" data-act="set-por" data-v="lata ">lata</button></div></div>' +
+      '<div class="fl"><label for="n-preco">Preço (opcional)</label><div class="money"><span>R$</span><input id="n-preco" inputmode="decimal" autocomplete="off" placeholder="0,00"></div></div>' +
+      '<div class="fl"><label for="n-mercado">Mercado</label><input class="inp" id="n-mercado" value="' + esc(lastLocal()) + '" autocomplete="off"></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-item">Cadastrar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "n-nome");
+  }
+  function salvarItem(){
+    var nome = document.getElementById("n-nome").value.trim();
+    if(!nome){ toast("Digite o nome"); document.getElementById("n-nome").focus(); return; }
+    var p = parseMoney(document.getElementById("n-preco").value);
+    var it = {id: uid(), cat: document.getElementById("n-cat").value || "Outros", nome: nome, por: document.getElementById("n-por").value.trim() || "unidade",
+      hist: [], nota: "", basico: false, lista: false, qtd: 1, ok: false};
+    if(p !== null && p > 0) it.hist.push({p: p, m: document.getElementById("n-mercado").value.trim(), d: todayStr()});
+    state.items.push(it); ui.filtro = it.cat; ui.busca = "";
+    var b = document.getElementById("busca"); if(b) b.value = "";
+    save(); closeSheet(); render(); toast("Item cadastrado");
+  }
+
+  function sheetFinalizar(){
+    var items = state.items.filter(function(i){ return i.lista && i.ok; });
+    var all = state.items.filter(function(i){ return i.lista; });
+    var total = (items.length ? items : all).reduce(function(s,i){ return s + lineTotal(i); }, 0);
+    ui.sheet = {type:"finalizar"};
+    openSheet('<h3 class="sh-title" id="sh-title">Finalizar compra</h3><p class="sh-sub">Confira com o valor da nota. Os itens marcados saem da lista.</p>' +
+      '<div class="form"><div class="money"><span>R$</span><input id="f-valor" inputmode="decimal" autocomplete="off" value="' + fmt(total) + '" aria-label="Valor da nota"></div>' +
+      '<div class="fl"><label for="f-local">Onde</label><input class="inp" id="f-local" value="' + esc(lastLocal()) + '" autocomplete="off"></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-compra">Anotar no mês</button><button class="quiet" type="button" data-act="fechar">Voltar</button></div></div>', "f-valor");
+  }
+  function confirmarCompra(){
+    var v = parseMoney(document.getElementById("f-valor").value);
+    if(v === null || v <= 0){ toast("Digite o valor da nota"); return; }
+    var data = todayStr(), m = mesData(monthKey(data), true);
+    m.gastos.push({id: uid(), data: data, local: document.getElementById("f-local").value.trim(), tipo: "Mercado", valor: v, obs: "Lista"});
+    state.items.forEach(function(i){ if(i.lista && i.ok){ i.lista = false; i.ok = false; i.qtd = 1; } });
+    state.mes = monthKey(data);
+    save(); closeSheet(); show("inicio"); toast("Compra anotada no mês");
+  }
+
+  function sheetOrcamento(){
+    var m = mesData(state.mes, false);
+    ui.sheet = {type:"orc"};
+    openSheet('<h3 class="sh-title" id="sh-title">Orçamento de ' + esc(monthName(state.mes).toLowerCase()) + '</h3><p class="sh-sub">Quanto a casa pode gastar com comida neste mês.</p>' +
+      '<div class="form"><div class="money"><span>R$</span><input id="f-orc" inputmode="decimal" autocomplete="off" value="' + fmt(m.orc || 0) + '"></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-orc">Salvar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-orc");
+  }
+
+  function sheetBackup(){
+    ui.sheet = {type:"backup"};
+    var data = JSON.stringify(state);
+    openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Guarde este texto no seu WhatsApp. Ele traz tudo de volta se precisar.</p>' +
+      '<div class="form"><textarea class="inp" id="f-backup" readonly>' + esc(data) + '</textarea>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="copiar-backup">Copiar backup</button>' +
+      '<a class="bigbtn wa" href="https://wa.me/?text=' + encodeURIComponent("Backup Mercado da Casa " + dShort(todayStr()) + "\n" + data) + '" target="_blank" rel="noopener">' + IC.wa + 'Mandar no WhatsApp</a>' +
+      '<button class="quiet" type="button" data-act="fechar">Fechar</button></div></div>');
+  }
+  function sheetRestaurar(){
+    ui.sheet = {type:"restaurar"};
+    openSheet('<h3 class="sh-title" id="sh-title">Restaurar backup</h3><p class="sh-sub">Cole o texto do backup. Isso substitui o que está no app agora.</p>' +
+      '<div class="form"><textarea class="inp" id="f-restaurar" placeholder="Cole aqui o texto que começa com {&quot;v&quot;:1"></textarea>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Restaurar</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>', "f-restaurar");
+  }
+
+  /* ---------- Toast e cópia ---------- */
+  var toastT = null;
+  function toast(msg){
+    var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("on");
+    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("on"); }, 1900);
+  }
+  function copy(txt, el){
+    var ok = function(){ toast("Copiado"); };
+    var fallback = function(){ if(el){ el.focus(); el.select(); } toast("Segure no texto e copie"); };
+    try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok, fallback); } else { fallback(); } }catch(e){ fallback(); }
+  }
+
+  /* ---------- Navegação ---------- */
+  var VIEWS = ["inicio","precos","lista","rotulo"];
+  function render(){
+    if(ui.view === "inicio") renderInicio();
+    else if(ui.view === "precos") renderPrecos();
+    else if(ui.view === "lista") renderLista();
+  }
+  function show(v, fromHash){
+    if(VIEWS.indexOf(v) < 0) v = "inicio";
+    ui.view = v; ui.armed = null;
+    VIEWS.forEach(function(x){
+      document.getElementById("view-" + x).classList.toggle("on", x === v);
+      var t = document.getElementById("tab-" + x);
+      if(x === v) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current");
+    });
+    render();
+    if(!fromHash){ try{ history.replaceState(null, "", "#" + v); }catch(e){} }
+    window.scrollTo(0,0);
+  }
+  function arm(key, btn, label){
+    if(ui.armed === key) return true;
+    ui.armed = key;
+    if(btn){ btn.classList.add("armed"); btn.textContent = label; }
+    setTimeout(function(){ if(ui.armed === key){ ui.armed = null; if(btn && btn.isConnected){ btn.classList.remove("armed"); btn.textContent = btn.dataset.orig || btn.textContent; } } }, 3500);
+    return false;
+  }
+
+  /* ---------- Eventos ---------- */
+  document.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("[data-act]") : null;
+    if(!b) return;
+    var act = b.dataset.act, id = b.dataset.id, it;
+    switch(act){
+      case "nav": show(b.dataset.view); break;
+      case "fechar": closeSheet(); break;
+      case "fechar-dica": state.dica = false; save(); renderInicio(); break;
+      case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
+      case "novo-gasto": sheetGasto(null); break;
+      case "editar-gasto":
+        var m = mesData(state.mes, false), g = null;
+        m.gastos.forEach(function(x){ if(x.id === id) g = x; });
+        if(g) sheetGasto(g);
+        break;
+      case "salvar-gasto": salvarGasto(); break;
+      case "apagar-gasto":
+        b.dataset.orig = "Apagar este gasto";
+        if(!arm("gasto", b, "Toque de novo para apagar")) break;
+        var mm = mesData(ui.sheet.mes, true);
+        mm.gastos = mm.gastos.filter(function(x){ return x.id !== ui.sheet.id; });
+        save(); closeSheet(); render(); toast("Gasto apagado"); break;
+      case "pick":
+        var g2 = b.dataset.g;
+        b.parentNode.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("on"); c.setAttribute("aria-checked","false"); });
+        b.classList.add("on"); b.setAttribute("aria-checked","true");
+        document.getElementById(g2).value = b.dataset.v; break;
+      case "set-local": document.getElementById("f-local").value = b.dataset.v; break;
+      case "set-mercado": document.getElementById("f-mercado").value = b.dataset.v; break;
+      case "set-por": var np = document.getElementById("n-por"); np.value = b.dataset.v; np.focus(); break;
+      case "mes-ant": state.mes = shiftMonth(state.mes, -1); save(); renderInicio(); break;
+      case "mes-prox": state.mes = shiftMonth(state.mes, 1); save(); renderInicio(); break;
+      case "ir-mes": state.mes = b.dataset.k; save(); renderInicio(); window.scrollTo(0,0); break;
+      case "orcamento": sheetOrcamento(); break;
+      case "salvar-orc":
+        var o = parseMoney(document.getElementById("f-orc").value);
+        if(o === null){ toast("Digite o valor"); break; }
+        mesData(state.mes, true).orc = o; save(); closeSheet(); renderInicio(); toast("Orçamento salvo"); break;
+      case "filtro": ui.filtro = b.dataset.v; renderPrecos(); break;
+      case "item": it = findItem(id); if(it) sheetItem(it); break;
+      case "salvar-preco": salvarPreco(); break;
+      case "toggle-lista":
+        it = findItem(ui.sheet.id); if(!it) break;
+        it.lista = !it.lista; if(!it.lista){ it.ok = false; it.qtd = 1; }
+        save(); closeSheet(); render(); toast(it.lista ? "Foi pra lista" : "Saiu da lista"); break;
+      case "apagar-item":
+        b.dataset.orig = "Apagar item";
+        if(!arm("item", b, "Toque de novo para apagar")) break;
+        state.items = state.items.filter(function(x){ return x.id !== ui.sheet.id; });
+        save(); closeSheet(); render(); toast("Item apagado"); break;
+      case "novo-item": sheetNovoItem(); break;
+      case "salvar-item": salvarItem(); break;
+      case "ok": it = findItem(id); if(it){ it.ok = !it.ok; save(); renderLista(); } break;
+      case "mais": it = findItem(id); if(it){ it.qtd = Math.round((it.qtd + (isKg(it) ? 0.5 : 1)) * 10) / 10; save(); renderLista(); } break;
+      case "menos": it = findItem(id); if(it){ var step = isKg(it) ? 0.5 : 1; if(it.qtd > step){ it.qtd = Math.round((it.qtd - step) * 10) / 10; save(); renderLista(); } } break;
+      case "basico":
+        state.items.forEach(function(x){ if(x.basico){ x.lista = true; x.ok = false; x.qtd = isKg(x) ? 1 : 1; } });
+        save(); renderLista(); toast("Básico adicionado"); break;
+      case "finalizar": sheetFinalizar(); break;
+      case "confirmar-compra": confirmarCompra(); break;
+      case "limpar":
+        if(ui.armed !== "limpar"){ ui.armed = "limpar"; renderLista(); setTimeout(function(){ if(ui.armed === "limpar"){ ui.armed = null; if(ui.view === "lista") renderLista(); } }, 3500); break; }
+        state.items.forEach(function(x){ x.lista = false; x.ok = false; x.qtd = 1; });
+        ui.armed = null; save(); renderLista(); toast("Lista limpa"); break;
+      case "backup": sheetBackup(); break;
+      case "copiar-backup": copy(JSON.stringify(state), document.getElementById("f-backup")); break;
+      case "restaurar": sheetRestaurar(); break;
+      case "confirmar-restaurar":
+        try{
+          var txt = document.getElementById("f-restaurar").value;
+          var pos = txt.indexOf("{"); var s = JSON.parse(txt.slice(pos));
+          if(!valid(s)) throw new Error("x");
+          state = s; save(); closeSheet(); show("inicio"); toast("Backup restaurado");
+        }catch(err){ toast("Esse texto não é um backup válido"); }
+        break;
+    }
+  });
+  document.addEventListener("input", function(e){
+    if(e.target.id === "busca"){ ui.busca = e.target.value; renderPrecosLista(); }
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && ui.sheet){ closeSheet(); }
+    if(e.key === "Enter" && ui.sheet && e.target.tagName === "INPUT" && e.target.type !== "search"){
+      e.preventDefault();
+      var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc"};
+      var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
+    }
+  });
+  window.addEventListener("hashchange", function(){ show((location.hash || "").replace("#",""), true); });
+
+  /* ---------- Início ---------- */
+  function start(data){
+    state = valid(data) ? data : (load() || seedState());
+    if(!state.mes) state.mes = monthKey(todayStr());
+    var h = (location.hash || "").replace("#","");
+    show(VIEWS.indexOf(h) >= 0 ? h : "inicio", true);
+    save();
+  }
+  try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot){ window.claude.hot.snapshot(function(){ return JSON.parse(JSON.stringify(state)); }); } }catch(e){}
+  if(window.claude && window.claude.hot && window.claude.hot.ready){ window.claude.hot.ready(start); }
+  else { start(window.claude && window.claude.hot && window.claude.hot.data); }
+})();
+</script>
+</body>
+</html>
