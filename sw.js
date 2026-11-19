@@ -1,8 +1,8 @@
 /* Elida: funciona sem internet no mercado. Rede primeiro, cópia guardada se cair.
    Produção e homologação usam caches com nomes diferentes. */
 const PRODUCAO = self.location.hostname === "kaleb-nunes.github.io" && self.location.pathname.indexOf("/mercado-da-casa/") === 0;
-const CACHE = (PRODUCAO ? "despensa" : "despensa-hml") + "-v7";
-const CORE = ["./", "./index.html", "./dieta.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js", "./fonts/fraunces.woff2", "./fonts/onest.woff2"];
+const CACHE = (PRODUCAO ? "despensa" : "despensa-hml") + "-v8";
+const CORE = ["./", "./index.html", "./dieta.js", "./elida-regras.js", "./elida-busca.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js", "./fonts/fraunces.woff2", "./fonts/onest.woff2"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
 });

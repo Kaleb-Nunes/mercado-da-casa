@@ -214,6 +214,34 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;f
 .hml-btn{background:none;border:0;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 4px}
 .warnbox{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
 .warnbox[hidden]{display:none}
+/* Elida IA: perfis e rótulos */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.seg{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px;margin:0 0 14px}
+.seg button{flex:1;min-height:44px;border:0;border-radius:99px;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--muted)}
+.seg button[aria-current=page]{background:var(--hero);color:var(--hero-ink)}
+.ia-op{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:500;cursor:pointer}
+.ia-op input{width:22px;height:22px;flex:none;accent-color:var(--hero)}
+.ia-sit{margin:0 0 8px 32px}
+.ia-erro{color:#9B2C2C;font-size:14px;font-weight:600;margin:4px 0 0}
+.ia-erro[hidden]{display:none}
+.ia-lista{border:1px solid var(--line);margin:0 0 10px;padding:4px 14px}
+.ia-perfil{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--line)}
+.ia-perfil:first-of-type{border-top:0}
+.ia-perfil small,.ia-prod small{color:var(--muted)}
+.ia-acoes{display:flex;gap:12px}
+.ia-vazio{padding:16px;display:flex;flex-direction:column;gap:8px}
+.ia-busca label{font-size:13px;font-weight:600;color:var(--muted)}
+.ia-linha{display:flex;gap:8px;margin-top:4px}
+.ia-linha .inp{flex:1}
+.ia-h{font-size:16px;margin:16px 0 4px}
+.ia-prod{padding:14px;margin:10px 0}
+.ia-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ia-det{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.ia-fonte{font-size:13px;color:var(--muted);margin:8px 0 0}
+.ia-chip{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.ia-INCOMPATIVEL_IDENTIFICADO,.ia-POSSIVEL_CONTAMINACAO{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.ia-REQUER_ORIENTACAO_PROFISSIONAL{background:#FFF4D6;color:#6B5310;border-color:#B08A1E}
+.ia-dl{font-size:14px;margin:12px 0}.ia-dl dt{font-weight:700;margin-top:8px}.ia-dl dd{margin:2px 0 0}
 textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-height:1.4}
 .tip .act{align-self:flex-start;background:var(--hero);color:var(--hero-ink);border:0;border-radius:99px;padding:7px 14px;font-weight:700;font-size:13px}
 
@@ -381,6 +409,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   <section class="view" id="view-precos" aria-label="Preços"></section>
   <section class="view" id="view-lista" aria-label="Lista"></section>
   <section class="view" id="view-rotulo" aria-label="Dieta"></section>
+  <section class="view" id="view-perfis" aria-label="Perfis alimentares"></section>
+  <section class="view" id="view-rotulos" aria-label="Rótulos"></section>
   <section class="view" id="view-ofertas" aria-label="Ofertas da semana"></section>
 </main>
 
@@ -403,6 +433,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="w-name"></div>
 
 <script src="dieta.js"></script>
+<script src="elida-regras.js"></script>
+<script src="elida-busca.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1187,14 +1219,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var nf = ft ? Object.keys(ft).length : 0;
     return (st.items || []).length + " itens, " + g + " gastos em " + ms + (ms === 1 ? " mês" : " meses") + (ft ? ", " + nf + (nf === 1 ? " foto" : " fotos") : ", sem fotos");
   }
-  function pacoteBackup(){ return {formato: "elida-backup", versao: 2, criado: new Date().toISOString(), estado: state, fotos: fotos}; }
+  function pacoteBackup(){ return {formato: "elida-backup", versao: 2, criado: new Date().toISOString(), estado: state, fotos: fotos, perfis: perfisEstado.guardar ? IA.migrarPerfis(perfisEstado) : undefined}; }
   function lerBackup(txt){
     var pos = String(txt || "").indexOf("{"); if(pos < 0) throw new Error("vazio");
     var o = JSON.parse(String(txt).slice(pos)), st, ft = null, criado = "";
-    if(o && o.formato === "elida-backup"){ st = o.estado; if(o.fotos && typeof o.fotos === "object") ft = o.fotos; criado = String(o.criado || "").slice(0, 10); }
+    var pf = null;
+    if(o && o.formato === "elida-backup"){ st = o.estado; if(o.fotos && typeof o.fotos === "object") ft = o.fotos; criado = String(o.criado || "").slice(0, 10); if(o.perfis) pf = IA.migrarPerfis(o.perfis); }
     else st = o;
     if(!valid(st)) throw new Error("invalido");
-    return {estado: st, fotos: ft, criado: criado};
+    return {estado: st, fotos: ft, criado: criado, perfis: pf};
   }
   function sheetBackup(){
     ui.sheet = {type:"backup"};
@@ -1232,11 +1265,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     ui.sheet = {type:"restaurar-previa", backup: b};
     openSheet('<h3 class="sh-title" id="sh-title">Restaurar este backup?</h3>' +
       '<div class="warnbox" role="alert"><b>Backup' + (b.criado ? ' de ' + esc(dShort(b.criado)) : '') + ':</b> ' + esc(resumoEstado(b.estado, b.fotos)) + '.<br>' +
-      '<b>Agora no app:</b> ' + esc(resumoEstado(state, fotos)) + '.<br>O que está no app será trocado pelo backup. O app guarda uma cópia do que está aqui agora para você poder desfazer.</div>' +
+      (b.perfis && b.perfis.perfis.length ? 'O backup também tem ' + b.perfis.perfis.length + (b.perfis.perfis.length === 1 ? ' perfil alimentar' : ' perfis alimentares') + '.<br>' : '') + '<b>Agora no app:</b> ' + esc(resumoEstado(state, fotos)) + '.<br>O que está no app será trocado pelo backup. O app guarda uma cópia do que está aqui agora para você poder desfazer.</div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="aplicar-restaurar">Restaurar este backup</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div>');
   }
   function aplicarRestauracao(b){
-    var copia = {em: todayStr(), estado: state, fotos: fotos}, guardou = false;
+    var copia = {em: todayStr(), estado: state, fotos: fotos, perfis: perfisEstado.guardar ? perfisEstado : undefined}, guardou = false;
     try{ localStorage.setItem(BK_ANTES, JSON.stringify(copia)); guardou = true; }catch(e){
       try{ localStorage.setItem(BK_ANTES, JSON.stringify({em: copia.em, estado: state})); guardou = true; }catch(e2){}
     }
@@ -1246,6 +1279,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     s.items.forEach(function(x){ if(!x.ev && marcas[x.id]) x.ev = marcas[x.id]; });
     state = s;
     if(b.fotos){ fotos = b.fotos; saveFotos(); }
+    if(b.perfis && b.perfis.perfis.length){ perfisEstado = b.perfis; perfisEstado.guardar = true; perfisEstado.consentidoEm = perfisEstado.consentidoEm || todayStr(); salvarPerfis(); }
     save(); closeSheet(); show("inicio");
     toast(guardou ? "Backup restaurado" : "Backup restaurado. Sem espaço para guardar a cópia de antes");
   }
@@ -1253,6 +1287,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var c = null; try{ c = JSON.parse(localStorage.getItem(BK_ANTES) || "null"); }catch(e){}
     if(!c || !valid(c.estado)){ toast("Não há restauração para desfazer"); return; }
     state = c.estado; if(c.fotos){ fotos = c.fotos; saveFotos(); }
+    if(c.perfis){ perfisEstado = IA.migrarPerfis(c.perfis); perfisEstado.guardar = true; salvarPerfis(); }
     save(); try{ localStorage.removeItem(BK_ANTES); }catch(e){}
     closeSheet(); show("inicio"); toast("Voltou ao que estava antes da restauração");
   }
@@ -1361,7 +1396,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function renderDieta(){
     var d = state.dieta || defaultDieta(), mod = DietaMotor.modeloPorId(d.modelo);
     var temLista = !!mod || (d.evitar || []).length > 0, ligada = d.ativa && temLista;
-    var h = '<div class="head-row"><div><h2 class="title">' + esc(ligada ? (d.nome || 'Dieta') : (temLista ? 'Dieta desligada' : 'Nenhuma dieta')) + '</h2><p class="sub">' +
+    var h = segDieta("rotulo") + '<div class="head-row"><div><h2 class="title">' + esc(ligada ? (d.nome || 'Dieta') : (temLista ? 'Dieta desligada' : 'Nenhuma dieta')) + '</h2><p class="sub">' +
       (ligada ? 'Cada item da casa recebe um de três avisos, só pelo nome.' : temLista ? 'O app não está avisando nada. Toque em Editar para ligar de novo.' : 'Se alguém da casa tem uma restrição orientada pelo médico, monte a lista aqui.') + '</p></div>' +
       (temLista ? '<button class="btn-sm" type="button" data-act="editar-dieta">' + IC.edit + 'Editar</button>' : '') + '</div>';
     h += '<p class="aviso-fixo" role="note">' + esc(DietaMotor.AVISO_FIXO) + '</p>';
@@ -1916,13 +1951,174 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
 
   /* ---------- Navegação ---------- */
-  var VIEWS = ["inicio","precos","lista","rotulo","ofertas"];
+  var VIEWS = ["inicio","precos","lista","rotulo","ofertas","perfis","rotulos"];
+  /* ---------- Elida IA: perfis e rótulos dentro do app ----------
+     Perfis ficam neste endereço (mesma origem do app), só com consentimento. A busca usa o
+     contrato do elida-busca.js: dados fictícios na homologação, "indisponível" em produção. */
+  var IA = window.ElidaRegras, BUS = window.ElidaBusca;
+  var Perfis = IA.criarArmazem(window.localStorage, PFX + "elida-perfis-v1");
+  var perfisEstado = Perfis.carregar();
+  var Busca = BUS.criarBusca({ provedor: HML ? BUS.provedorFicticio() : null, producao: PRODUCAO });
+  var buscaIA = { texto: "", resposta: null, rodando: false };
+  var gatilhosIA = IA.criarGatilhos({
+    REAVALIAR_RESULTADOS_LOCAIS: function(){ if(ui.view === "rotulos" || ui.view === "perfis") render(); },
+    INVALIDAR_RESULTADOS_E_REAVALIAR: function(){ if(ui.view === "rotulos" || ui.view === "perfis") render(); },
+    EXCLUIR_DADOS_DO_PERFIL: function(){ render(); },
+    BUSCAR_PRODUTO_E_APLICAR_PERFIL: function(ctx){ executarBusca(ctx.texto); },
+    CONSULTAR_FONTE_E_APLICAR_PERFIL: function(ctx){ executarBusca(ctx.texto); }
+  }, { fornecedorAprovado: !!Busca.fornecedor });
+  function perfilAtivo(){ return perfisEstado.perfis.filter(function(p){ return p.id === perfisEstado.ativo; })[0] || null; }
+  function salvarPerfis(){ return Perfis.salvar(perfisEstado); }
+  function segDieta(atual){
+    return '<nav class="seg" aria-label="Seções da dieta">' + [["rotulo","Avisos da lista"],["perfis","Perfis"],["rotulos","Rótulos"]].map(function(s){
+      return '<button type="button" data-act="nav" data-view="' + s[0] + '"' + (s[0] === atual ? ' aria-current="page"' : '') + '>' + s[1] + '</button>'; }).join("") + '</nav>';
+  }
+  function nomesRestricoes(p){ return p.restricoes.map(function(r){ return IA.RESTRICOES[r.tipo].nome + " (" + IA.SITUACOES[r.situacao].toLowerCase() + ")"; }).join(", "); }
+  function renderPerfisIA(){
+    var v = document.getElementById("view-perfis"), ps = perfisEstado.perfis;
+    var h = segDieta("perfis") + '<div class="head-row"><div><h2 class="title">Perfis</h2><p class="sub">Um perfil para cada pessoa com restrição. O perfil escolhido é aplicado em todas as buscas de rótulo.</p></div>' +
+      '<button class="btn-sm" type="button" data-act="novo-perfil">' + IC.plus + 'Novo</button></div>';
+    if(!ps.length) h += '<div class="card ia-vazio"><p><b>Nenhum perfil ainda.</b></p><p class="sub">Não precisa de diagnóstico: dá para marcar uma suspeita ou preferência.</p><button class="bigbtn" type="button" data-act="novo-perfil">Criar o primeiro perfil</button></div>';
+    else {
+      h += '<fieldset class="card ia-lista"><legend class="sr">Perfil usado nas buscas</legend>' + ps.map(function(p){
+        return '<div class="ia-perfil"><label class="ia-op"><input type="radio" name="perfil-ativo" value="' + esc(p.id) + '"' + (p.id === perfisEstado.ativo ? ' checked' : '') + '><span><b>' + esc(p.apelido) + '</b>' +
+          (p.faixaEtaria ? ' · ' + esc(IA.FAIXAS[p.faixaEtaria]) : '') + '<br><small>' + esc(nomesRestricoes(p)) + '</small></span></label>' +
+          '<span class="ia-acoes"><button class="link" type="button" data-act="editar-perfil" data-id="' + esc(p.id) + '">Editar<span class="sr"> ' + esc(p.apelido) + '</span></button>' +
+          '<button class="link" type="button" data-act="excluir-perfil" data-id="' + esc(p.id) + '">' + (ui.armed === "xp-" + p.id ? 'Toque de novo' : 'Excluir') + '<span class="sr"> ' + esc(p.apelido) + '</span></button></span></div>';
+      }).join("") + '</fieldset>';
+      h += '<p class="sub">' + (perfisEstado.guardar ? 'Guardados só neste aparelho e no seu backup. Nada vai para a internet.' : 'Só nesta sessão: os perfis somem ao fechar o app. Para guardar, edite um perfil e marque "Guardar neste aparelho".') + '</p>' +
+        '<div class="links"><button class="link" type="button" data-act="apagar-perfis">' + (ui.armed === "apagar-perfis" ? 'Toque de novo para apagar todos' : 'Apagar todos os perfis') + '</button></div>';
+    }
+    v.innerHTML = h;
+  }
+  function sheetPerfil(p){
+    ui.sheet = {type: "perfil", id: p ? p.id : null};
+    var sit = {}; (p ? p.restricoes : []).forEach(function(r){ sit[r.tipo] = r.situacao; });
+    openSheet('<h3 class="sh-title" id="sh-title">' + (p ? 'Editar perfil' : 'Novo perfil') + '</h3><form class="form" id="form-perfil" novalidate>' +
+      '<div class="fl"><label for="f-pa">Como quer chamar este perfil?</label><input class="inp" id="f-pa" maxlength="60" autocomplete="off" value="' + esc(p ? p.apelido : "") + '" aria-describedby="h-pa e-pa"><p class="sub" id="h-pa">Um apelido basta. Sem nome completo nem documento.</p><p class="ia-erro" id="e-pa" hidden></p></div>' +
+      '<div class="fl"><label for="f-pf">Faixa etária (opcional)</label><select class="inp" id="f-pf"><option value="">Prefiro não dizer</option>' + Object.keys(IA.FAIXAS).map(function(k){ return '<option value="' + k + '"' + (p && p.faixaEtaria === k ? ' selected' : '') + '>' + esc(IA.FAIXAS[k]) + '</option>'; }).join("") + '</select></div>' +
+      '<fieldset class="fl" id="f-pr" aria-describedby="h-pr e-pr"><legend>O que acompanhar?</legend><p class="sub" id="h-pr">Pode marcar mais de uma.</p>' +
+      Object.keys(IA.RESTRICOES).map(function(k){ return '<label class="ia-op"><input type="checkbox" data-restr value="' + k + '"' + (sit[k] ? ' checked' : '') + '> ' + esc(IA.RESTRICOES[k].nome) + '</label>' +
+        '<div class="ia-sit" id="s-' + k + '"' + (sit[k] ? '' : ' hidden') + '><label for="sel-' + k + '">Situação</label><select class="inp" id="sel-' + k + '"><option value="">Escolha</option>' +
+        Object.keys(IA.SITUACOES).map(function(s){ return '<option value="' + s + '"' + (sit[k] === s ? ' selected' : '') + '>' + esc(IA.SITUACOES[s]) + '</option>'; }).join("") + '</select></div>'; }).join("") +
+      '<p class="ia-erro" id="e-pr" hidden></p></fieldset><div id="ia-infos" aria-live="polite"></div>' +
+      '<label class="ia-op"><input type="checkbox" id="f-pg"' + (perfisEstado.guardar ? ' checked' : '') + '> Guardar os perfis neste aparelho</label><p class="sub">Sem marcar, os perfis somem ao fechar o app.</p>' +
+      '<p class="ia-erro" id="e-pg" hidden></p><div class="sh-actions"><button class="bigbtn" type="submit">Salvar perfil</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div></form>', "f-pa");
+    setTimeout(atualizarFormPerfil, 0);
+  }
+  function dadosFormPerfil(){
+    var rs = [].slice.call(sheet.querySelectorAll("[data-restr]:checked")).map(function(i){ return i.value; }), sit = {};
+    rs.forEach(function(k){ sit[k] = document.getElementById("sel-" + k).value; });
+    return { id: ui.sheet && ui.sheet.id || undefined, apelido: document.getElementById("f-pa").value, faixaEtaria: document.getElementById("f-pf").value || null, restricoes: rs, situacoes: sit };
+  }
+  function atualizarFormPerfil(){
+    if(!ui.sheet || ui.sheet.type !== "perfil") return;
+    var d = dadosFormPerfil();
+    Object.keys(IA.RESTRICOES).forEach(function(k){ var s = document.getElementById("s-" + k); if(s) s.hidden = d.restricoes.indexOf(k) < 0; });
+    var box = document.getElementById("ia-infos"); if(box) box.innerHTML = IA.infosVisiveis(d).map(function(i){ return '<p class="tip">' + esc(IA.INFOS[i]) + '</p>'; }).join("");
+  }
+  function salvarPerfilIA(){
+    var v = IA.validarFormulario(dadosFormPerfil());
+    var mostra = function(id, campo, msg){ var e = document.getElementById(id); if(e){ e.hidden = !msg; e.textContent = msg || ""; } var c = campo && document.getElementById(campo); if(c) c.setAttribute("aria-invalid", msg ? "true" : "false"); };
+    mostra("e-pa", "f-pa", v.erros.apelido); mostra("e-pr", "f-pr", v.erros.restricoes || v.erros.situacoes); mostra("e-pg", null, v.erros.geral);
+    if(!v.ok){ var f = v.erros.apelido ? document.getElementById("f-pa") : sheet.querySelector("[data-restr]"); if(f) f.focus(); return; }
+    var antes = perfisEstado.perfis.filter(function(p){ return p.id === v.perfil.id; })[0];
+    perfisEstado.perfis = perfisEstado.perfis.filter(function(p){ return p.id !== v.perfil.id; }).concat([v.perfil]);
+    if(!perfisEstado.ativo) perfisEstado.ativo = v.perfil.id;
+    perfisEstado.guardar = document.getElementById("f-pg").checked;
+    perfisEstado.consentidoEm = perfisEstado.guardar ? (perfisEstado.consentidoEm || todayStr()) : null;
+    var guardou = salvarPerfis();
+    closeSheet(); render();
+    toast(perfisEstado.guardar ? (guardou ? "Perfil salvo neste aparelho" : "Sem espaço para guardar o perfil") : "Perfil salvo só nesta sessão");
+    gatilhosIA.disparar(antes && JSON.stringify(antes.restricoes) !== JSON.stringify(v.perfil.restricoes) ? "RESTRICAO_ALTERADA" : "PERFIL_SALVO");
+  }
+  function chipEstado(estado, texto){ return '<span class="ia-chip ia-' + esc(estado) + '">' + esc(texto || IA.TEXTO_ESTADO[estado]) + '</span>'; }
+  function fonteTexto(f){ return esc(f.provedor) + ' · ' + esc(f.identificacao) + ' · conferido em ' + esc(f.dataVerificacao.split("-").reverse().join("/")) + (f.ficticio ? ' · <b>fictício</b>' : ''); }
+  function avaliarProduto(p){ var pa = perfilAtivo(); return pa ? IA.analisar(pa, BUS.rotuloParaRegras(p), { hoje: todayStr() }) : null; }
+  function renderRotulosIA(){
+    var v = document.getElementById("view-rotulos"), pa = perfilAtivo(), r = buscaIA.resposta;
+    var h = segDieta("rotulos") + '<div class="head-row"><div><h2 class="title">Rótulos</h2><p class="sub">' +
+      (pa ? 'Usando o perfil <b>' + esc(pa.apelido) + '</b>. <button class="link" type="button" data-act="nav" data-view="perfis">Trocar</button>' : 'Nenhum perfil escolhido: os produtos aparecem sem avaliação. <button class="link" type="button" data-act="nav" data-view="perfis">Escolher perfil</button>') + '</p></div></div>';
+    h += Busca.ficticio ? '<p class="warnbox" role="note">Homologação: a busca usa um catálogo fictício de teste. Ainda não há fonte real de rótulos.</p>'
+      : !Busca.fornecedor ? '<p class="warnbox" role="note">A busca de rótulos ainda não está disponível: falta uma fonte de dados aprovada. Use "Conferir rótulo digitado".</p>' : '';
+    h += '<form class="ia-busca" id="form-busca" role="search"><label for="f-busca">Nome do produto ou código de barras</label><div class="ia-linha"><input class="inp" id="f-busca" type="search" autocomplete="off" enterkeyhint="search" value="' + esc(buscaIA.texto) + '">' +
+      '<button class="btn-sm" type="submit">' + (buscaIA.rodando ? 'Buscando…' : 'Buscar') + '</button></div></form>' +
+      '<div class="links"><button class="link" type="button" data-act="rotulo-digitado">Conferir rótulo digitado</button><button class="link" type="button" data-act="rotulo-foto">Ler rótulo por foto</button></div>';
+    h += '<div id="ia-resultados" tabindex="-1">';
+    if(r){
+      h += '<h3 class="ia-h">' + (r.status === "ok" ? r.produtos.length + (r.produtos.length === 1 ? ' produto' : ' produtos') + ' para "' + esc(r.consulta.valor) + '"' : 'Resultado da busca') + '</h3>';
+      r.avisos.forEach(function(a){ h += '<p class="sub">' + esc(a) + '</p>'; });
+      if(r.status === "nao_encontrado") h += '<p class="card ia-vazio">Nada encontrado. Confira a embalagem ou use "Conferir rótulo digitado".</p>';
+      r.produtos.forEach(function(p){
+        var a = avaliarProduto(p);
+        h += '<article class="card ia-prod"><div class="ia-topo"><div><b>' + esc(p.nome) + '</b><br><small>' + esc(p.marca || "") + (p.ean ? ' · ' + esc(p.ean) : '') + '</small></div>' + (a ? chipEstado(a.status, a.texto) : '') + '</div>' +
+          (a ? '<ul class="ia-det">' + a.detalhes.map(function(d){ return '<li>' + esc(d.nome) + ': ' + chipEstado(d.estado, d.texto) + '</li>'; }).join("") + '</ul>' : '') +
+          '<p class="ia-fonte">Fonte: ' + fonteTexto(p.fonte) + '</p><div class="links"><button class="link" type="button" data-act="ver-produto" data-id="' + esc(p.id) + '">Ver rótulo e motivos</button>' +
+          '<button class="link" type="button" data-act="produto-lista" data-id="' + esc(p.id) + '">Pôr na lista</button></div></article>';
+      });
+    }
+    h += '</div><p class="aviso-fixo" role="note">O app não diz que um alimento é seguro. Confira sempre a embalagem atual e a orientação profissional. Motor ' + esc(IA.VERSAO_MOTOR) + '.</p>';
+    v.innerHTML = h;
+  }
+  function executarBusca(texto){
+    buscaIA.texto = texto; buscaIA.rodando = true; render();
+    BUS.consultar(Busca, texto).then(function(r){
+      buscaIA.resposta = r; buscaIA.rodando = false; render();
+      var alvo = document.getElementById("ia-resultados"); if(alvo) alvo.focus();
+    });
+  }
+  function produtoDaBusca(id){ var r = buscaIA.resposta; return r && r.produtos.filter(function(p){ return p.id === id; })[0]; }
+  function blocoAnalise(a){
+    return '<div class="dbox"><b>Resultado: ' + esc(a.texto) + '</b>' + a.detalhes.map(function(d){ return '<span><b>' + esc(d.nome) + ':</b> ' + esc(d.texto) + '. ' + esc(d.motivos.join(" ")) + (d.trechos.length ? ' Achado: ' + esc(d.trechos.join(", ")) + '.' : '') + '</span>'; }).join("") +
+      '<span class="sub">' + esc(a.aviso) + '</span></div>';
+  }
+  function sheetProduto(p){
+    ui.sheet = {type: "produto-ia", id: p.id};
+    var r = p.rotulo, a = avaliarProduto(p), dec = {contem: "contém glúten", nao_contem: "não contém glúten", nao_informado: "não informado", contraditorio: "contraditório"},
+      lac = {contem_lactose: "contém lactose", sem_lactose: "sem lactose", nao_informado: "não informado", contraditorio: "contraditório"};
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(p.nome) + '</h3><p class="sh-sub">Fonte: ' + fonteTexto(p.fonte) + '</p>' +
+      (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') +
+      '<dl class="ia-dl"><dt>Ingredientes</dt><dd>' + esc([].concat(r.ingredientes || []).join(", ") || "não informado") + (r.ingredientesCompletos ? '' : ' <b>(lista incompleta)</b>') + '</dd>' +
+      '<dt>Alérgicos: contém</dt><dd>' + esc(r.advertencias && r.advertencias.contem || "nada declarado") + '</dd><dt>Pode conter</dt><dd>' + esc(r.advertencias && r.advertencias.podeConter || "nada declarado") + '</dd>' +
+      '<dt>Glúten</dt><dd>' + esc(dec[r.declaracaoGluten] || "não informado") + '</dd><dt>Lactose</dt><dd>' + esc(lac[r.declaracaoLactose] || "não informado") + '</dd></dl>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="produto-lista" data-id="' + esc(p.id) + '">Pôr na lista</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+  }
+  function produtoNaLista(p){
+    var n = DietaMotor.normalizar(p.nome), it = state.items.filter(function(x){ return DietaMotor.normalizar(x.nome) === n; })[0];
+    if(!it){ it = {id: uid(), cat: "Outros", nome: p.nome, por: "unidade", hist: [], nota: p.ean ? "Código de barras " + p.ean : "", basico: false, lista: false, qtd: 1, ok: false, icon: ""}; state.items.push(it); }
+    it.lista = true; it.ok = false; save(); closeSheet(); render(); toast("Na lista: " + p.nome);
+  }
+  function sheetRotuloDigitado(){
+    ui.sheet = {type: "rotulo-digitado"};
+    openSheet('<h3 class="sh-title" id="sh-title">Conferir rótulo digitado</h3><p class="sh-sub">Copie da embalagem. Sem marcar que copiou tudo, o resultado fica "informação insuficiente".</p><form class="form" id="form-rd" novalidate>' +
+      '<div class="fl"><label for="rd-nome">Produto</label><input class="inp" id="rd-nome" autocomplete="off"></div>' +
+      '<div class="fl"><label for="rd-ing">Ingredientes (separados por vírgula)</label><textarea class="inp" id="rd-ing"></textarea></div>' +
+      '<div class="fl"><label for="rd-contem">Alérgicos: contém</label><input class="inp" id="rd-contem" autocomplete="off"></div>' +
+      '<div class="fl"><label for="rd-pode">Pode conter</label><input class="inp" id="rd-pode" autocomplete="off"></div>' +
+      '<div class="fl"><label for="rd-gl">Glúten</label><select class="inp" id="rd-gl"><option value="nao_informado">Não achei na embalagem</option><option value="contem">Contém glúten</option><option value="nao_contem">Não contém glúten</option><option value="contraditorio">A embalagem se contradiz</option></select></div>' +
+      '<div class="fl"><label for="rd-lac">Lactose</label><select class="inp" id="rd-lac"><option value="nao_informado">Não achei na embalagem</option><option value="contem_lactose">Contém lactose</option><option value="sem_lactose">Sem lactose</option><option value="contraditorio">A embalagem se contradiz</option></select></div>' +
+      '<label class="ia-op"><input type="checkbox" id="rd-form"> É fórmula infantil</label><label class="ia-op"><input type="checkbox" id="rd-ok1"> Copiei a lista inteira de ingredientes</label><label class="ia-op"><input type="checkbox" id="rd-ok2"> Copiei todos os avisos de alérgicos</label>' +
+      '<div id="rd-res" aria-live="polite" tabindex="-1"></div><div class="sh-actions"><button class="bigbtn" type="submit">Analisar com o perfil escolhido</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></form>', "rd-nome");
+  }
+  function analisarDigitado(){
+    var pa = perfilAtivo(), out = document.getElementById("rd-res"), g = function(id){ return document.getElementById(id); };
+    if(!pa){ out.innerHTML = '<p class="ia-erro">Crie ou escolha um perfil antes.</p>'; out.focus(); return; }
+    var rot = { nome: g("rd-nome").value.trim(), categoria: g("rd-form").checked ? "formula_infantil" : "alimento", ingredientes: g("rd-ing").value.split(/[,;\n]/).map(function(s){ return s.trim(); }).filter(Boolean),
+      advertencias: { contem: g("rd-contem").value, podeConter: g("rd-pode").value }, declaracaoGluten: g("rd-gl").value, declaracaoLactose: g("rd-lac").value,
+      ingredientesCompletos: g("rd-ok1").checked, advertenciasCompletas: g("rd-ok2").checked, fonte: { identificacao: "Embalagem conferida por você", dataVerificacao: todayStr() } };
+    var a = IA.analisar(pa, rot, { hoje: todayStr() });
+    out.innerHTML = a.status === "INVALIDO" ? '<p class="ia-erro">' + esc(a.erros.join(" ")) + '</p>' : blocoAnalise(a);
+    out.focus();
+  }
+
   function render(){
     if(ui.view === "inicio") renderInicio();
     else if(ui.view === "precos") renderPrecos();
     else if(ui.view === "lista") renderLista();
     else if(ui.view === "rotulo") renderDieta();
     else if(ui.view === "ofertas") renderOfertas();
+    else if(ui.view === "perfis") renderPerfisIA();
+    else if(ui.view === "rotulos") renderRotulosIA();
     syncPill();
   }
   function show(v, fromHash){
@@ -1930,8 +2126,8 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     ui.view = v; ui.armed = null;
     VIEWS.forEach(function(x){
       document.getElementById("view-" + x).classList.toggle("on", x === v);
-      var t = document.getElementById("tab-" + x);
-      if(t){ if(x === v) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current"); }
+      var t = document.getElementById("tab-" + x), dieta = x === "rotulo" && (v === "perfis" || v === "rotulos");
+      if(t){ if(x === v || dieta) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current"); }
     });
     render();
     if(!fromHash){ try{ history.replaceState(null, "", "#" + v); }catch(e){} }
@@ -1952,6 +2148,19 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var act = b.dataset.act, id = b.dataset.id, it;
     switch(act){
       case "nav": show(b.dataset.view); break;
+      case "novo-perfil": sheetPerfil(null); break;
+      case "editar-perfil": sheetPerfil(perfisEstado.perfis.filter(function(p){ return p.id === id; })[0] || null); break;
+      case "excluir-perfil":
+        if(ui.armed !== "xp-" + id){ ui.armed = "xp-" + id; render(); break; }
+        ui.armed = null; perfisEstado = Object.assign(IA.excluirPerfil(perfisEstado, id), { guardar: perfisEstado.guardar, consentidoEm: perfisEstado.consentidoEm });
+        salvarPerfis(); gatilhosIA.disparar("PERFIL_EXCLUIDO", { id: id }); toast("Perfil excluído"); break;
+      case "apagar-perfis":
+        if(ui.armed !== "apagar-perfis"){ ui.armed = "apagar-perfis"; render(); break; }
+        ui.armed = null; perfisEstado = Perfis.excluirTudo(); render(); toast("Perfis apagados deste aparelho"); break;
+      case "ver-produto": var pv = produtoDaBusca(id); if(pv) sheetProduto(pv); break;
+      case "produto-lista": var pl = produtoDaBusca(id); if(pl) produtoNaLista(pl); break;
+      case "rotulo-digitado": sheetRotuloDigitado(); break;
+      case "rotulo-foto": Busca.porFoto().then(function(r){ toast(r.avisos[0], 4200); }); break;
       case "fechar": closeSheet(); break;
       case "fechar-dica": state.dica = false; save(); renderInicio(); break;
       case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
@@ -2107,7 +2316,15 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
     }
   });
+  document.addEventListener("submit", function(e){
+    var f = e.target;
+    if(f.id === "form-busca"){ e.preventDefault(); var q = document.getElementById("f-busca").value; gatilhosIA.disparar(/^[\d\s.-]{8,}$/.test(q.trim()) ? "CODIGO_LIDO" : "PESQUISA_SOLICITADA", { origem: "usuario", texto: q }); }
+    else if(f.id === "form-perfil"){ e.preventDefault(); salvarPerfilIA(); }
+    else if(f.id === "form-rd"){ e.preventDefault(); analisarDigitado(); }
+  });
   document.addEventListener("change", function(e){
+    if(e.target.name === "perfil-ativo"){ perfisEstado.ativo = e.target.value; salvarPerfis(); gatilhosIA.disparar("PERFIL_SALVO"); toast("Perfil em uso: " + (perfilAtivo() || {}).apelido); return; }
+    if(e.target.matches && e.target.matches("[data-restr], #f-pf")){ atualizarFormPerfil(); return; }
     if(e.target.id === "f-arquivo" && e.target.files && e.target.files[0]){
       var rd = new FileReader(); rd.onload = function(){ previaRestaurar(String(rd.result || "")); };
       rd.onerror = function(){ toast("Não deu para ler o arquivo"); }; rd.readAsText(e.target.files[0]); return;

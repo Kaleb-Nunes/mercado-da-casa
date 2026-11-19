@@ -132,18 +132,21 @@ t("armazém: dado corrompido ou estranho vira estado vazio", function () { var s
 t("armazém: exportação é JSON com formato e versão", function () { var e = R.estadoVazio(); e.perfis.push(P1); var j = JSON.parse(R.exportar(e)); assert.equal(j.formato, "elida-perfis"); assert.equal(j.versao, 1); });
 
 /* --- Convivência com o app atual --- */
-t("app atual: DietaMotor intacto e chaves da Despensa não mudaram", function () {
+t("app: DietaMotor intacto, chaves da Despensa iguais e motor novo integrado", function () {
   var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   assert.ok(/PFX \+ "mercado-casa-v1"/.test(html));
-  assert.ok(html.indexOf("elida-regras.js") < 0, "index.html não deve carregar o motor novo no Marco 1");
+  assert.ok(/<script src="dieta\.js"><\/script>\s*<script src="elida-regras\.js"><\/script>\s*<script src="elida-busca\.js"><\/script>/.test(html));
+  assert.ok(/IA\.criarArmazem\(window\.localStorage, PFX \+ "elida-perfis-v1"\)/.test(html), "perfis na mesma origem do app, com prefixo de homologação");
+  assert.ok(/provedor: HML \? BUS\.provedorFicticio\(\) : null, producao: PRODUCAO/.test(html), "dados fictícios só na homologação");
+  assert.ok(!fs.existsSync(path.join(__dirname, "..", "perfis.html")), "não pode haver segunda experiência isolada");
 });
-t("página de perfis usa chave própria com prefixo de homologação", function () {
-  var h = fs.readFileSync(path.join(__dirname, "..", "perfis.html"), "utf8");
-  assert.ok(/"elida-perfis-v1"/.test(h) && /hml:/.test(h));
-  assert.ok(!/fetch\(|XMLHttpRequest|navigator\.sendBeacon|WebSocket/.test(h), "a página não pode chamar a rede");
-  assert.ok(!/location\.(search|hash)\s*=/.test(h), "restrições não podem ir para a URL");
+t("app: restrições nunca vão para a URL e não há rede nos módulos novos", function () {
+  ["elida-regras.js", "elida-busca.js"].forEach(function (f) { var c = fs.readFileSync(path.join(__dirname, "..", f), "utf8"); assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket|importScripts/.test(c), f); });
+  var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  assert.ok(!/location\.(search|hash)\s*=\s*[^;]*perfil/.test(html));
 });
+t("service worker guarda os módulos novos para uso offline", function () { var sw = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8"); assert.ok(/"\.\/elida-regras\.js", "\.\/elida-busca\.js"/.test(sw)); });
 
-console.log("Elida IA · Marco 1: " + ok + " testes passaram, " + falhas.length + " falharam.");
+console.log("Elida IA · regras: " + ok + " testes passaram, " + falhas.length + " falharam.");
 falhas.forEach(function (f) { console.log("FALHA " + f); });
 process.exit(falhas.length ? 1 : 0);

@@ -1,0 +1,80 @@
+{
+ "android-chrome": {
+  "erros": [],
+  "rede": [],
+  "axe": {
+   "perfis-vazio": [],
+   "folha-perfil-erros": [],
+   "rotulos-resultado": [],
+   "folha-produto": [],
+   "folha-digitado": []
+  },
+  "seg_na_dieta": true,
+  "tab_dieta_ativa_em_perfis": true,
+  "erros_form": [
+   true,
+   true
+  ],
+  "situacao_condicional": true,
+  "infos": "APLV e intolerância à lactose são coisas diferentes. \"Sem lactose\" não quer dizer sem proteína do leite.\n\nO app não escolhe nem indica fórmula infantil. Isso é ",
+  "perfil_salvo_com_consentimento": "Bebê teste",
+  "url_sem_saude": "http://127.0.0.1:8802/index.html#rotulos",
+  "bolo": "1 produto para \"bolo\" |  | Dados fictícios de teste: não são produtos reais. |  | Bolo de chocolate (teste) | Marca Teste · 2000000000022 | Tem algo que precisa ser evitado | Alergia à proteína do leite (APLV): Tem algo que precisa se",
+  "codigo_pao": true,
+  "folha_produto_fonte": true,
+  "foi_para_lista": true,
+  "troca_perfil_reavalia": true,
+  "foto_nao_pronta": "Leitura por foto ainda não existe. Ela vai exigir que você confirme o texto lido antes de ",
+  "digitado": "Resultado: Tem algo que precisa ser evitado | Alergia à soja: Tem algo que precisa ser evitado. Ingrediente ou advertência",
+  "persistiu_2_perfis": 2,
+  "backup_tem_perfis": 2,
+  "previa_cita_perfis": true,
+  "restaurou_perfis": 2,
+  "chaves": [
+   "hml:despensa-ofertas",
+   "hml:elida-antes-restaurar",
+   "hml:elida-perfis-v1",
+   "hml:mercado-casa-fotos",
+   "hml:mercado-casa-v1"
+  ]
+ },
+ "iphone-webkit": {
+  "erros": [],
+  "rede": [],
+  "axe": {
+   "perfis-vazio": [],
+   "folha-perfil-erros": [],
+   "rotulos-resultado": [],
+   "folha-produto": [],
+   "folha-digitado": []
+  },
+  "seg_na_dieta": true,
+  "tab_dieta_ativa_em_perfis": true,
+  "erros_form": [
+   true,
+   true
+  ],
+  "situacao_condicional": true,
+  "infos": "APLV e intolerância à lactose são coisas diferentes. \"Sem lactose\" não quer dizer sem proteína do leite.\n\nO app não escolhe nem indica fórmula infantil. Isso é ",
+  "perfil_salvo_com_consentimento": "Bebê teste",
+  "url_sem_saude": "http://127.0.0.1:8802/index.html#rotulos",
+  "bolo": "1 produto para \"bolo\" |  | Dados fictícios de teste: não são produtos reais. |  | Bolo de chocolate (teste) | Marca Teste · 2000000000022 | Tem algo que precisa ser evitado | Alergia à proteína do leite (APLV):Tem algo que precisa ser",
+  "codigo_pao": true,
+  "folha_produto_fonte": true,
+  "foi_para_lista": true,
+  "troca_perfil_reavalia": true,
+  "foto_nao_pronta": "Leitura por foto ainda não existe. Ela vai exigir que você confirme o texto lido antes de ",
+  "digitado": "Resultado: Tem algo que precisa ser evitado | Alergia à soja: Tem algo que precisa ser evitado. Ingrediente ou advertência",
+  "persistiu_2_perfis": 2,
+  "backup_tem_perfis": 2,
+  "previa_cita_perfis": true,
+  "restaurou_perfis": 2,
+  "chaves": [
+   "hml:despensa-ofertas",
+   "hml:elida-antes-restaurar",
+   "hml:elida-perfis-v1",
+   "hml:mercado-casa-fotos",
+   "hml:mercado-casa-v1"
+  ]
+ }
+}

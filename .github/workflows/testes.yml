@@ -24,7 +24,7 @@ jobs:
       - name: Pacote de homologação
         run: |
           mkdir -p _homologacao
-          cp -r index.html dieta.js sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
+          cp -r index.html dieta.js elida-regras.js elida-busca.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
       - uses: actions/upload-artifact@v4
         with:
           name: homologacao-${{ github.sha }}
@@ -40,7 +40,9 @@ jobs:
         with:
           node-version: 22
       - name: Elida IA · regras, formulário, gatilhos e armazenamento
-        run: node tests/rodar-regras.js | tee relatorio-elida-ia.txt
+        run: |
+          node tests/rodar-regras.js | tee relatorio-elida-ia.txt
+          node tests/rodar-busca.js | tee -a relatorio-elida-ia.txt
       - uses: actions/upload-artifact@v4
         with:
           name: elida-ia-${{ github.sha }}
