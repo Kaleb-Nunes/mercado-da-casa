@@ -1,0 +1,19 @@
+{
+ "_nota": "Revisão manual feita em 19/11/2026 comparando a descrição do varejo com nome, marca e quantidade do OFF. Só GTINs que a heurística marcou para verificar, mais divergências de tamanho achadas no conjunto 'provável'.",
+ "identificacao": {
+  "7891000065440": ["variante_nao_confirmada", "OFF diz só 'Leite moça' 395; varejo diz semidesnatado"],
+  "7891025114673": ["correto", "Activia tradicional, mesmo produto"],
+  "7891962057668": ["variante_nao_confirmada", "OFF: Chocotone M&M's 80g; varejo: kit com sachê de cobertura"],
+  "7896423419276": ["correto", "M&M's pote"],
+  "7891000249239": ["correto", "KitKat branco 41,5 g"],
+  "7891000099032": ["correto", "nome idêntico; a heurística falhou pela codificação da fonte"],
+  "7896022200961": ["correto", "sem nome no OFF, mas marca Renata e 1 kg conferem"],
+  "7894900093001": ["correto", "Fanta Guaraná lata 350 mL"],
+  "7894904098071": ["divergente", "OFF sem marca: 'ling pernil com pimenta'; varejo: linguiça cuiabana Seara"],
+  "7891000702505": ["variante_nao_confirmada", "OFF só 'Chambinho'; varejo: sorvete"],
+  "7891193020387": ["correto", "Bolo mármore Seven Boys"],
+  "7892840817916": ["correto", "Doritos 210 g"],
+  "7894000000275": ["correto", "nome 'Knor', mas marca Knorr e 57 g conferem"],
+  "7891095031122": ["correto_com_dado_divergente", "batata palha extrafina: OFF 120 g, varejo 100 g"]
+ }
+}

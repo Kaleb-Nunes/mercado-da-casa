@@ -1,0 +1,502 @@
+[
+ {
+  "gtin": "7891000065440",
+  "descricao_fonte": "LEITE CONDENSADO SEMIDESNATADO MO�A CAIXA 395G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7891000244449",
+  "descricao_fonte": "IOGURTE PARCIALMENTE DESNATADO MORANGO NESTL� GARRAFA 1,25KG TAMANHO FAM�LIA",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7891008121728",
+  "descricao_fonte": "CHOCOLATE AO LEITE COM AVEL�S GAROTO TALENTO PACOTE 85G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7891025114673",
+  "descricao_fonte": "LEITE FERMENTADO TRADICIONAL ACTIVIA SHOT 100G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7891962057668",
+  "descricao_fonte": "KIT PANETTONE COM GOTAS DE CHOCOLATE 80G + SACH� DE COBERTURA CHOCOLATE COM AVEL� 25G BAUDUCCO CHOCOTTONE + SACH� DE CONFEITOS CHOCOLATE AO LEITE M&M'S 20G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7896024760289",
+  "descricao_fonte": "BISCOITO LEITE MALTADO COBERTURA CHOCOLATE PIRAQU� PACOTE 80G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7896283800559",
+  "descricao_fonte": "LEITE UHT SEMIDESNATADO ZERO LACTOSE JUSSARA GARRAFA 1L",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7896423419276",
+  "descricao_fonte": "CONFEITO DE CHOCOLATE AO LEITE M&MS POTE 30G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7898080640413",
+  "descricao_fonte": "LEITE CONDENSADO ITALAC  395G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7898215151784",
+  "descricao_fonte": "CREME DE LEITE UHT LEVE HOMOGENEIZADO PIRACANJUBA CAIXA 200G",
+  "grupo_sorteio": "laticinios"
+ },
+ {
+  "gtin": "7891000081242",
+  "descricao_fonte": "BISCOITO MINI WAFER PASSATEMPO 20G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7891000249239",
+  "descricao_fonte": "WAFER WHITE KITKAT PACOTE 41,5G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7891000369159",
+  "descricao_fonte": "BISCOITO MORANGO E BANANA MUCILON MEU PRIMEIRO LANCHINHO PACOTE 35G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7891095023226",
+  "descricao_fonte": "SALGADINHO DE MILHO REDINHA REQUEIJ�O YOKI YOKITOS PACOTE 45G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7891962037004",
+  "descricao_fonte": "BISCOITO WAFER RECHEIO MORANGO BAUDUCCO PACOTE 140G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7891962066073",
+  "descricao_fonte": "BISCOITO CHOCOLATE RECHEIO BAUNILHA BAUDUCCO PACOTE 140G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "78939301",
+  "descricao_fonte": "BOMBOM WAFER LACTA SONHO DE VALSA PACOTE 20G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7896006779674",
+  "descricao_fonte": "BISCOITO DE ARROZ INTEGRALADO CAMIL TRADICIONAL 150G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7896061301742",
+  "descricao_fonte": "BISCOITO DIN CRACKERS ORIGINAL TUCS CRUSH PACOTE 60G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7896256065688",
+  "descricao_fonte": "BISCOITO TERMOG�NICO DE CANELA NATURAL LIFE PACOTE 140G",
+  "grupo_sorteio": "biscoitos_salgadinhos"
+ },
+ {
+  "gtin": "7891000099032",
+  "descricao_fonte": "FARINHA L�CTEA ORIGINAL NESTL� SACH� 210G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7891203010605",
+  "descricao_fonte": "P�O BISNAGUINHA PANCO ORIGINAIS PACOTE 300G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7891962053189",
+  "descricao_fonte": "TORRADA TRADICIONAL BAUDUCCO PACOTE 142G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7891962053202",
+  "descricao_fonte": "TORRADA MULTIGR�OS BAUDUCCO PACOTE 142G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7893000674073",
+  "descricao_fonte": "LASANHA QUATRO QUEIJOS SADIA PACOTE 350G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7894904082704",
+  "descricao_fonte": "LASANHA SEARA SABORES 600G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7896005202074",
+  "descricao_fonte": "FARINHA DE TRIGO TRADICIONAL DONA BENTA PACOTE 1KG",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7896005272022",
+  "descricao_fonte": "MISTURA PARA BOLO LARANJA DONA BENTA SACH� 450G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7896005281710",
+  "descricao_fonte": "MACARR�O MASSA COM OVOS PENNE DONA BENTA PACOTE 500G",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7896022200961",
+  "descricao_fonte": "FARINHA DE TRIGO TIPO 1 TRADICIONAL RENATA PACOTE 1KG",
+  "grupo_sorteio": "massas_paes_farinhas"
+ },
+ {
+  "gtin": "7891000338087",
+  "descricao_fonte": "ACHOCOLATADO P� NESCAU PACOTE 550G",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7891149440801",
+  "descricao_fonte": "REFRIGERANTE SUKITA DE LARANJA PET 2L",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7891991001342",
+  "descricao_fonte": "REFRIGERANTE GUARANA ANTARCTICA 2L",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7892840808174",
+  "descricao_fonte": "ISOTONICO MORANGO E MARACUJA GATORADE 500ML",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "78933873",
+  "descricao_fonte": "REFRIGERANTE SEM A��CAR COCA-COLA GARRAFA 200ML",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7894900030013",
+  "descricao_fonte": "REFRIGERANTE LARANJA FANTA LATA 350ML",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7894900093001",
+  "descricao_fonte": "REFRIGERANTE GUARAN� FANTA LATA 350ML",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7894900680522",
+  "descricao_fonte": "REFRIGERANTE LEMON FRESH SPRITE GARRAFA 1,5L",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7894900701753",
+  "descricao_fonte": "REFRIGERANTE SEM A��CAR COCA-COLA GARRAFA 1,5L",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7896005800010",
+  "descricao_fonte": "CAFE TORRADO E MO�DO TRADICIONAL 3 CORA��ES PACOTE 500G",
+  "grupo_sorteio": "bebidas"
+ },
+ {
+  "gtin": "7891095023202",
+  "descricao_fonte": "SALGADINHO DE MILHO CONCHINHA PRESUNTO YOKI YOKITOS PACOTE 54G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7891150027848",
+  "descricao_fonte": "KETCHUP NBA DENVER NUGGETS HELLMANNS GARRAFA 380G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7891515434311",
+  "descricao_fonte": "MORTADELA DEFUMADA PERDIG�O OURO 200G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7893000135529",
+  "descricao_fonte": "SALSICHA HOT-DOG SADIA 500G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7893000949355",
+  "descricao_fonte": "EMPANADO DE FRANGO TRADICIONAL SADIA NUGGETS PACOTE 300G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7894904005482",
+  "descricao_fonte": "SALSICHA HOT DOG SEARA RESFRIADA PACOTE 500G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7894904098071",
+  "descricao_fonte": "LINGUICA CUIABANA GOURMET SEARA 500G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7894904268511",
+  "descricao_fonte": "PRESUNTO SEARA FATIADO 180G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7894904268528",
+  "descricao_fonte": "APRESUNTADO SEARA FATIADO 180G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7894904280001",
+  "descricao_fonte": "EMPANADO DE FRANGO PEITO RECHEIO PRESUNTO E QUEIJO SEARA PACOTE 110G",
+  "grupo_sorteio": "carnes_processadas"
+ },
+ {
+  "gtin": "7891000092606",
+  "descricao_fonte": "BOMBOM CHOCOLATE RECHEIO LEITE MALTADO LOLLO PACOTE 28G",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7891000368572",
+  "descricao_fonte": "CHOCOLATE MEIO AMARGO 40% CACAU CLASSIC PACOTE 80G",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7891000702505",
+  "descricao_fonte": "SORVETE MORANGO NESTL� CHAMBINHO PACOTE 45G",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7891025115649",
+  "descricao_fonte": "BEBIDA L�CTEA UHT COCO COM BATATA-DOCE ZERO LACTOSE YOPRO 15G HIGH PROTEIN CAIXA 250ML",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7891193020387",
+  "descricao_fonte": "BOLO M�RMORE CHOCOLATE E COCO SEVEN BOYS PACOTE 250G",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7893333229001",
+  "descricao_fonte": "GELATINA P� SEM SABOR ROYAL PACOTE 24G 2 UNIDADES",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7895800309780",
+  "descricao_fonte": "GOMA DE MASCAR MELANCIA ZERO A��CAR TRIDENT ENVELOPE 8G 5 UNIDADES",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7896262301022",
+  "descricao_fonte": "BALA MORANGO FRUIT-TELLA PACOTE 40G 10 UNIDADES",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7896423481853",
+  "descricao_fonte": "CHOCOLATE DARK SNICKERS PACOTE 42G",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7898279790776",
+  "descricao_fonte": "BALA MINHOCAS BRILHO FINI 100G",
+  "grupo_sorteio": "doces_chocolates"
+ },
+ {
+  "gtin": "7891000098950",
+  "descricao_fonte": "CEREAL NESTON 3 CEREAIS PACOTE 210G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7891000319505",
+  "descricao_fonte": "CEREAL INFANTIL MULTICEREAIS MUCILON PACOTE 180G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7891095023264",
+  "descricao_fonte": "SALGADINHO DE MILHO QUEIJO BOLINHA YOKI YOKITOS PACOTE 45G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7891150058903",
+  "descricao_fonte": "MILHO VERDE EM CONSERVA KNORR LATA 170G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7892840815783",
+  "descricao_fonte": "FARINHA DE AVEIA QUAKER CAIXA 165G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7892840817916",
+  "descricao_fonte": "SALGADINHO DE MILHO QUEIJO NACHO DORITOS PACOTE 210G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7896006711155",
+  "descricao_fonte": "ARROZ CAMIL T1 5KG",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7896006755517",
+  "descricao_fonte": "ARROZ INTEGRAL PARBOILIZADO CAMIL 1 KG",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7896102500608",
+  "descricao_fonte": "MILHO VERDE EM CONSERVA QUERO LATA 170G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7898176582177",
+  "descricao_fonte": "BARRA DE CEREAL CARAMELO E CACAU COBERTURA CHOCOLATE MEIO AMARGO BIO2 VEGAN CRUNCHY PACOTE 28G",
+  "grupo_sorteio": "graos_cereais"
+ },
+ {
+  "gtin": "7891000006689",
+  "descricao_fonte": "TEMPERO GRANULADO 7 VEGETAIS MAGGI MEU SEGREDO CAIXA 49G 7 UNIDADES",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7891031409404",
+  "descricao_fonte": "KETCHUP TRADICIONAL HEMMER GARRAFA 320G",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7891095910977",
+  "descricao_fonte": "AMENDOIM CROCANTE MOLHO DE PIMENTA YOKI PACOTE 150G",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7891132019281",
+  "descricao_fonte": "TEMPERO PARA CARNES SAZ�N PACOTE 12UN 60G",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7891150012363",
+  "descricao_fonte": "CALDO TABLETE CARNE KNORR CAIXA 114G 12 UNIDADES",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7894000000275",
+  "descricao_fonte": "CALDO TABLETE GALINHA KNORR MAIS SABOR CAIXA 57G 6 UNIDADES",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7896007800001",
+  "descricao_fonte": "MOLHO SHOYU TRADICIONAL SAKURA GARRAFA 500ML",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7896009301131",
+  "descricao_fonte": "ATUM RALADO EM �LEO COMEST�VEL COM CALDO VEGETAL COQUEIRO LATA PESO L�QUIDO 170G PESO DRENADO 120G",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7891150027794",
+  "descricao_fonte": "MOSTARDA AMARELA TRADICIONAL HELLMANNS SQUEEZE 170G",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7896036095126",
+  "descricao_fonte": "MOLHO DE TOMATE BOLONHESA POMAROLA SACH� 300G",
+  "grupo_sorteio": "molhos_temperos"
+ },
+ {
+  "gtin": "7891048040065",
+  "descricao_fonte": "FERMENTO BIOLOGICO INSTANTANEO DR. OETKER 10G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891079001011",
+  "descricao_fonte": "MACARR�O INSTANT�NEO L�MEN GALINHA SUAVE TURMA DA M�NICA NISSIN MIOJO PACOTE 85G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891095023103",
+  "descricao_fonte": "BATATA FRITA ONDULADA COM SAL YOKI YOKITOS PACOTE 90G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891095031115",
+  "descricao_fonte": "BATATA PALHA TRADICIONAL YOKI SACH� 105G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891095031122",
+  "descricao_fonte": "BATATA PALHA EXTRAFINA YOKI SACH� 100G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891095031696",
+  "descricao_fonte": "BATATA PALHA TRADICIONAL YOKI SACH� LEVE 105G PAGUE 90G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891164026462",
+  "descricao_fonte": "PIZZA CONGELADA DE FRANGO COM REQUEIJ�O E MUSSARELA AURORA 460G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891515475703",
+  "descricao_fonte": "LASANHA BOLONHESA SADIA PACOTE 600G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7892840817978",
+  "descricao_fonte": "BATATA FRITA ONDULADA ORIGINAL ELMA CHIPS RUFFLES PACOTE 115G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7893000674233",
+  "descricao_fonte": "LASANHA BOLONHESA SADIA PACOTE 350G",
+  "grupo_sorteio": "congelados_prontos"
+ },
+ {
+  "gtin": "7891000377642",
+  "descricao_fonte": "CHOCOLATE NESTLE CHOCBISCUIT PASTA DE AMENDOIM 90G",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7891095002177",
+  "descricao_fonte": "AMENDOIM JAPON�S YOKI PACOTE 150G",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7891095011605",
+  "descricao_fonte": "AMENDOIM TIPO 2 YOKI PACOTE 500G",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7891095911479",
+  "descricao_fonte": "PIPOCA PARA MICRO-ONDAS COM SAL COBERTURA MANTEIGA PACOTE YOKI 105G",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7891167021013",
+  "descricao_fonte": "SARDINHA COM �LEO GOMES DA COSTA LATA 84G DRENADO 125G L�Q.",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7891910000197",
+  "descricao_fonte": "ACUCAR REFINADO UNIAO 1KG",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7894321826011",
+  "descricao_fonte": "CONSERVA ATUM RALADO COQUEIRO LIGHT LATA PESO LIQUIDO 170G PESO DRENADO 120G",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7896009301155",
+  "descricao_fonte": "ATUM S�LIDO EM �LEO COQUEIRO LATA PESO LIQ 170G PESO DREN 120G",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7896110100043",
+  "descricao_fonte": "SAL MARINHO REFINADO LEBRE PACOTE 1KG",
+  "grupo_sorteio": "outros_alimentos"
+ },
+ {
+  "gtin": "7896292360136",
+  "descricao_fonte": "GELEIA AMORA PREDILECTA VIDRO 230G",
+  "grupo_sorteio": "outros_alimentos"
+ }
+]

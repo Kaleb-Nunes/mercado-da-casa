@@ -1,0 +1,111 @@
+{
+ "metricas": {
+  "amostra": 100,
+  "encontrados_por_gtin": 98,
+  "identificacao_provavel_auto": 85,
+  "identificacao_a_verificar": 13,
+  "identificacao_final": {
+   "correto": 9,
+   "correto_com_dado_divergente": 1,
+   "correto_heuristica": 84,
+   "divergente": 1,
+   "nao_encontrado": 2,
+   "variante_nao_confirmada": 3
+  },
+  "com_ingredientes_e_advertencia_no_texto": 8,
+  "campo_ingredientes_preenchido": 45,
+  "com_ingredientes": 44,
+  "com_ingredientes_em_portugues": 41,
+  "com_advertencia_explicita_no_texto": 8,
+  "com_tags_de_alergenicos_ou_tracos": 26,
+  "com_declaracao_de_gluten_no_texto": 14,
+  "com_foto_de_ingredientes": 43,
+  "incompletos_entre_encontrados": 54,
+  "mais_de_3_anos_sem_atualizar": 0,
+  "contraditorio_gluten": 0,
+  "erros_http_finais": 0,
+  "requisicoes_com_retentativa": 0,
+  "tempo_resposta_ms_mediana": 553.5,
+  "tempo_resposta_ms_p90": 947,
+  "estados_aplv": {
+   "INCOMPATIVEL_IDENTIFICADO": 15,
+   "INFORMACAO_INSUFICIENTE": 28,
+   "NAO_IDENTIFICADO_NOS_DADOS_VERIFICADOS": 1
+  },
+  "estados_celiaca": {
+   "INFORMACAO_INSUFICIENTE": 24,
+   "INCOMPATIVEL_IDENTIFICADO": 18,
+   "NAO_IDENTIFICADO_NOS_DADOS_VERIFICADOS": 2
+  },
+  "busca_por_nome": {
+   "testes": 20,
+   "achou_no_top5": 2,
+   "sem_resultado": 0,
+   "erros_http": 0
+  },
+  "por_grupo": {
+   "laticinios": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 5,
+    "advertencia_texto": 1
+   },
+   "biscoitos_salgadinhos": {
+    "n": 10,
+    "encontrados": 9,
+    "ingredientes": 3,
+    "advertencia_texto": 1
+   },
+   "massas_paes_farinhas": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 6,
+    "advertencia_texto": 2
+   },
+   "bebidas": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 7,
+    "advertencia_texto": 1
+   },
+   "carnes_processadas": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 5,
+    "advertencia_texto": 1
+   },
+   "doces_chocolates": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 2,
+    "advertencia_texto": 0
+   },
+   "graos_cereais": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 5,
+    "advertencia_texto": 1
+   },
+   "molhos_temperos": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 2,
+    "advertencia_texto": 0
+   },
+   "congelados_prontos": {
+    "n": 10,
+    "encontrados": 10,
+    "ingredientes": 6,
+    "advertencia_texto": 1
+   },
+   "outros_alimentos": {
+    "n": 10,
+    "encontrados": 9,
+    "ingredientes": 3,
+    "advertencia_texto": 0
+   }
+  }
+ },
+ "user_agent": "Elida-piloto/0.1 (+https://github.com/Kaleb-Nunes/mercado-da-casa)",
+ "concluido": "2026-11-19T14:54:53"
+}

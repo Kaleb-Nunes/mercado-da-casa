@@ -16,7 +16,7 @@ Nenhuma das duas opções acessíveis resolve sozinha. A base aberta traz ingred
 | Ingredientes e alergênicos | Sim, quando alguém da comunidade cadastrou. Vêm de fotos dos rótulos | **Não.** Traz descrição, marca, NCM, GPC, CEST, imagem e faixa de preço |
 | Confiabilidade e atualização | Variável: depende de colaboradores, pode estar desatualizado ou ser de outra versão da embalagem | Bom para identificação fiscal e comercial. Não é fonte de rotulagem |
 | Código de barras e nome | Sim, as duas | Sim, as duas (GTIN e busca por descrição) |
-| Limites e licença | Sem chave. 100 consultas de produto por minuto e 10 buscas por minuto, contados por usuário quando a chamada sai do celular dele. Licença ODbL: uso comercial permitido com atribuição; base derivada precisa ser compartilhada na mesma licença | Exige token por usuário da API, com cota por plano. Termos comerciais e preços **pendentes de confirmação** (a página de preços não abriu) |
+| Limites e licença | Sem chave. **15 leituras de produto por minuto e 10 buscas por minuto, por IP** (corrigido em 19/11/2026; a versão anterior dizia 100/min, errado). Acima disso o OFF pode banir o IP; limites globais devolvem 503. Quando a chamada sai do celular, o limite conta por usuário. Licença ODbL: uso comercial permitido com atribuição; base derivada precisa ser compartilhada na mesma licença | Exige token por usuário da API, com cota por plano. Termos comerciais e preços **pendentes de confirmação** (a página de preços não abriu) |
 | Custo inicial | R$ 0 | Existe plano gratuito com cota baixa (**confirmar**) |
 | Custo em escala | R$ 0 na API. Em volume alto, cache próprio (Cloudflare Workers ou KV, que tem plano gratuito) | Plano pago por volume (**valores a confirmar**), mais um backend para esconder o token (o front-end público não pode guardar chave) |
 | Riscos | Falta de produto, ingrediente faltando ou desatualizado, dado colaborativo sem validação | Não resolve a necessidade central sozinho, há custo recorrente e dependência de fornecedor |
@@ -32,3 +32,5 @@ Nenhuma das duas opções acessíveis resolve sozinha. A base aberta traz ingred
 3. Tela de fonte e atribuição ODbL, e aviso de dado colaborativo.
 
 Risco de privacidade: a consulta revela ao fornecedor qual produto foi pesquisado e o IP de quem pesquisou, mas não o perfil de saúde.
+
+> **Atualização 19/11/2026:** o piloto de cobertura foi feito. Resultado e recomendação em [PILOTO-OFF.md](PILOTO-OFF.md). Ingredientes vieram em 44 de 100 produtos, abaixo do critério de 60%.

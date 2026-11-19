@@ -1,0 +1,1472 @@
+{
+ "user_agent": "Elida-piloto/0.1 (+https://github.com/Kaleb-Nunes/mercado-da-casa)",
+ "registro": [
+  {
+   "gtin": "7891000065440",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 1022
+    }
+   ]
+  },
+  {
+   "gtin": "7891000244449",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 739
+    }
+   ]
+  },
+  {
+   "gtin": "7891008121728",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891025114673",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891962057668",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896024760289",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896283800559",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896423419276",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7898080640413",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7898215151784",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000081242",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 947
+    }
+   ]
+  },
+  {
+   "gtin": "7891000249239",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 732
+    }
+   ]
+  },
+  {
+   "gtin": "7891000369159",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891095023226",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891962037004",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891962066073",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "78939301",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896006779674",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896061301742",
+   "status_off": 0,
+   "tentativas": [
+    {
+     "http": 404,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896256065688",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000099032",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 496
+    }
+   ]
+  },
+  {
+   "gtin": "7891203010605",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 502
+    }
+   ]
+  },
+  {
+   "gtin": "7891962053189",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891962053202",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7893000674073",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894904082704",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896005202074",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896005272022",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896005281710",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896022200961",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000338087",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 813
+    }
+   ]
+  },
+  {
+   "gtin": "7891149440801",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 501
+    }
+   ]
+  },
+  {
+   "gtin": "7891991001342",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7892840808174",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "78933873",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894900030013",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894900093001",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894900680522",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894900701753",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896005800010",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891095023202",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 929
+    }
+   ]
+  },
+  {
+   "gtin": "7891150027848",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 514
+    }
+   ]
+  },
+  {
+   "gtin": "7891515434311",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7893000135529",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7893000949355",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894904005482",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894904098071",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894904268511",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894904268528",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894904280001",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000092606",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 949
+    }
+   ]
+  },
+  {
+   "gtin": "7891000368572",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 514
+    }
+   ]
+  },
+  {
+   "gtin": "7891000702505",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891025115649",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891193020387",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7893333229001",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7895800309780",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896262301022",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896423481853",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7898279790776",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000098950",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 867
+    }
+   ]
+  },
+  {
+   "gtin": "7891000319505",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 515
+    }
+   ]
+  },
+  {
+   "gtin": "7891095023264",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891150058903",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7892840815783",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7892840817916",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896006711155",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896006755517",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896102500608",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7898176582177",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000006689",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 512
+    }
+   ]
+  },
+  {
+   "gtin": "7891031409404",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 537
+    }
+   ]
+  },
+  {
+   "gtin": "7891095910977",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891132019281",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891150012363",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894000000275",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896007800001",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896009301131",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891150027794",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896036095126",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891048040065",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 506
+    }
+   ]
+  },
+  {
+   "gtin": "7891079001011",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 498
+    }
+   ]
+  },
+  {
+   "gtin": "7891095023103",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891095031115",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891095031122",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891095031696",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891164026462",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891515475703",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7892840817978",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7893000674233",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891000377642",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 636
+    }
+   ]
+  },
+  {
+   "gtin": "7891095002177",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 570
+    }
+   ]
+  },
+  {
+   "gtin": "7891095011605",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891095911479",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891167021013",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7891910000197",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7894321826011",
+   "status_off": 0,
+   "tentativas": [
+    {
+     "http": 404,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896009301155",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896110100043",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  },
+  {
+   "gtin": "7896292360136",
+   "status_off": 1,
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": null,
+     "obs": "coleta 1 (tempo não registrado)"
+    }
+   ]
+  }
+ ],
+ "busca_nome": [
+  {
+   "gtin": "7891000065440",
+   "termos": "LEITE CONDENSADO SEMIDESNATADO MO",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 531
+    }
+   ],
+   "codigos_top5": [
+    "7898403781298",
+    "0444540564439",
+    "7897773305172",
+    "7896256600230",
+    "7896504305085"
+   ],
+   "achou_no_top5": false,
+   "total": 748
+  },
+  {
+   "gtin": "7891000244449",
+   "termos": "IOGURTE PARCIALMENTE DESNATADO MORANGO",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 639
+    }
+   ],
+   "codigos_top5": [
+    "7898958872540",
+    "7898938880206",
+    "7898034920790",
+    "5510975970239",
+    "4828431552709"
+   ],
+   "achou_no_top5": false,
+   "total": 765
+  },
+  {
+   "gtin": "7891000081242",
+   "termos": "BISCOITO MINI WAFER PASSATEMPO",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 540
+    }
+   ],
+   "codigos_top5": [
+    "0555404365267",
+    "7896058200355",
+    "7891000389096",
+    "7891000109298",
+    "7891000241295"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000249239",
+   "termos": "WAFER WHITE KITKAT PACOTE",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 697
+    }
+   ],
+   "codigos_top5": [
+    "3800110301168",
+    "8690562017473",
+    "7613287527493",
+    "8445290568069",
+    "5614187872258"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000099032",
+   "termos": "FARINHA L CTEA ORIGINAL",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 807
+    }
+   ],
+   "codigos_top5": [
+    "3565840207302",
+    "307901030080",
+    "0307901030080",
+    "2866227000821",
+    "5891295300389"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891203010605",
+   "termos": "P O BISNAGUINHA PANCO",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 550
+    }
+   ],
+   "codigos_top5": [
+    "7891203010056",
+    "7891203069924",
+    "7896002308762",
+    "7891203069771",
+    "7898907867214"
+   ],
+   "achou_no_top5": false,
+   "total": 3959
+  },
+  {
+   "gtin": "7891000338087",
+   "termos": "ACHOCOLATADO P NESCAU PACOTE",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 532
+    }
+   ],
+   "codigos_top5": [
+    "7891000379691",
+    "7891000379585",
+    "7891000388853",
+    "7891000370377",
+    "7891000118962"
+   ],
+   "achou_no_top5": false,
+   "total": 928
+  },
+  {
+   "gtin": "7891149440801",
+   "termos": "REFRIGERANTE SUKITA DE LARANJA",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 645
+    }
+   ],
+   "codigos_top5": [
+    "7898941025014",
+    "7891149441501",
+    "7891149103409",
+    "7891149440801",
+    "7896278500402"
+   ],
+   "achou_no_top5": true,
+   "total": 10000
+  },
+  {
+   "gtin": "7891095023202",
+   "termos": "SALGADINHO DE MILHO CONCHINHA",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 545
+    }
+   ],
+   "codigos_top5": [
+    "7896565008253",
+    "7892840819965",
+    "7898971774012",
+    "7896221402425",
+    "0618231021383"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891150027848",
+   "termos": "KETCHUP NBA DENVER NUGGETS",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 566
+    }
+   ],
+   "codigos_top5": [
+    "8901450012471",
+    "8901450015076",
+    "4088700204481",
+    "6066306017801",
+    "0077189054193"
+   ],
+   "achou_no_top5": false,
+   "total": 8301
+  },
+  {
+   "gtin": "7891000092606",
+   "termos": "BOMBOM CHOCOLATE RECHEIO LEITE",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 557
+    }
+   ],
+   "codigos_top5": [
+    "7899930900787",
+    "7896986246050",
+    "5070002194521",
+    "5070002194538",
+    "5070002194514"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000368572",
+   "termos": "CHOCOLATE MEIO AMARGO CACAU",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 697
+    }
+   ],
+   "codigos_top5": [
+    "7897077836860",
+    "7899516207989",
+    "00140119",
+    "7891330017294",
+    "4896496765297"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000098950",
+   "termos": "CEREAL NESTON CEREAIS PACOTE",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 538
+    }
+   ],
+   "codigos_top5": [
+    "2851000480693",
+    "7891000288474",
+    "7891000358801",
+    "7891000260623",
+    "7891000360323"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000319505",
+   "termos": "CEREAL INFANTIL MULTICEREAIS MUCILON",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 531
+    }
+   ],
+   "codigos_top5": [
+    "7613032259396",
+    "7613037008470",
+    "8480000230003",
+    "7891000357019",
+    "7891000319505"
+   ],
+   "achou_no_top5": true,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000006689",
+   "termos": "TEMPERO GRANULADO VEGETAIS MAGGI",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 531
+    }
+   ],
+   "codigos_top5": [
+    "7897077820593",
+    "7898955400470",
+    "7898924867136",
+    "4904561033087",
+    "0818511011138"
+   ],
+   "achou_no_top5": false,
+   "total": 3588
+  },
+  {
+   "gtin": "7891031409404",
+   "termos": "KETCHUP TRADICIONAL HEMMER GARRAFA",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 663
+    }
+   ],
+   "codigos_top5": [
+    "7896025800779",
+    "7791473002761",
+    "7891031110072",
+    "7891031406403",
+    "7891031405284"
+   ],
+   "achou_no_top5": false,
+   "total": 5422
+  },
+  {
+   "gtin": "7891048040065",
+   "termos": "FERMENTO BIOLOGICO INSTANTANEO DR",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 538
+    }
+   ],
+   "codigos_top5": [
+    "5602477817157",
+    "78946996",
+    "0555680002467",
+    "0039738000228",
+    "4061462497674"
+   ],
+   "achou_no_top5": false,
+   "total": 5005
+  },
+  {
+   "gtin": "7891079001011",
+   "termos": "MACARR O INSTANT NEO",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 533
+    }
+   ],
+   "codigos_top5": [
+    "00848941",
+    "4056489356172",
+    "7898080640673",
+    "0076498356110",
+    "4710626420118"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891000377642",
+   "termos": "CHOCOLATE NESTLE CHOCBISCUIT PASTA",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 544
+    }
+   ],
+   "codigos_top5": [
+    "8850011076745",
+    "6294003532956",
+    "0040088004521",
+    "6001068379200",
+    "7891000369371"
+   ],
+   "achou_no_top5": false,
+   "total": 10000
+  },
+  {
+   "gtin": "7891095002177",
+   "termos": "AMENDOIM JAPON S YOKI",
+   "tentativas": [
+    {
+     "http": 200,
+     "ms": 697
+    }
+   ],
+   "codigos_top5": [
+    "7897115100717",
+    "7891095011315",
+    "7896066301839",
+    "7896594973034",
+    "0891495833316"
+   ],
+   "achou_no_top5": false,
+   "total": 7156
+  }
+ ],
+ "observacoes": [
+  "A busca antiga (/cgi/search.pl) respondeu 503 em todas as tentativas durante o piloto; a fase de busca foi refeita na API nova (search.openfoodfacts.org).",
+  "Tempo de resposta medido numa subamostra de 20 GTINs (2 por grupo)."
+ ],
+ "concluido": "2026-11-19T14:54:53"
+}
