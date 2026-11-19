@@ -402,14 +402,17 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="w-name"></div>
 
+<script src="ambiente.js"></script>
 <script src="dieta.js"></script>
 <script>
 (function(){
   "use strict";
   /* Ambiente. Produção é só o endereço publicado. Qualquer outro (prévia, teste local) é homologação:
      os dados ficam com prefixo próprio e o Firebase de produção não é usado. */
-  var PRODUCAO = location.protocol === "https:" && location.hostname === "kaleb-nunes.github.io" && location.pathname.indexOf("/mercado-da-casa/") === 0;
-  var HML = !PRODUCAO, PFX = HML ? "hml:" : "";
+  /* Ambiente pela configuração explícita de ambiente.js: só endereços da lista de homologação
+     são homologação; qualquer outro (inclusive domínio próprio) é produção. */
+  var AMB = window.ElidaAmbiente ? window.ElidaAmbiente.resolver(location) : { producao: true, homologacao: false, prefixoDados: "", catalogoFicticio: false, dadosDeTeste: false };
+  var PRODUCAO = AMB.producao, HML = AMB.homologacao, PFX = AMB.prefixoDados;
   var KEY = PFX + "mercado-casa-v1";
   var CATS = ["Mercearia","Proteínas","Hortifruti","Bebidas","Bebê","Limpeza e casa","Outros"];
   var TIPOS = ["Mercado","Feira","Açougue","Farmácia","Bebê","Outros"];
@@ -2080,7 +2083,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         ui.armed = null; save(); renderLista(); toast("Lista limpa"); break;
       case "backup": sheetBackup(); break;
       case "hml-dados":
-        if(!HML) break;
+        if(!AMB.dadosDeTeste) break;
         if(ui.armed !== "hml-dados"){ ui.armed = "hml-dados"; toast("Toque de novo para trocar tudo pelos dados de teste"); break; }
         ui.armed = null; state = dadosDeTeste(); fotos = {}; saveFotos(); save(); show("inicio"); toast("Dados de teste carregados"); break;
       case "salvar-backup": salvarArquivoBackup(); break;

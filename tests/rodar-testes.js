@@ -233,7 +233,7 @@ confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height
   confere(/function previaRestaurar/.test(html) && /data-act="aplicar-restaurar"/.test(html), "restauração deveria mostrar o conteúdo antes de trocar");
   confere(/BK_ANTES/.test(html) && /function desfazerRestauracao/.test(html), "restauração deveria guardar cópia para desfazer");
   confere(/não mande em grupo/.test(bk), "tela de backup deveria avisar que o arquivo não tem senha");
-  confere(/case "hml-dados":\s*if\(!HML\) break;/.test(html), "dados de teste só podem existir na homologação");
+  confere(/case "hml-dados":\s*if\(!AMB\.dadosDeTeste\) break;/.test(html), "dados de teste só podem existir na homologação");
 })();
 
 /* 14. Fontes no próprio site e área de toque */
