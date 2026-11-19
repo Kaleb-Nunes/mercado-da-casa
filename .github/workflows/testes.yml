@@ -30,3 +30,19 @@ jobs:
           name: homologacao-${{ github.sha }}
           path: _homologacao
           retention-days: 14
+
+  elida-ia:
+    # Pipeline separado: motor de regras do Elida IA (Marco 1). Não afeta o Elida Familiar.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Elida IA · regras, formulário, gatilhos e armazenamento
+        run: node tests/rodar-regras.js | tee relatorio-elida-ia.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elida-ia-${{ github.sha }}
+          path: relatorio-elida-ia.txt
+          retention-days: 14

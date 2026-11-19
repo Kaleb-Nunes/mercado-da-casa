@@ -1,0 +1,52 @@
+{
+ "android-chrome": {
+  "erros": [],
+  "rede": [],
+  "axe_inicial": [],
+  "erros_campos": [
+   true,
+   true
+  ],
+  "axe_com_erros": [],
+  "situacao_aparece": true,
+  "infos": "APLV e intolerância à lactose são coisas diferentes. \"Sem lactose\" não quer dizer sem proteína do leite.\n\nDoença celíaca e alergia ao trigo são diferentes. Para celíaca, o app olha a declaração de glúten do rótulo e cereais como trigo, centeio, cevada, malte e aveia.\n\nO app não escolhe nem indica fó",
+  "exige_situacao": true,
+  "perfis_na_lista": 1,
+  "sem_consentimento_nada_salvo": true,
+  "sem_consentimento_some_ao_recarregar": true,
+  "com_consentimento_persiste": 2,
+  "resultado": "Resultado geral\nTem algo que precisa ser evitado\nAlergia ao ovo\nTem algo que precisa ser evitado\nIngrediente ou advertência ligada a ovo.\nAchado no rótulo: ovos, ovo\n\nO resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.",
+  "url_sem_dados": "http://127.0.0.1:8801/perfis.html",
+  "axe_resultado": [],
+  "aviso_rotulo_mudou": true,
+  "restricao_mudou_invalida": true,
+  "excluiu": true,
+  "apagar_tudo": true,
+  "chaves_app_familia_intocadas": true
+ },
+ "iphone-webkit": {
+  "erros": [],
+  "rede": [],
+  "axe_inicial": [],
+  "erros_campos": [
+   true,
+   true
+  ],
+  "axe_com_erros": [],
+  "situacao_aparece": true,
+  "infos": "APLV e intolerância à lactose são coisas diferentes. \"Sem lactose\" não quer dizer sem proteína do leite.\n\nDoença celíaca e alergia ao trigo são diferentes. Para celíaca, o app olha a declaração de glúten do rótulo e cereais como trigo, centeio, cevada, malte e aveia.\n\nO app não escolhe nem indica fó",
+  "exige_situacao": true,
+  "perfis_na_lista": 1,
+  "sem_consentimento_nada_salvo": true,
+  "sem_consentimento_some_ao_recarregar": true,
+  "com_consentimento_persiste": 2,
+  "resultado": "Resultado geral\nTem algo que precisa ser evitado\nAlergia ao ovo\nTem algo que precisa ser evitado\nIngrediente ou advertência ligada a ovo.\nAchado no rótulo: ovos, ovo\n\nO resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.",
+  "url_sem_dados": "http://127.0.0.1:8801/perfis.html",
+  "axe_resultado": [],
+  "aviso_rotulo_mudou": true,
+  "restricao_mudou_invalida": true,
+  "excluiu": true,
+  "apagar_tudo": true,
+  "chaves_app_familia_intocadas": true
+ }
+}
