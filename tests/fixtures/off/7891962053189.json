@@ -1,0 +1,19 @@
+{
+ "status": 1,
+ "code": "7891962053189",
+ "product": {
+  "code": "7891962053189",
+  "product_name": "Torrada bauducco",
+  "product_name_pt": "Torrada bauducco",
+  "generic_name_pt": "",
+  "brands": "Bauducco",
+  "quantity": "142 g",
+  "ingredients_text_pt": "FARINHA DE TRIGO (ENRIQUECIDA COM FERRO, ÁCIDO FÓLICO), GORDURA VEGETAL, AÇÚCAR, SAL, EXTRATO DE MALTE.",
+  "ingredients_text": "FARINHA DE TRIGO (ENRIQUECIDA COM FERRO, ÁCIDO FÓLICO), GORDURA VEGETAL, AÇÚCAR, SAL, EXTRATO DE MALTE.",
+  "allergens_tags": [
+   "en:gluten"
+  ],
+  "traces_tags": [],
+  "last_modified_t": 1779056391
+ }
+}

@@ -4,8 +4,10 @@ importScripts("./ambiente.js");
 /* Mesma decisão do app: só a lista de homologação de ambiente.js é homologação. */
 const AMB = self.ElidaAmbiente.resolver(self.location);
 const PRODUCAO = AMB.producao;
-const CACHE = AMB.prefixoCache + "-v9";
-const CORE = ["./", "./index.html", "./ambiente.js", "./dieta.js", "./elida-regras.js", "./elida-busca.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js", "./fonts/fraunces.woff2", "./fonts/onest.woff2"];
+const CACHE = AMB.prefixoCache + "-v10";
+/* Leitor de rótulos (cerca de 5 MB): cache próprio, fora da versão do app, para não baixar de novo a cada atualização. */
+const CACHE_OCR = AMB.prefixoCache + "-ocr-1";
+const CORE = ["./", "./index.html", "./ambiente.js", "./dieta.js", "./elida-regras.js", "./elida-busca.js", "./elida-ocr.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js", "./fonts/fraunces.woff2", "./fonts/onest.woff2"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
@@ -13,12 +15,18 @@ self.addEventListener("activate", (e) => {
   /* Apaga só versões antigas deste app neste ambiente. Outros sites do mesmo domínio
      (kaleb-nunes.github.io/...) e a homologação não são tocados. */
   const meu = (k) => PRODUCAO ? /^despensa-v\d+$/.test(k) : /^despensa-hml-v\d+$/.test(k);
+  /* CACHE_OCR (despensa[-hml]-ocr-N) não casa com essas expressões e sobrevive às atualizações do app. */
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && meu(k)).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+  if (url.origin === self.location.origin && url.pathname.indexOf("/vendor/ocr/") >= 0) {
+    /* Arquivos do leitor não mudam dentro da mesma versão: cache primeiro, rede se faltar. */
+    e.respondWith(caches.open(CACHE_OCR).then((c) => c.match(req, { ignoreSearch: true }).then((r) => r || fetch(req).then((res) => { if (res.ok) c.put(req, res.clone()); return res; }))));
+    return;
+  }
   if (url.origin === self.location.origin) {
     e.respondWith(
       fetch(req).then((res) => {

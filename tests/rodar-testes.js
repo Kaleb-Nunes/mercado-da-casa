@@ -148,9 +148,9 @@ confere(/var FB_CONFIG_HML = null;/.test(html), "Firebase: FB_CONFIG_HML deveria
 var chamadas = html.match(/localStorage\.(getItem|setItem|removeItem)\(\s*([A-Za-z_]+)/g) || [];
 chamadas.forEach(function (c) {
   var v = c.replace(/.*\(\s*/, "");
-  confere(["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY", "BK_ANTES", "BK_ULTIMO"].indexOf(v) >= 0, "homologação: chave de armazenamento fora do padrão (" + v + ")");
+  confere(["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY", "BK_ANTES", "BK_ULTIMO", "FONTE_TESTE_KEY", "CONF_KEY", "OFF_CACHE_KEY"].indexOf(v) >= 0, "homologação: chave de armazenamento fora do padrão (" + v + ")");
 });
-["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY"].forEach(function (k) {
+["KEY", "FOTO_KEY", "OF_KEY", "CASA_KEY", "FONTE_TESTE_KEY", "CONF_KEY", "OFF_CACHE_KEY"].forEach(function (k) {
   confere(new RegExp("\\b" + k + " = PFX \\+ \"").test(html), "homologação: " + k + " deveria usar o prefixo de ambiente");
 });
 confere(/<script src="dieta\.js"><\/script>/.test(html), "o app deveria carregar dieta.js");

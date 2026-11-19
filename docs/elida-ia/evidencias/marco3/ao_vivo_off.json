@@ -1,0 +1,12 @@
+{
+ "fora": [
+  [
+   "https://world.openfoodfacts.org/api/v2/product/7898080640413.json?fields=code,product_name",
+   200,
+   "*"
+  ]
+ ],
+ "erros": [],
+ "console": [],
+ "card": "1 produto para \"7898080640413\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nLeite CondensadoRascunho\nItalac · 395 g · 7898080640413\nTem algo que precisa ser evitado\nAlergia à proteína do leite (APLV): Tem algo que precisa ser evitado\nDoença celíaca (glúten): Informação insuficiente: confira a embalagem\n\nFonte: Open Food Facts (colaborativo) · GTIN 7898080640413 · editado no OFF em 02/04/2026 · consultado em 19/11/2026 · Dados: Open Food Fa"
+}

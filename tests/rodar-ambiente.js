@@ -39,7 +39,8 @@ t("index.html carrega ambiente.js antes do app e não tem domínio fixo", functi
 });
 t("se ambiente.js não carregar, o app assume produção", function () { assert.ok(/: \{ producao: true, homologacao: false, prefixoDados: "", catalogoFicticio: false, dadosDeTeste: false \}/.test(html)); });
 t("catálogo fictício e dados de teste dependem só do ambiente", function () {
-  assert.ok(/provedor: AMB\.catalogoFicticio \? BUS\.provedorFicticio\(\) : null, producao: AMB\.producao/.test(html));
+  assert.ok(/function criarProvedorIA\(\)\{\s*if\(!AMB\.homologacao\) return null;/.test(html));
+  assert.ok(/return AMB\.catalogoFicticio \? BUS\.provedorFicticio\(\) : null;/.test(html));
   assert.ok(/if\(!AMB\.dadosDeTeste\) break;/.test(html));
 });
 function rodarSW(host) {

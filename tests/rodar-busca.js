@@ -25,7 +25,7 @@ t("produto fora do contrato é descartado com aviso", function () {
   var ruim = { nome: "x", porNome: function () { return Promise.resolve([{ id: "a", nome: "Sem fonte" }]); }, porCodigo: function () { return Promise.resolve([]); } };
   return B.criarBusca({ provedor: ruim }).porNome("sem fonte").then(function (r) { assert.equal(r.status, "nao_encontrado"); assert.match(r.avisos.join(" "), /descartado/); });
 });
-t("resposta traz versão do contrato e a consulta", function () { return busca.porNome("bolo").then(function (r) { assert.equal(r.versaoContrato, 1); assert.deepEqual(r.consulta, { tipo: "nome", valor: "bolo" }); }); });
+t("resposta traz versão do contrato e a consulta", function () { return busca.porNome("bolo").then(function (r) { assert.equal(r.versaoContrato, 2); assert.deepEqual(r.consulta, { tipo: "nome", valor: "bolo" }); }); });
 
 /* Busca por nome e código */
 t("busca por nome ignora acento e maiúscula", function () { return busca.porNome("PÃO DE FORMA").then(function (r) { assert.equal(r.produtos[0].id, "t-pao"); }); });
@@ -46,7 +46,7 @@ t("fonte lenta estoura o tempo limite", function () { var lento = { nome: "lento
   return B.criarBusca({ provedor: lento, tempoLimiteMs: 30 }).porNome("bolo").then(function (r) { assert.equal(r.status, "indisponivel"); assert.match(r.avisos[0], /tempo/); }); });
 t("produção nunca usa dados fictícios", function () { var b = B.criarBusca({ provedor: B.provedorFicticio(), producao: true }); assert.equal(b.fornecedor, null);
   return b.porNome("bolo").then(function (r) { assert.equal(r.status, "indisponivel"); assert.equal(r.produtos.length, 0); }); });
-t("foto: só contrato, responde não implementado", function () { return busca.porFoto().then(function (r) { assert.equal(r.status, "nao_implementado"); assert.match(r.avisos[0], /confirme/); }); });
+t("foto: não passa pela busca (leitura é local)", function () { return busca.porFoto().then(function (r) { assert.equal(r.status, "nao_implementado"); assert.match(r.avisos[0], /próprio aparelho/); }); });
 
 /* Regras aplicadas aos resultados (perfil ativo) */
 t("APLV: bolo com leite é incompatível", function () { return avaliar("bolo", perfil("aplv")).then(function (a) { assert.equal(a.status, E.INCOMPATIVEL); }); });
@@ -72,6 +72,86 @@ t("nenhum resultado do catálogo diz seguro", function () {
       r.produtos.forEach(function (p) { var s = JSON.stringify(R.analisar(perfil(tipo), B.rotuloParaRegras(p), { hoje: HOJE })).toLowerCase(); assert.ok(s.indexOf("seguro para") < 0 && s.indexOf('"seguro"') < 0); });
     });
   });
+});
+
+/* ---------- Marco 3: Open Food Facts (rede simulada, sem chamada real) ---------- */
+var fs = require("fs");
+function fx(c) { return JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "off", c + ".json"), "utf8")); }
+function redeFalsa(rotas, log) {
+  return function (url, opcoes) {
+    log && log.push({ url: url, opcoes: opcoes });
+    for (var i = 0; i < rotas.length; i++) if (rotas[i][0].test(url)) { var r = rotas[i][1](url); return Promise.resolve({ status: r.status || 200, ok: (r.status || 200) < 400, json: function () { return Promise.resolve(r.corpo); } }); }
+    return Promise.resolve({ status: 404, ok: false, json: function () { return Promise.resolve({ status: 0 }); } });
+  };
+}
+var relogio = { t: Date.parse("2026-11-19T12:00:00Z") };
+function off(rotas, log, extra) { return B.provedorOpenFoodFacts(Object.assign({ fetch: redeFalsa(rotas, log), agora: function () { return relogio.t; }, hoje: function () { return HOJE; }, appName: "Elida-teste", appVersion: "t" }, extra || {})); }
+var ROTAS = [[/api\/v2\/product\/(\d+)/, function (u) { var c = u.match(/product\/(\d+)/)[1]; try { return { corpo: fx(c) }; } catch (e) { return { status: 404, corpo: { status: 0 } }; } }],
+  [/search\.openfoodfacts\.org\/search/, function () { return { corpo: { hits: [{ code: "7898215151784", product_name: "Creme de Leite", brands: "Piracanjuba", quantity: "200 g" }, { code: "123", product_name: "inválido" }] } }; }]];
+
+t("OFF: produto vem como rascunho, nunca completo", function () {
+  return B.criarBusca({ provedor: off(ROTAS) }).porCodigo("7898215151784").then(function (r) {
+    var p = r.produtos[0]; assert.equal(r.status, "ok"); assert.equal(p.rotulo.rascunho, true); assert.equal(p.rotulo.ingredientesCompletos, false); assert.equal(p.rotulo.advertenciasCompletas, false);
+    assert.equal(p.fonte.rascunho, true); assert.match(p.fonte.licenca, /ODbL/); assert.match(r.avisos[0], /Rascunho do Open Food Facts/);
+  });
+});
+t("OFF: dado sozinho nunca gera conclusão favorável (várias restrições)", function () {
+  var bus = B.criarBusca({ provedor: off(ROTAS) });
+  return Promise.all(["7898215151784", "7891962053189", "7896423419276", "7894904005482"].map(function (c) { return bus.porCodigo(c); })).then(function (rs) {
+    rs.forEach(function (r) {
+      var a = R.analisar(perfil("aplv", "celiaca", "lactose", "alergia_soja", "alergia_ovo", "alergia_trigo"), B.rotuloParaRegras(r.produtos[0]), { hoje: HOJE });
+      assert.notEqual(a.status, E.NAO_IDENTIFICADO, r.consulta.valor);
+      a.detalhes.forEach(function (d) { assert.notEqual(d.estado, E.NAO_IDENTIFICADO, r.consulta.valor + " " + d.restricao); });
+      assert.equal(a.rascunho, true);
+    });
+  });
+});
+t("OFF: alergênico indicado pelo OFF só agrava (creme de leite = incompatível para APLV)", function () {
+  return B.criarBusca({ provedor: off(ROTAS) }).porCodigo("7898215151784").then(function (r) { assert.equal(R.analisar(perfil("aplv"), B.rotuloParaRegras(r.produtos[0]), { hoje: HOJE }).status, E.INCOMPATIVEL); });
+});
+t("OFF: campo de ingredientes com lixo vira lista vazia", function () {
+  return B.criarBusca({ provedor: off(ROTAS) }).porCodigo("7896423419276").then(function (r) { assert.deepEqual(r.produtos[0].rotulo.ingredientes, []); });
+});
+t("OFF: produto inexistente = não encontrado", function () {
+  return B.criarBusca({ provedor: off(ROTAS) }).porCodigo("7891000100103").then(function (r) { assert.equal(r.status, "nao_encontrado"); });
+});
+t("OFF: só o código e a identificação do app saem; sem cookie, sem referrer, sem perfil", function () {
+  var log = [];
+  return B.criarBusca({ provedor: off(ROTAS, log) }).porCodigo("7898215151784").then(function () {
+    assert.equal(log.length, 1); var u = log[0].url;
+    assert.match(u, /^https:\/\/world\.openfoodfacts\.org\/api\/v2\/product\/7898215151784\.json\?fields=/); assert.match(u, /app_name=Elida-teste&app_version=t$/);
+    assert.equal(log[0].opcoes.credentials, "omit"); assert.equal(log[0].opcoes.referrerPolicy, "no-referrer");
+    assert.ok(!/aplv|celiac|perfil|restri/i.test(u));
+  });
+});
+t("OFF: cache de 7 dias evita nova chamada", function () {
+  var log = [], prov = off(ROTAS, log), bus = B.criarBusca({ provedor: prov });
+  return bus.porCodigo("7898215151784").then(function () { return bus.porCodigo("7898215151784"); }).then(function () { assert.equal(log.length, 1); });
+});
+t("OFF: limite de 12 leituras por minuto (a 13ª não sai)", function () {
+  var log = [], bus = B.criarBusca({ provedor: off(ROTAS, log) });
+  var validos = []; for (var n = 0; validos.length < 13; n++) { var base = "7891000" + String(100000 + n).slice(1); for (var d = 0; d < 10; d++) if (B.gtinValido(base + d)) { validos.push(base + d); break; } }
+  return validos.reduce(function (p, c) { return p.then(function (acc) { return bus.porCodigo(c).then(function (r) { acc.push(r); return acc; }); }); }, Promise.resolve([])).then(function (rs) {
+    assert.equal(log.length, 12); assert.equal(rs[12].status, "indisponivel"); assert.match(rs[12].avisos.join(" "), /limite de consultas/);
+  });
+});
+t("OFF: 429/503 bloqueia novas chamadas e o app avisa", function () {
+  var log = [], bus = B.criarBusca({ provedor: off([[/product/, function () { return { status: 503, corpo: {} }; }]], log) });
+  return bus.porCodigo("7898215151784").then(function (r) { assert.equal(r.status, "indisponivel"); assert.match(r.avisos.join(" "), /ocupado \(503\)/); return bus.porCodigo("7891962053189"); })
+    .then(function (r) { assert.equal(log.length, 1, "não chama de novo durante a espera"); assert.match(r.avisos.join(" "), /limite de consultas; tente em \d+ s/); });
+});
+t("OFF: busca por nome devolve só sugestões, sem ingredientes, códigos válidos", function () {
+  return B.criarBusca({ provedor: off(ROTAS) }).porNome("creme de leite").then(function (r) {
+    assert.equal(r.produtos.length, 1); assert.equal(r.produtos[0].sugestao, true); assert.deepEqual(r.produtos[0].rotulo.ingredientes, []); assert.match(r.avisos[0], /confirme se é o mesmo produto, sabor e tamanho/);
+  });
+});
+t("OFF: em produção fica desligado sem aprovação expressa", function () {
+  var log = [], bus = B.criarBusca({ provedor: off(ROTAS, log), producao: true });
+  return bus.porCodigo("7898215151784").then(function (r) { assert.equal(r.status, "indisponivel"); assert.equal(log.length, 0); assert.equal(bus.fornecedor, null); });
+});
+t("OFF: módulo só conhece os dois endereços do OFF", function () {
+  var c = fs.readFileSync(path.join(__dirname, "..", "elida-busca.js"), "utf8"), urls = c.match(/https?:\/\/[^\s"')]+/g) || [];
+  urls.forEach(function (u) { assert.ok(/^https:\/\/(world|search)\.openfoodfacts\.org\//.test(u), u); });
 });
 
 (function roda(i) {

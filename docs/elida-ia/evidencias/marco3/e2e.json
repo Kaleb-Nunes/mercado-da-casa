@@ -1,0 +1,107 @@
+{
+ "android-chrome": {
+  "erros": [],
+  "rede_fora": [
+   "https://world.openfoodfacts.org/api/v2/product/7891962053189.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+   "https://search.openfoodfacts.org/search?q=creme%20de%20leite&page_size=5&fields=code,product_name,product_name_pt,brands,quantity&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+   "https://world.openfoodfacts.org/api/v2/product/7898215151784.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19"
+  ],
+  "axe": {
+   "rotulos": [],
+   "folha-foto": [],
+   "foto-insuficiente": [],
+   "folha-conferir-foto": [],
+   "resultado": [],
+   "off-resultado": []
+  },
+  "sw_controla": true,
+  "tem_fieldset_fonte_teste": true,
+  "borrada_insuficiente": true,
+  "borrada_s": 0.8,
+  "borrada_motivo": "Informação insuficiente: confira a embalagem\n\nA foto ficou pouco legível (confiança 0%). Tire outra, de perto, com luz e sem reflexo.\n\nQuase nenhum texto foi lido na foto.\n\nNão achei a palavra \"Ingred",
+  "legivel_s": 0.3,
+  "prefill": {
+   "ing": "FARINHA DE ARROZ, AÇÚCAR, ÓLEO DE GIRASSOL, AMIDO DE MILHO E SAL",
+   "pode": "PODE CONTER LEITE.",
+   "gl": "nao_contem"
+  },
+  "sem_conferir_bloqueia": true,
+  "conferido_incompleto": "Resultado: Pode conter: risco de contaminação\nAlergia à proteína do leite (APLV): Pode conter: risco de contaminação. O rótulo avisa que pode conter leite. Achado: leite.\nDoença celíaca (glúten): Informação insuficiente: confira a embalagem. Falta conferir: lista de ingredientes incompleta.\nO resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.\nFo",
+  "conferido_completo": "Resultado: Pode conter: risco de contaminação\nAlergia à proteína do leite (APLV): Pode conter: risco de contaminação. O rótulo avisa que pode conter leite. Achado: leite.\nDoença celíaca (glúten): Nada encontrado nos dados conferidos (isso não garante que seja seguro). O rótulo conferido declara \"não contém glúten\".\nO resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.\nFonte: Foto do rótulo conferida por você (ocr-2026.11.19) · 19/11/2026 · motor m3-2026.11.19 · política pol-2026.11.18 (pendente de revisão profissional) · evidência ev-rfhmvm",
+  "conferencias_salvas": 2,
+  "conferencia_tem_perfil": false,
+  "rede_fora_ate_aqui": [],
+  "cache_ocr": [
+   "despensa-hml-v10",
+   "despensa-hml-ocr-1"
+  ],
+  "offline_leu": true,
+  "aviso_off": true,
+  "off_codigo_card": "1 produto para \"7891962053189\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nTorrada bauduccoRascunho\nBauducco · 142 g · 7891962053189\nTem algo que precisa ser evitado\nDoença celíaca (glúten): Tem algo que precisa ser evitado\nAlergia à proteína do leite (APLV): Informação insuficiente: confira a embalagem\n\nFonte: Open Food Facts (colaborativo) · GTIN 7891962053189 · editado no OFF em 17/05/2026 · consultado em 19/11/2026 · Dados: Open Food ",
+  "off_sem_nao_identificado": true,
+  "off_conferir_prefill": "FARINHA DE TRIGO (ENRIQUECIDA COM FERRO, ÁCIDO FÓLICO), GORDURA VEGETAL, AÇÚCAR,",
+  "off_conferir_exige_ok0": true,
+  "sugestao_texto": "1 produto para \"creme de leite\"\n\nSugestões do Open Food Facts: confirme se é o mesmo produto, sabor e tamanho antes de ver a avaliação.\n\nCreme de LeiteSugestão\nPiracanjuba · 200 g · 7898215151784\n\nConfirme se é o mesmo produto, sabor e tamanho da embalagem antes de ver a avaliação.\n\nFonte: Open Food Facts (colaborativo) · GTIN 7898215151784 · consultado em 19/11/2026 · Dados: Open Food Facts (ODbL",
+  "sugestao_sem_avaliacao": true,
+  "apos_confirmar": "1 produto para \"7898215151784\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nCreme de Leite PiracanjubaRascunho\nPiracanjuba · 200 g · 7898215151784\nTem algo que precisa ser evitado\nAlergia à proteína do leite (APLV): Tem algo que precisa ser ev",
+  "chamadas_off": [
+   "https://world.openfoodfacts.org/api/v2/product/7891962053189.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+   "https://search.openfoodfacts.org/search?q=creme%20de%20leite&page_size=5&fields=code,product_name,product_name_pt,brands,quantity&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+   "https://world.openfoodfacts.org/api/v2/product/7898215151784.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19"
+  ],
+  "chamadas_off_sem_perfil": true
+ },
+ "iphone-webkit": {
+  "erros": [],
+  "rede_fora": [
+   "https://world.openfoodfacts.org/api/v2/product/7891962053189.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19"
+  ],
+  "axe": {
+   "rotulos": [],
+   "folha-foto": [],
+   "foto-insuficiente": [],
+   "folha-conferir-foto": [],
+   "resultado": [],
+   "off-resultado": []
+  },
+  "sw_controla": true,
+  "tem_fieldset_fonte_teste": true,
+  "borrada_insuficiente": true,
+  "borrada_s": 0.8,
+  "borrada_motivo": "Informação insuficiente: confira a embalagem\n\nA foto ficou pouco legível (confiança 0%). Tire outra, de perto, com luz e sem reflexo.\n\nQuase nenhum texto foi lido na foto.\n\nNão achei a palavra \"Ingred",
+  "legivel_s": 0.8,
+  "prefill": {
+   "ing": "FARINHA DE ARROZ, AÇÚCAR, ÓLEO DE GIRASSOL, AMIDO DE MILHO E SAL",
+   "pode": "PODE CONTER LEITE.",
+   "gl": "nao_contem"
+  },
+  "sem_conferir_bloqueia": true,
+  "conferido_incompleto": "Resultado: Pode conter: risco de contaminação\nAlergia à proteína do leite (APLV): Pode conter: risco de contaminação. O rótulo avisa que pode conter leite. Achado: leite.\nDoença celíaca (glúten): Informação insuficiente: confira a embalagem. Falta conferir: lista de ingredientes incompleta.\nO resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.\nFo",
+  "conferido_completo": "Resultado: Pode conter: risco de contaminação\nAlergia à proteína do leite (APLV): Pode conter: risco de contaminação. O rótulo avisa que pode conter leite. Achado: leite.\nDoença celíaca (glúten): Nada encontrado nos dados conferidos (isso não garante que seja seguro). O rótulo conferido declara \"não contém glúten\".\nO resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.\nFonte: Foto do rótulo conferida por você (ocr-2026.11.19) · 19/11/2026 · motor m3-2026.11.19 · política pol-2026.11.18 (pendente de revisão profissional) · evidência ev-rfhmvm",
+  "conferencias_salvas": 2,
+  "conferencia_tem_perfil": false,
+  "rede_fora_ate_aqui": [],
+  "cache_ocr": [
+   "despensa-hml-v10",
+   "despensa-hml-ocr-1"
+  ],
+  "offline_leu": true,
+  "aviso_off": true,
+  "off_codigo_card": "Rótulos conferidos neste aparelho\nProduto sem nome\nFoto do rótulo conferida por você (ocr-2026.11.19) · 19/11/2026 · motor m3-2026.11.19\nAnalisar com o perfil escolhido\nProduto sem nome\nFoto do rótulo conferida por você (ocr-2026.11.19) · 19/11/2026 · motor m3-2026.11.19\nAnalisar com o perfil escolhido\nApagar rótulos conferidos",
+  "off_sem_nao_identificado": true,
+  "off_conferir_prefill": "FARINHA DE TRIGO (ENRIQUECIDA COM FERRO, ÁCIDO FÓLICO), GORDURA VEGETAL, AÇÚCAR,",
+  "off_conferir_exige_ok0": true,
+  "sugestao_texto": "1 produto para \"7891962053189\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nTorrada bauduccoRascunho\nBauducco · 142 g · 7891962053189\nTem algo que precisa ser evitado\nDoença celíaca (glúten):Tem algo que precisa ser evitado\nAlergia à proteína do leite (APLV):Informação insuficiente: confira a embalagem\n\nFonte: Open Food Facts (colaborativo) ",
+  "sugestao_sem_avaliacao": false,
+  "apos_confirmar": "1 produto para \"7891962053189\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nTorrada bauduccoRascunho\nBauducco · 142 g · 7891962053189\nTem algo que precisa ser evitado\nDoença celíaca (glúten):Tem algo que precisa ser evitado\nAlergia à proteína ",
+  "chamadas_off": [],
+  "chamadas_off_sem_perfil": true
+ },
+ "producao-simulada": {
+  "rede": [],
+  "producao": "sem AMB global",
+  "sem_fieldset": true,
+  "resposta": "Resultado da busca\n\nAinda não há fonte de rótulos aprovada. Confira a embalagem.",
+  "sem_chamada_off": true
+ }
+}

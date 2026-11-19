@@ -1,0 +1,18 @@
+{
+ "status": 1,
+ "code": "7894904005482",
+ "product": {
+  "code": "7894904005482",
+  "product_name": "Salsicha Hot Dog Seara 500g",
+  "product_name_pt": "Salsicha Hot Dog Seara 500g",
+  "brands": "Seara",
+  "quantity": "500g",
+  "ingredients_text_pt": "Carne mecanicamente separada de frango, carne suína, água (4%), carne de frango, proteína de soja*(2%), pele de frango, fécula de mandioca (1,8%), sal, açúcar, cebola, pimenta-branca, pimenta-da-jamaica, aromas naturais (fermentado, fumaça, carne, noz-moscada, pimenta-da-jamaica e alho) e aromas idênticos aos naturais (frango e carne), estabilizantes: tripolifosfato de sódio e pirofosfato dissódico, realçador de sabor glutamato monossódico, antioxidante eritorbato de sódio, corantes: carmim de cochonilha e urucum e conservante nitrito de sódio.\nAlérgicos: contém derivados de soja, não contém glúten.",
+  "ingredients_text": "Carne mecanicamente separada de frango, carne suína, água (4%), carne de frango, proteína de soja*(2%), pele de frango, fécula de mandioca (1,8%), sal, açúcar, cebola, pimenta-branca, pimenta-da-jamaica, aromas naturais (fermentado, fumaça, carne, noz-moscada, pimenta-da-jamaica e alho) e aromas idênticos aos naturais (frango e carne), estabilizantes: tripolifosfato de sódio e pirofosfato dissódico, realçador de sabor glutamato monossódico, antioxidante eritorbato de sódio, corantes: carmim de cochonilha e urucum e conservante nitrito de sódio.\nAlérgicos: contém derivados de soja, não contém glúten.",
+  "allergens_tags": [
+   "en:soybeans"
+  ],
+  "traces_tags": [],
+  "last_modified_t": 1788385175
+ }
+}

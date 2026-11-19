@@ -1,7 +1,10 @@
-/* Elida IA · Marco 2: contrato de busca de rótulos e provedor de dados FICTÍCIOS.
-   - Nenhuma chamada de rede neste arquivo. Fonte real só entra depois de aprovada (custo, termos, licença).
-   - O provedor fictício só existe para homologação e testes. Em produção a busca responde "indisponível".
-   - Foto: só o contrato. A leitura (OCR + confirmação humana) é o Marco 3.
+/* Elida IA · contrato de busca de rótulos.
+   - Marco 2: provedor de dados FICTÍCIOS, só para homologação e testes.
+   - Marco 3: provedor Open Food Facts, autorizado só em homologação. Tudo que vem dele é RASCUNHO:
+     nunca conta como advertências completas e nunca gera conclusão favorável sozinho.
+     A busca por nome só devolve sugestões, que exigem confirmar produto e variante.
+     Só o código de barras ou o termo digitado saem do aparelho; perfil e restrições nunca.
+   - Em produção, provedor que exige aprovação fica desligado: a busca responde "indisponível".
    Todo produto devolvido traz a fonte: provedor, identificação, data da conferência e licença. */
 (function (raiz, fabrica) {
   "use strict";
@@ -11,7 +14,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var VERSAO_CONTRATO = 1;
+  var VERSAO_CONTRATO = 2;
   var STATUS = Object.freeze({ OK: "ok", NAO_ENCONTRADO: "nao_encontrado", INDISPONIVEL: "indisponivel", INVALIDO: "invalido", NAO_IMPLEMENTADO: "nao_implementado" });
   var TEMPO_LIMITE_MS = 8000;
 
@@ -43,7 +46,8 @@
   function rotuloParaRegras(p) {
     var r = copia(p.rotulo);
     r.nome = p.nome; r.ean = p.ean || null;
-    r.fonte = { identificacao: p.fonte.provedor + " · " + p.fonte.identificacao, dataVerificacao: p.fonte.dataVerificacao, desatualizada: !!p.fonte.desatualizada };
+    r.fonte = { identificacao: p.fonte.provedor + " · " + p.fonte.identificacao, dataVerificacao: p.fonte.dataVerificacao, desatualizada: !!p.fonte.desatualizada, rascunho: !!p.fonte.rascunho };
+    if (p.fonte.rascunho || p.rotulo.rascunho) { r.rascunho = true; r.ingredientesCompletos = false; r.advertenciasCompletas = false; }
     return r;
   }
 
@@ -90,6 +94,98 @@
     return { nome: "indisponivel", ficticio: false, porNome: erro, porCodigo: erro };
   }
 
+
+  /* ---------- Provedor Open Food Facts (Marco 3, só homologação) ---------- */
+  var OFF = Object.freeze({ produto: "https://world.openfoodfacts.org/api/v2/product/", busca: "https://search.openfoodfacts.org/search",
+    campos: "code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t",
+    licenca: "Open Food Facts · ODbL (base) / DbCL (conteúdo). Dado colaborativo: pode estar errado ou incompleto.",
+    leiturasPorMinuto: 12, buscasPorMinuto: 8, cacheDias: 7 });
+  var TAG = { "en:milk": "leite", "en:gluten": "glúten", "en:soybeans": "soja", "en:eggs": "ovo", "en:peanuts": "amendoim", "en:nuts": "castanhas",
+    "en:wheat": "trigo", "en:fish": "peixe", "en:crustaceans": "crustáceos", "en:sesame-seeds": "gergelim", "en:oats": "aveia", "en:barley": "cevada", "en:rye": "centeio", "en:molluscs": "moluscos", "en:lupin": "tremoço" };
+  /* Janela deslizante: no máximo N chamadas por minuto; espera crescente depois de 429/503. */
+  function limitador(porMinuto, agora) {
+    var marcas = [], bloqueadoAte = 0, falhas = 0;
+    return {
+      pode: function () { var t = agora(); marcas = marcas.filter(function (m) { return t - m < 60000; }); return t >= bloqueadoAte && marcas.length < porMinuto; },
+      usar: function () { marcas.push(agora()); },
+      ocupado: function () { falhas++; bloqueadoAte = agora() + Math.min(600000, 30000 * Math.pow(2, falhas - 1)); },
+      ok: function () { falhas = 0; },
+      esperaMs: function () { var t = agora(); return Math.max(0, bloqueadoAte - t, marcas.length >= porMinuto ? 60000 - (t - marcas[0]) : 0); }
+    };
+  }
+  function cacheMemoria() { var m = {}; return { ler: function (k) { return m[k] || null; }, gravar: function (k, v) { m[k] = v; } }; }
+  function separarIngredientes(t) {
+    var partes = [], atual = "", nivel = 0;
+    for (var i = 0; i < t.length; i++) { var c = t.charAt(i); if (c === "(" || c === "[") nivel++; else if ((c === ")" || c === "]") && nivel > 0) nivel--; if ((c === "," || c === ";") && nivel === 0) { partes.push(atual); atual = ""; } else atual += c; }
+    partes.push(atual);
+    return partes.map(function (p) { return p.replace(/^[\s.:;_*-]+|[\s.:;_*-]+$/g, ""); }).filter(function (p) { return /[A-Za-zÀ-ú]{2,}/.test(p); });
+  }
+  function plausivel(t) { return t.length >= 3 && !/\bprice\b|\bpre[çc]o\b|r\$|^[\d\s.,]+$/i.test(t); }
+  function declaracao(texto, rxNao, rxSim) {
+    var n = normalizar(texto), nao = rxNao.test(n), sim = false, m, rx = new RegExp(rxSim.source, "g");
+    while ((m = rx.exec(n))) { if (!/nao\s*$/.test(n.slice(Math.max(0, m.index - 5), m.index))) sim = true; }
+    return [nao, sim];
+  }
+  function produtoOFF(p, hoje, sugestao) {
+    var codigo = String(p.code || "").replace(/\D/g, "");
+    var bruto = String(p.ingredients_text_pt || p.ingredients_text || "").trim(), ing = plausivel(bruto) ? separarIngredientes(bruto) : [];
+    var g = declaracao(bruto, /nao contem gluten|sem gluten|isento de gluten/, /contem gluten/), l = declaracao(bruto, /nao contem lactose|(sem|zero|isento de) lactose/, /contem lactose/);
+    var tagsA = (p.allergens_tags || []).map(function (x) { return TAG[x]; }).filter(Boolean), tagsT = (p.traces_tags || []).map(function (x) { return TAG[x]; }).filter(Boolean);
+    var editado = p.last_modified_t ? new Date(p.last_modified_t * 1000).toISOString().slice(0, 10) : null;
+    var nome = String(p.product_name_pt || p.product_name || p.generic_name_pt || "").trim() || ("Produto " + codigo);
+    return {
+      id: "off-" + codigo, nome: nome, marca: String(p.brands || "").split(",")[0].trim(), quantidade: String(p.quantity || ""),
+      ean: gtinValido(codigo) ? codigo : null, sugestao: !!sugestao,
+      rotulo: { categoria: "alimento", ingredientes: ing,
+        /* Sinais do OFF só podem deixar o resultado mais grave: viram "contém"/"pode conter", nunca "completo". */
+        advertencias: { contem: tagsA.length ? "Open Food Facts indica: " + tagsA.join(", ") : "", podeConter: tagsT.length ? "Open Food Facts indica traços de: " + tagsT.join(", ") : "" },
+        declaracaoGluten: g[0] && g[1] ? "contraditorio" : g[1] ? "contem" : g[0] ? "nao_contem" : "nao_informado",
+        declaracaoLactose: l[0] && l[1] ? "contraditorio" : l[1] ? "contem_lactose" : l[0] ? "sem_lactose" : "nao_informado",
+        ingredientesCompletos: false, advertenciasCompletas: false, rascunho: true },
+      fonte: { provedor: "Open Food Facts (colaborativo)", identificacao: "GTIN " + codigo + (editado ? " · editado no OFF em " + editado.split("-").reverse().join("/") : ""),
+        dataVerificacao: hoje, licenca: OFF.licenca, ficticio: false, rascunho: true, urlProduto: "https://world.openfoodfacts.org/product/" + codigo }
+    };
+  }
+  /* provedorOpenFoodFacts({ fetch, agora, hoje, cache, appName, appVersion }) */
+  function provedorOpenFoodFacts(op) {
+    op = op || {};
+    var buscar = op.fetch || (typeof fetch === "function" ? function (u, o) { return fetch(u, o); } : null);
+    var agora = op.agora || function () { return Date.now(); };
+    var hoje = op.hoje || function () { return new Date().toISOString().slice(0, 10); };
+    var cache = op.cache || cacheMemoria();
+    var lim = { leitura: limitador(OFF.leiturasPorMinuto, agora), busca: limitador(OFF.buscasPorMinuto, agora) };
+    var app = "app_name=" + encodeURIComponent(op.appName || "Elida") + "&app_version=" + encodeURIComponent(op.appVersion || "hml");
+    function chamar(tipo, url) {
+      var l = lim[tipo];
+      if (!buscar) return Promise.reject(new Error("sem acesso à rede"));
+      if (!l.pode()) return Promise.reject(new Error("limite de consultas; tente em " + Math.ceil(l.esperaMs() / 1000) + " s"));
+      l.usar();
+      return buscar(url, { headers: { Accept: "application/json" }, credentials: "omit", referrerPolicy: "no-referrer" }).then(function (r) {
+        if (r.status === 429 || r.status === 503) { l.ocupado(); throw new Error("Open Food Facts ocupado (" + r.status + "); tente mais tarde"); }
+        if (r.status === 404) { l.ok(); return null; }
+        if (!r.ok) throw new Error("Open Food Facts respondeu " + r.status);
+        l.ok(); return r.json();
+      });
+    }
+    return {
+      nome: "openfoodfacts", ficticio: false, exigeAprovacaoProducao: true, colaborativo: true,
+      porCodigo: function (codigo) {
+        var k = "off:" + codigo, c = cache.ler(k);
+        if (c && agora() - c.em < OFF.cacheDias * 86400000) return Promise.resolve(c.produtos);
+        return chamar("leitura", OFF.produto + encodeURIComponent(codigo) + ".json?fields=" + OFF.campos + "&" + app).then(function (d) {
+          var lista = d && d.status === 1 && d.product ? [produtoOFF(d.product, hoje(), false)] : [];
+          cache.gravar(k, { em: agora(), produtos: lista });
+          return lista;
+        });
+      },
+      porNome: function (termo) {
+        return chamar("busca", OFF.busca + "?q=" + encodeURIComponent(termo) + "&page_size=5&fields=code,product_name,product_name_pt,brands,quantity&" + app).then(function (d) {
+          return ((d && d.hits) || []).filter(function (h) { return gtinValido(h.code); }).map(function (h) { return produtoOFF(h, hoje(), true); });
+        });
+      }
+    };
+  }
+
   function comTempoLimite(promessa, ms) {
     return new Promise(function (ok, falha) {
       var t = setTimeout(function () { falha(new Error("tempo esgotado")); }, ms);
@@ -104,6 +200,7 @@
     config = config || {};
     var prov = config.provedor || null;
     if (config.producao && (!prov || prov.ficticio)) prov = null;
+    if (config.producao && prov && prov.exigeAprovacaoProducao && !config.aprovadoProducao) prov = null;
     var limite = config.tempoLimiteMs || TEMPO_LIMITE_MS;
     function rodar(tipo, valor, chamada) {
       var consulta = { tipo: tipo, valor: valor };
@@ -113,13 +210,15 @@
           var v = validarProduto(p); if (!v.ok) avisos.push("Um resultado foi descartado: dados fora do contrato (" + v.erros.join(", ") + ")."); return v.ok;
         });
         if (prov.ficticio) avisos.unshift("Dados fictícios de teste: não são produtos reais.");
+        if (prov.colaborativo) avisos.unshift(tipo === "nome" ? "Sugestões do Open Food Facts: confirme se é o mesmo produto, sabor e tamanho antes de ver a avaliação."
+          : "Rascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.");
         return resposta(validos.length ? STATUS.OK : STATUS.NAO_ENCONTRADO, consulta, validos, avisos);
       }, function (e) {
         return resposta(STATUS.INDISPONIVEL, consulta, [], ["A fonte não respondeu (" + String(e && e.message || e).slice(0, 60) + "). Confira a embalagem."]);
       });
     }
     return {
-      fornecedor: prov ? prov.nome : null, ficticio: !!(prov && prov.ficticio),
+      fornecedor: prov ? prov.nome : null, ficticio: !!(prov && prov.ficticio), colaborativo: !!(prov && prov.colaborativo),
       porNome: function (q) {
         var t = String(q == null ? "" : q).trim();
         if (t.length < 2 || t.length > 80) return Promise.resolve(resposta(STATUS.INVALIDO, { tipo: "nome", valor: t }, [], ["Digite de 2 a 80 letras."]));
@@ -130,8 +229,8 @@
         if (!gtinValido(d)) return Promise.resolve(resposta(STATUS.INVALIDO, { tipo: "codigo", valor: d }, [], ["Código de barras inválido: confira os números."]));
         return rodar("codigo", d, function () { return prov.porCodigo(d); });
       },
-      /* Contrato do Marco 3: foto -> OCR -> confirmação humana -> regras. Não existe ainda. */
-      porFoto: function () { return Promise.resolve(resposta(STATUS.NAO_IMPLEMENTADO, { tipo: "foto", valor: null }, [], ["Leitura por foto ainda não existe. Ela vai exigir que você confirme o texto lido antes de qualquer análise."])); }
+      /* Foto: a leitura é local (elida-ocr.js) e passa pela confirmação humana; nada vai para o provedor. */
+      porFoto: function () { return Promise.resolve(resposta(STATUS.NAO_IMPLEMENTADO, { tipo: "foto", valor: null }, [], ["A foto é lida no próprio aparelho, pela tela de leitura de rótulo. Ela não passa pela busca."])); }
     };
   }
   /* Busca que entende o que foi digitado: só números = código de barras; o resto = nome. */
@@ -141,5 +240,5 @@
   }
 
   return Object.freeze({ VERSAO_CONTRATO: VERSAO_CONTRATO, STATUS: STATUS, gtinValido: gtinValido, validarProduto: validarProduto, rotuloParaRegras: rotuloParaRegras,
-    provedorFicticio: provedorFicticio, provedorIndisponivel: provedorIndisponivel, criarBusca: criarBusca, consultar: consultar, _catalogo: function () { return CATALOGO.map(copia); } });
+    provedorFicticio: provedorFicticio, provedorIndisponivel: provedorIndisponivel, provedorOpenFoodFacts: provedorOpenFoodFacts, OFF: OFF, _produtoOFF: produtoOFF, criarBusca: criarBusca, consultar: consultar, _catalogo: function () { return CATALOGO.map(copia); } });
 });

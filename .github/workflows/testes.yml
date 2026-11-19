@@ -24,7 +24,7 @@ jobs:
       - name: Pacote de homologação
         run: |
           mkdir -p _homologacao
-          cp -r index.html ambiente.js dieta.js elida-regras.js elida-busca.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
+          cp -r index.html ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
       - uses: actions/upload-artifact@v4
         with:
           name: homologacao-${{ github.sha }}
@@ -32,7 +32,7 @@ jobs:
           retention-days: 14
 
   elida-ia:
-    # Pipeline separado: motor de regras do Elida IA (Marco 1). Não afeta o Elida Familiar.
+    # Pipeline separado: Elida IA (regras, busca, leitura de rótulo por foto). Não afeta o Elida Familiar.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +44,7 @@ jobs:
           node tests/rodar-regras.js | tee relatorio-elida-ia.txt
           node tests/rodar-busca.js | tee -a relatorio-elida-ia.txt
           node tests/rodar-ambiente.js | tee -a relatorio-elida-ia.txt
+          node tests/rodar-ocr.js | tee -a relatorio-elida-ia.txt
       - uses: actions/upload-artifact@v4
         with:
           name: elida-ia-${{ github.sha }}

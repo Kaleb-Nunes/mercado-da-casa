@@ -241,6 +241,11 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;f
 .ia-chip{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 .ia-INCOMPATIVEL_IDENTIFICADO,.ia-POSSIVEL_CONTAMINACAO{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
 .ia-REQUER_ORIENTACAO_PROFISSIONAL{background:#FFF4D6;color:#6B5310;border-color:#B08A1E}
+.ia-badge{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:2px 9px;background:#FFF4D6;color:#6B5310;border:1px solid #B08A1E;margin-left:6px}
+.ia-fontes{border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}.ia-fontes legend{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
+.ia-ev{font-size:12px;color:var(--muted);word-break:break-word}
+.ia-duv{font-size:13px;background:#FFF4D6;color:#6B5310;border-radius:10px;padding:8px 10px;margin:4px 0}
+#ocr-status{display:flex;flex-direction:column;gap:8px;margin:12px 0;font-size:14px}
 .ia-dl{font-size:14px;margin:12px 0}.ia-dl dt{font-weight:700;margin-top:8px}.ia-dl dd{margin:2px 0 0}
 textarea.inp.txt{font-family:var(--font-body);font-size:15px;height:110px;line-height:1.4}
 .tip .act{align-self:flex-start;background:var(--hero);color:var(--hero-ink);border:0;border-radius:99px;padding:7px 14px;font-weight:700;font-size:13px}
@@ -436,6 +441,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <script src="dieta.js"></script>
 <script src="elida-regras.js"></script>
 <script src="elida-busca.js"></script>
+<script src="elida-ocr.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1074,6 +1080,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function closeSheet(){
     sheet.classList.remove("on"); scrim.classList.remove("on"); ui.sheet = null; ui.armed = null;
+    if(window.ElidaOCR) window.ElidaOCR.encerrar();
     setTimeout(function(){ if(!sheet.classList.contains("on")) sheet.innerHTML = ""; }, 350);
     document.body.style.overflow = "";
     if(lastFocus && lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
@@ -1961,7 +1968,25 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   var IA = window.ElidaRegras, BUS = window.ElidaBusca;
   var Perfis = IA.criarArmazem(window.localStorage, PFX + "elida-perfis-v1");
   var perfisEstado = Perfis.carregar();
-  var Busca = BUS.criarBusca({ provedor: AMB.catalogoFicticio ? BUS.provedorFicticio() : null, producao: AMB.producao });
+  /* Marco 3: em homologação dá para escolher a fonte de teste (fictícia ou Open Food Facts real, como rascunho).
+     Em produção nenhum provedor é criado: o OFF exige aprovação expressa e a busca responde "indisponível". */
+  var OCR = window.ElidaOCR;
+  var FONTE_TESTE_KEY = PFX + "elida-fonte-teste";
+  var CONF_KEY = PFX + "elida-conferencias-v1";
+  var OFF_CACHE_KEY = PFX + "elida-off-cache";
+  function fonteTeste(){ if(!AMB.homologacao) return null; try{ return localStorage.getItem(FONTE_TESTE_KEY) === "off" ? "off" : "ficticio"; }catch(e){ return "ficticio"; } }
+  function cacheOFF(){
+    function ler(){ try{ return JSON.parse(localStorage.getItem(OFF_CACHE_KEY) || "{}") || {}; }catch(e){ return {}; } }
+    return { ler: function(k){ return ler()[k] || null; }, gravar: function(k, v){ var m = ler(); m[k] = v; var ks = Object.keys(m);
+      if(ks.length > 200) ks.sort(function(a, b){ return m[a].em - m[b].em; }).slice(0, ks.length - 200).forEach(function(x){ delete m[x]; });
+      try{ localStorage.setItem(OFF_CACHE_KEY, JSON.stringify(m)); }catch(e){} } };
+  }
+  function criarProvedorIA(){
+    if(!AMB.homologacao) return null;
+    if(fonteTeste() === "off") return BUS.provedorOpenFoodFacts({ appName: "Elida-homologacao", appVersion: "c" + BUS.VERSAO_CONTRATO + "-" + IA.VERSAO_MOTOR, cache: cacheOFF() });
+    return AMB.catalogoFicticio ? BUS.provedorFicticio() : null;
+  }
+  var Busca = BUS.criarBusca({ provedor: criarProvedorIA(), producao: AMB.producao });
   var buscaIA = { texto: "", resposta: null, rodando: false };
   var gatilhosIA = IA.criarGatilhos({
     REAVALIAR_RESULTADOS_LOCAIS: function(){ if(ui.view === "rotulos" || ui.view === "perfis") render(); },
@@ -2036,14 +2061,22 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     gatilhosIA.disparar(antes && JSON.stringify(antes.restricoes) !== JSON.stringify(v.perfil.restricoes) ? "RESTRICAO_ALTERADA" : "PERFIL_SALVO");
   }
   function chipEstado(estado, texto){ return '<span class="ia-chip ia-' + esc(estado) + '">' + esc(texto || IA.TEXTO_ESTADO[estado]) + '</span>'; }
-  function fonteTexto(f){ return esc(f.provedor) + ' · ' + esc(f.identificacao) + ' · conferido em ' + esc(f.dataVerificacao.split("-").reverse().join("/")) + (f.ficticio ? ' · <b>fictício</b>' : ''); }
+  function fonteTexto(f){ return esc(f.provedor) + ' · ' + esc(f.identificacao) + ' · consultado em ' + esc(f.dataVerificacao.split("-").reverse().join("/")) + (f.ficticio ? ' · <b>fictício</b>' : '') +
+    (f.rascunho ? ' · <a class="link" href="' + esc(f.urlProduto || "https://world.openfoodfacts.org") + '" target="_blank" rel="noopener noreferrer">Dados: Open Food Facts (ODbL)</a>' : ''); }
   function avaliarProduto(p){ var pa = perfilAtivo(); return pa ? IA.analisar(pa, BUS.rotuloParaRegras(p), { hoje: todayStr() }) : null; }
   function renderRotulosIA(){
     var v = document.getElementById("view-rotulos"), pa = perfilAtivo(), r = buscaIA.resposta;
     var h = segDieta("rotulos") + '<div class="head-row"><div><h2 class="title">Rótulos</h2><p class="sub">' +
       (pa ? 'Usando o perfil <b>' + esc(pa.apelido) + '</b>. <button class="link" type="button" data-act="nav" data-view="perfis">Trocar</button>' : 'Nenhum perfil escolhido: os produtos aparecem sem avaliação. <button class="link" type="button" data-act="nav" data-view="perfis">Escolher perfil</button>') + '</p></div></div>';
-    h += Busca.ficticio ? '<p class="warnbox" role="note">Homologação: a busca usa um catálogo fictício de teste. Ainda não há fonte real de rótulos.</p>'
-      : !Busca.fornecedor ? '<p class="warnbox" role="note">A busca de rótulos ainda não está disponível: falta uma fonte de dados aprovada. Use "Conferir rótulo digitado".</p>' : '';
+    if(AMB.homologacao){
+      var ft = fonteTeste();
+      h += '<fieldset class="ia-fontes"><legend>Fonte de teste (só homologação)</legend>' +
+        '<label class="ia-op"><input type="radio" name="fonte-teste" value="ficticio"' + (ft !== "off" ? ' checked' : '') + '> Catálogo fictício</label>' +
+        '<label class="ia-op"><input type="radio" name="fonte-teste" value="off"' + (ft === "off" ? ' checked' : '') + '> Open Food Facts (real, colaborativo)</label></fieldset>';
+    }
+    h += Busca.ficticio ? '<p class="warnbox" role="note">Homologação: a busca usa um catálogo fictício de teste. Não são produtos reais.</p>'
+      : Busca.colaborativo ? '<p class="warnbox" role="note">Homologação com Open Food Facts real. Os dados são colaborativos e entram como rascunho: sem você conferir a embalagem, o app não conclui nada favorável. Só o código ou o termo digitado saem do aparelho; o perfil nunca.</p>'
+      : !Busca.fornecedor ? '<p class="warnbox" role="note">A busca de rótulos ainda não está disponível: falta uma fonte de dados aprovada. Use "Ler rótulo por foto" ou "Conferir rótulo digitado".</p>' : '';
     h += '<form class="ia-busca" id="form-busca" role="search"><label for="f-busca">Nome do produto ou código de barras</label><div class="ia-linha"><input class="inp" id="f-busca" type="search" autocomplete="off" enterkeyhint="search" value="' + esc(buscaIA.texto) + '">' +
       '<button class="btn-sm" type="submit">' + (buscaIA.rodando ? 'Buscando…' : 'Buscar') + '</button></div></form>' +
       '<div class="links"><button class="link" type="button" data-act="rotulo-digitado">Conferir rótulo digitado</button><button class="link" type="button" data-act="rotulo-foto">Ler rótulo por foto</button></div>';
@@ -2053,12 +2086,23 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       r.avisos.forEach(function(a){ h += '<p class="sub">' + esc(a) + '</p>'; });
       if(r.status === "nao_encontrado") h += '<p class="card ia-vazio">Nada encontrado. Confira a embalagem ou use "Conferir rótulo digitado".</p>';
       r.produtos.forEach(function(p){
-        var a = avaliarProduto(p);
-        h += '<article class="card ia-prod"><div class="ia-topo"><div><b>' + esc(p.nome) + '</b><br><small>' + esc(p.marca || "") + (p.ean ? ' · ' + esc(p.ean) : '') + '</small></div>' + (a ? chipEstado(a.status, a.texto) : '') + '</div>' +
+        var a = p.sugestao ? null : avaliarProduto(p), sub = [p.marca, p.quantidade, p.ean].filter(Boolean).map(esc).join(' · ');
+        h += '<article class="card ia-prod"><div class="ia-topo"><div><b>' + esc(p.nome) + '</b>' + (p.fonte.rascunho ? '<span class="ia-badge">' + (p.sugestao ? 'Sugestão' : 'Rascunho') + '</span>' : '') + '<br><small>' + sub + '</small></div>' + (a ? chipEstado(a.status, a.texto) : '') + '</div>' +
+          (p.sugestao ? '<p class="sub">Confirme se é o mesmo produto, sabor e tamanho da embalagem antes de ver a avaliação.</p>' : '') +
           (a ? '<ul class="ia-det">' + a.detalhes.map(function(d){ return '<li>' + esc(d.nome) + ': ' + chipEstado(d.estado, d.texto) + '</li>'; }).join("") + '</ul>' : '') +
-          '<p class="ia-fonte">Fonte: ' + fonteTexto(p.fonte) + '</p><div class="links"><button class="link" type="button" data-act="ver-produto" data-id="' + esc(p.id) + '">Ver rótulo e motivos</button>' +
-          '<button class="link" type="button" data-act="produto-lista" data-id="' + esc(p.id) + '">Pôr na lista</button></div></article>';
+          '<p class="ia-fonte">Fonte: ' + fonteTexto(p.fonte) + '</p><div class="links">' +
+          (p.sugestao ? '<button class="link" type="button" data-act="confirmar-sugestao" data-id="' + esc(p.id) + '">É este produto (mesmo sabor e tamanho)</button>'
+            : '<button class="link" type="button" data-act="ver-produto" data-id="' + esc(p.id) + '">Ver rótulo e motivos</button>' +
+              (p.fonte.rascunho ? '<button class="link" type="button" data-act="conferir-produto" data-id="' + esc(p.id) + '">Conferir com a embalagem</button>' : '') +
+              '<button class="link" type="button" data-act="produto-lista" data-id="' + esc(p.id) + '">Pôr na lista</button>') + '</div></article>';
       });
+    }
+    var confs = lerConferencias();
+    if(confs.length){
+      h += '<h3 class="ia-h">Rótulos conferidos neste aparelho</h3>' + confs.slice(0, 5).map(function(c){
+        return '<article class="card ia-prod"><b>' + esc(c.produto) + '</b><br><small>' + esc(c.fonte && c.fonte.identificacao || "") + ' · ' + esc(String(c.quando || "").slice(0, 10).split("-").reverse().join("/")) + ' · motor ' + esc(c.versaoMotor) + '</small>' +
+          '<div class="links"><button class="link" type="button" data-act="reanalisar" data-id="' + esc(c.id) + '">Analisar com o perfil escolhido</button></div></article>';
+      }).join("") + '<div class="links"><button class="link" type="button" data-act="apagar-conferencias">' + (ui.armed === "apagar-conferencias" ? 'Toque de novo para apagar' : 'Apagar rótulos conferidos') + '</button></div>';
     }
     h += '</div><p class="aviso-fixo" role="note">O app não diz que um alimento é seguro. Confira sempre a embalagem atual e a orientação profissional. Motor ' + esc(IA.VERSAO_MOTOR) + '.</p>';
     v.innerHTML = h;
@@ -2072,8 +2116,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function produtoDaBusca(id){ var r = buscaIA.resposta; return r && r.produtos.filter(function(p){ return p.id === id; })[0]; }
   function blocoAnalise(a){
+    var f = a.fonte || {};
     return '<div class="dbox"><b>Resultado: ' + esc(a.texto) + '</b>' + a.detalhes.map(function(d){ return '<span><b>' + esc(d.nome) + ':</b> ' + esc(d.texto) + '. ' + esc(d.motivos.join(" ")) + (d.trechos.length ? ' Achado: ' + esc(d.trechos.join(", ")) + '.' : '') + '</span>'; }).join("") +
-      '<span class="sub">' + esc(a.aviso) + '</span></div>';
+      (a.rascunho ? '<span class="ia-duv">Rascunho: confira a embalagem. Sem essa conferência o app não conclui nada favorável.</span>' : '') +
+      '<span class="sub">' + esc(a.aviso) + '</span>' +
+      '<span class="ia-ev">Fonte: ' + esc(f.identificacao || "não informada") + (f.dataVerificacao ? ' · ' + esc(f.dataVerificacao.split("-").reverse().join("/")) : '') + ' · motor ' + esc(a.versaoMotor) + ' · política ' + esc(a.versaoPolitica) + ' · evidência ' + esc(a.evidencia) + '</span></div>';
   }
   function sheetProduto(p){
     ui.sheet = {type: "produto-ia", id: p.id};
@@ -2084,34 +2131,98 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       '<dl class="ia-dl"><dt>Ingredientes</dt><dd>' + esc([].concat(r.ingredientes || []).join(", ") || "não informado") + (r.ingredientesCompletos ? '' : ' <b>(lista incompleta)</b>') + '</dd>' +
       '<dt>Alérgicos: contém</dt><dd>' + esc(r.advertencias && r.advertencias.contem || "nada declarado") + '</dd><dt>Pode conter</dt><dd>' + esc(r.advertencias && r.advertencias.podeConter || "nada declarado") + '</dd>' +
       '<dt>Glúten</dt><dd>' + esc(dec[r.declaracaoGluten] || "não informado") + '</dd><dt>Lactose</dt><dd>' + esc(lac[r.declaracaoLactose] || "não informado") + '</dd></dl>' +
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="produto-lista" data-id="' + esc(p.id) + '">Pôr na lista</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+      '<div class="sh-actions">' + (p.fonte.rascunho ? '<button class="bigbtn" type="button" data-act="conferir-produto" data-id="' + esc(p.id) + '">Conferir com a embalagem</button>' : '') +
+      '<button class="' + (p.fonte.rascunho ? 'quiet' : 'bigbtn') + '" type="button" data-act="produto-lista" data-id="' + esc(p.id) + '">Pôr na lista</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
   }
   function produtoNaLista(p){
     var n = DietaMotor.normalizar(p.nome), it = state.items.filter(function(x){ return DietaMotor.normalizar(x.nome) === n; })[0];
     if(!it){ it = {id: uid(), cat: "Outros", nome: p.nome, por: "unidade", hist: [], nota: p.ean ? "Código de barras " + p.ean : "", basico: false, lista: false, qtd: 1, ok: false, icon: ""}; state.items.push(it); }
     it.lista = true; it.ok = false; save(); closeSheet(); render(); toast("Na lista: " + p.nome);
   }
-  function sheetRotuloDigitado(){
-    ui.sheet = {type: "rotulo-digitado"};
-    openSheet('<h3 class="sh-title" id="sh-title">Conferir rótulo digitado</h3><p class="sh-sub">Copie da embalagem. Sem marcar que copiou tudo, o resultado fica "informação insuficiente".</p><form class="form" id="form-rd" novalidate>' +
-      '<div class="fl"><label for="rd-nome">Produto</label><input class="inp" id="rd-nome" autocomplete="off"></div>' +
-      '<div class="fl"><label for="rd-ing">Ingredientes (separados por vírgula)</label><textarea class="inp" id="rd-ing"></textarea></div>' +
-      '<div class="fl"><label for="rd-contem">Alérgicos: contém</label><input class="inp" id="rd-contem" autocomplete="off"></div>' +
-      '<div class="fl"><label for="rd-pode">Pode conter</label><input class="inp" id="rd-pode" autocomplete="off"></div>' +
-      '<div class="fl"><label for="rd-gl">Glúten</label><select class="inp" id="rd-gl"><option value="nao_informado">Não achei na embalagem</option><option value="contem">Contém glúten</option><option value="nao_contem">Não contém glúten</option><option value="contraditorio">A embalagem se contradiz</option></select></div>' +
-      '<div class="fl"><label for="rd-lac">Lactose</label><select class="inp" id="rd-lac"><option value="nao_informado">Não achei na embalagem</option><option value="contem_lactose">Contém lactose</option><option value="sem_lactose">Sem lactose</option><option value="contraditorio">A embalagem se contradiz</option></select></div>' +
-      '<label class="ia-op"><input type="checkbox" id="rd-form"> É fórmula infantil</label><label class="ia-op"><input type="checkbox" id="rd-ok1"> Copiei a lista inteira de ingredientes</label><label class="ia-op"><input type="checkbox" id="rd-ok2"> Copiei todos os avisos de alérgicos</label>' +
+  /* Conferência de rótulo: digitado, lido na foto (rascunho) ou rascunho do Open Food Facts.
+     Foto e OFF exigem marcar "conferi com a embalagem"; sem isso não há análise. */
+  function sheetRotuloDigitado(pre){
+    pre = pre || null;
+    ui.sheet = {type: "rotulo-digitado", pre: pre};
+    var r = pre ? pre.rotulo : {}, sel = function(v, atual){ return v === atual ? ' selected' : ''; },
+      titulo = !pre ? "Conferir rótulo digitado" : pre.origem === "foto" ? "Conferir texto lido na foto" : "Conferir rascunho do Open Food Facts",
+      sub = !pre ? 'Copie da embalagem. Sem marcar que copiou tudo, o resultado fica "informação insuficiente".'
+        : 'Compare cada campo com a embalagem na sua mão e corrija o que estiver errado. Sem essa conferência não há análise.';
+    var gl = r.declaracaoGluten || "nao_informado", lac = r.declaracaoLactose || "nao_informado";
+    openSheet('<h3 class="sh-title" id="sh-title">' + titulo + '</h3><p class="sh-sub">' + sub + '</p>' +
+      (pre && pre.avisos && pre.avisos.length ? pre.avisos.map(function(a){ return '<p class="ia-duv">' + esc(a) + '</p>'; }).join("") : '') +
+      (pre && pre.duvidosas && pre.duvidosas.length ? '<p class="ia-duv">Leitura duvidosa, confira com atenção: ' + esc(pre.duvidosas.slice(0, 20).join(", ")) + '</p>' : '') +
+      '<form class="form" id="form-rd" novalidate>' +
+      '<div class="fl"><label for="rd-nome">Produto</label><input class="inp" id="rd-nome" autocomplete="off" value="' + esc(pre && pre.nome || r.nome || "") + '"></div>' +
+      '<div class="fl"><label for="rd-ing">Ingredientes (separados por vírgula)</label><textarea class="inp" id="rd-ing">' + esc([].concat(r.ingredientes || []).join(", ")) + '</textarea></div>' +
+      '<div class="fl"><label for="rd-contem">Alérgicos: contém</label><textarea class="inp" id="rd-contem">' + esc(r.advertencias && r.advertencias.contem || "") + '</textarea></div>' +
+      '<div class="fl"><label for="rd-pode">Pode conter</label><textarea class="inp" id="rd-pode">' + esc(r.advertencias && r.advertencias.podeConter || "") + '</textarea></div>' +
+      '<div class="fl"><label for="rd-gl">Glúten</label><select class="inp" id="rd-gl"><option value="nao_informado"' + sel("nao_informado", gl) + '>Não achei na embalagem</option><option value="contem"' + sel("contem", gl) + '>Contém glúten</option><option value="nao_contem"' + sel("nao_contem", gl) + '>Não contém glúten</option><option value="contraditorio"' + sel("contraditorio", gl) + '>A embalagem se contradiz</option></select></div>' +
+      '<div class="fl"><label for="rd-lac">Lactose</label><select class="inp" id="rd-lac"><option value="nao_informado"' + sel("nao_informado", lac) + '>Não achei na embalagem</option><option value="contem_lactose"' + sel("contem_lactose", lac) + '>Contém lactose</option><option value="sem_lactose"' + sel("sem_lactose", lac) + '>Sem lactose</option><option value="contraditorio"' + sel("contraditorio", lac) + '>A embalagem se contradiz</option></select></div>' +
+      '<label class="ia-op"><input type="checkbox" id="rd-form"> É fórmula infantil</label>' +
+      (pre ? '<label class="ia-op"><input type="checkbox" id="rd-ok0"> Conferi este texto com a embalagem na minha mão</label>' : '') +
+      '<label class="ia-op"><input type="checkbox" id="rd-ok1"> ' + (pre ? 'A lista de ingredientes está completa' : 'Copiei a lista inteira de ingredientes') + '</label>' +
+      '<label class="ia-op"><input type="checkbox" id="rd-ok2"> ' + (pre ? 'O bloco ALÉRGICOS e a declaração de glúten estão completos' : 'Copiei todos os avisos de alérgicos') + '</label>' +
       '<div id="rd-res" aria-live="polite" tabindex="-1"></div><div class="sh-actions"><button class="bigbtn" type="submit">Analisar com o perfil escolhido</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></form>', "rd-nome");
   }
   function analisarDigitado(){
-    var pa = perfilAtivo(), out = document.getElementById("rd-res"), g = function(id){ return document.getElementById(id); };
+    var pa = perfilAtivo(), out = document.getElementById("rd-res"), g = function(id){ return document.getElementById(id); }, pre = ui.sheet && ui.sheet.pre;
     if(!pa){ out.innerHTML = '<p class="ia-erro">Crie ou escolha um perfil antes.</p>'; out.focus(); return; }
-    var rot = { nome: g("rd-nome").value.trim(), categoria: g("rd-form").checked ? "formula_infantil" : "alimento", ingredientes: g("rd-ing").value.split(/[,;\n]/).map(function(s){ return s.trim(); }).filter(Boolean),
-      advertencias: { contem: g("rd-contem").value, podeConter: g("rd-pode").value }, declaracaoGluten: g("rd-gl").value, declaracaoLactose: g("rd-lac").value,
-      ingredientesCompletos: g("rd-ok1").checked, advertenciasCompletas: g("rd-ok2").checked, fonte: { identificacao: "Embalagem conferida por você", dataVerificacao: todayStr() } };
+    var campos = { nome: g("rd-nome").value, ingredientes: g("rd-ing").value, contem: g("rd-contem").value, podeConter: g("rd-pode").value, declaracaoGluten: g("rd-gl").value, declaracaoLactose: g("rd-lac").value },
+      marcas = { textoConferido: pre ? g("rd-ok0").checked : true, ingredientesCompletos: g("rd-ok1").checked, advertenciasCompletas: g("rd-ok2").checked }, rot;
+    if(pre){
+      var c = OCR.confirmar(pre.rotulo, campos, marcas, todayStr());
+      if(!c.ok){ out.innerHTML = '<p class="ia-erro">' + esc(c.erros.join(" ")) + '</p>'; out.focus(); return; }
+      rot = c.rotulo;
+      if(pre.origem === "off") rot.fonte = { identificacao: "Rascunho do Open Food Facts (" + (pre.ean || "") + ") conferido por você na embalagem", dataVerificacao: todayStr() };
+      if(pre.ean) rot.ean = pre.ean;
+    } else {
+      rot = { nome: campos.nome.trim(), ingredientes: campos.ingredientes.split(/[,;\n]/).map(function(x){ return x.trim(); }).filter(Boolean),
+        advertencias: { contem: campos.contem, podeConter: campos.podeConter }, declaracaoGluten: campos.declaracaoGluten, declaracaoLactose: campos.declaracaoLactose,
+        ingredientesCompletos: marcas.ingredientesCompletos, advertenciasCompletas: marcas.advertenciasCompletas, fonte: { identificacao: "Embalagem conferida por você", dataVerificacao: todayStr() } };
+    }
+    rot.categoria = g("rd-form").checked ? "formula_infantil" : "alimento";
     var a = IA.analisar(pa, rot, { hoje: todayStr() });
+    if(a.status !== "INVALIDO") guardarConferencia(rot, a);
     out.innerHTML = a.status === "INVALIDO" ? '<p class="ia-erro">' + esc(a.erros.join(" ")) + '</p>' : blocoAnalise(a);
     out.focus();
+  }
+  /* Rótulos conferidos ficam só neste aparelho: texto do rótulo, fonte, data e versões. Nada do perfil. */
+  function lerConferencias(){ try{ var l = JSON.parse(localStorage.getItem(CONF_KEY) || "[]"); return Array.isArray(l) ? l : []; }catch(e){ return []; } }
+  function guardarConferencia(rot, a){
+    var l = lerConferencias().filter(function(c){ return c.evidencia !== a.evidencia; });
+    l.unshift({ id: uid(), quando: a.carimbo, produto: rot.nome || "Produto sem nome", ean: rot.ean || null, rotulo: rot, fonte: a.fonte, evidencia: a.evidencia, versaoMotor: a.versaoMotor, versaoPolitica: a.versaoPolitica });
+    try{ localStorage.setItem(CONF_KEY, JSON.stringify(l.slice(0, 30))); }catch(e){}
+  }
+  function reanalisar(id){
+    var c = lerConferencias().filter(function(x){ return x.id === id; })[0], pa = perfilAtivo(); if(!c) return;
+    var a = pa ? IA.analisar(pa, c.rotulo, { hoje: todayStr() }) : null;
+    ui.sheet = {type: "conferencia", id: id};
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(c.produto) + '</h3><p class="sh-sub">Conferido em ' + esc(String(c.quando).slice(0, 10).split("-").reverse().join("/")) + ' (motor ' + esc(c.versaoMotor) + ').' +
+      (a && a.versaoMotor !== c.versaoMotor ? ' As regras mudaram desde então: esta é a análise com as regras atuais.' : '') + '</p>' +
+      (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') + '<div class="sh-actions"><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+  }
+  /* Foto do rótulo: lida aqui mesmo, sem enviar a imagem. Ilegível = INFORMAÇÃO INSUFICIENTE. */
+  function sheetFoto(){
+    ui.sheet = {type: "foto"};
+    openSheet('<h3 class="sh-title" id="sh-title">Ler rótulo por foto</h3><p class="sh-sub">Fotografe de perto, com luz e sem reflexo, a lista de ingredientes junto com o bloco ALÉRGICOS. A foto é lida neste aparelho e não é enviada a ninguém nem guardada. Depois você confere o texto antes da análise.</p>' +
+      '<input type="file" id="ocr-foto" accept="image/*" hidden>' +
+      '<div id="ocr-status" role="status" aria-live="polite"></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="ocr-escolher">Tirar ou escolher foto</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+  }
+  function lerFoto(file){
+    var st = document.getElementById("ocr-status"); if(!st || !ui.sheet || ui.sheet.type !== "foto") return;
+    ui.sheet.lendo = true;
+    st.innerHTML = '<p class="sub">Preparando o leitor de rótulos… Na primeira vez ele baixa cerca de 5 MB; depois funciona sem internet.</p>';
+    OCR.lerImagem(file, { base: "./vendor/ocr/", hoje: todayStr(), etapa: function(i, n){ var e = document.getElementById("ocr-status"); if(e) e.innerHTML = '<p class="sub">Lendo a foto (tentativa ' + i + ' de ' + n + ')…</p>'; } }).then(function(r){
+      if(!ui.sheet || ui.sheet.type !== "foto") return;
+      ui.sheet.lendo = false;
+      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
+      var e = document.getElementById("ocr-status"); if(!e) return;
+      e.innerHTML = '<div>' + chipEstado("INFORMACAO_INSUFICIENTE") + '</div>' + r.motivos.map(function(m){ return '<p class="ia-erro">' + esc(m) + '</p>'; }).join("") +
+        '<p class="sub">O app não analisa uma foto que não conseguiu ler direito. Tire outra ou digite o rótulo.</p><div class="links"><button class="link" type="button" data-act="rotulo-digitado">Digitar o rótulo</button></div>';
+      e.setAttribute("tabindex", "-1"); e.focus();
+    });
   }
 
   function render(){
@@ -2163,7 +2274,14 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
       case "ver-produto": var pv = produtoDaBusca(id); if(pv) sheetProduto(pv); break;
       case "produto-lista": var pl = produtoDaBusca(id); if(pl) produtoNaLista(pl); break;
       case "rotulo-digitado": sheetRotuloDigitado(); break;
-      case "rotulo-foto": Busca.porFoto().then(function(r){ toast(r.avisos[0], 4200); }); break;
+      case "rotulo-foto": sheetFoto(); break;
+      case "ocr-escolher": var fi = document.getElementById("ocr-foto"); if(fi){ fi.value = ""; fi.click(); } break;
+      case "confirmar-sugestao": var ps = produtoDaBusca(id); if(ps && ps.ean){ buscaIA.rodando = true; render(); Busca.porCodigo(ps.ean).then(function(r){ buscaIA.rodando = false; buscaIA.resposta = r; render(); var al = document.getElementById("ia-resultados"); if(al) al.focus(); }); } break;
+      case "conferir-produto": var pc = produtoDaBusca(id); if(pc) sheetRotuloDigitado({ origem: "off", rotulo: pc.rotulo, nome: pc.nome, ean: pc.ean, avisos: ["Dados colaborativos do Open Food Facts: podem estar errados, incompletos ou ser de uma embalagem antiga."] }); break;
+      case "reanalisar": reanalisar(id); break;
+      case "apagar-conferencias":
+        if(ui.armed !== "apagar-conferencias"){ ui.armed = "apagar-conferencias"; render(); break; }
+        ui.armed = null; try{ localStorage.removeItem(CONF_KEY); }catch(err){} render(); toast("Rótulos conferidos apagados deste aparelho"); break;
       case "fechar": closeSheet(); break;
       case "fechar-dica": state.dica = false; save(); renderInicio(); break;
       case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
@@ -2331,6 +2449,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     else if(f.id === "form-rd"){ e.preventDefault(); analisarDigitado(); }
   });
   document.addEventListener("change", function(e){
+    if(e.target.name === "fonte-teste" && AMB.homologacao){
+      try{ localStorage.setItem(FONTE_TESTE_KEY, e.target.value === "off" ? "off" : "ficticio"); }catch(err){}
+      Busca = BUS.criarBusca({ provedor: criarProvedorIA(), producao: AMB.producao }); buscaIA.resposta = null; render();
+      toast(e.target.value === "off" ? "Fonte de teste: Open Food Facts (rascunho)" : "Fonte de teste: catálogo fictício"); return;
+    }
+    if(e.target.id === "ocr-foto" && e.target.files && e.target.files[0]){ lerFoto(e.target.files[0]); return; }
     if(e.target.name === "perfil-ativo"){ perfisEstado.ativo = e.target.value; salvarPerfis(); gatilhosIA.disparar("PERFIL_SALVO"); toast("Perfil em uso: " + (perfilAtivo() || {}).apelido); return; }
     if(e.target.matches && e.target.matches("[data-restr], #f-pf")){ atualizarFormPerfil(); return; }
     if(e.target.id === "f-arquivo" && e.target.files && e.target.files[0]){

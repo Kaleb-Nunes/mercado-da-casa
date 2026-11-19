@@ -79,7 +79,9 @@ t("[auditoria] celíaca ≠ alergia ao trigo: amido sem glúten declarado não l
 t("[auditoria] fórmula com leite continua INCOMPATÍVEL (não vira só orientação)", function () { assert.equal(st(perfil("aplv"), rot({ categoria: "formula_infantil", ingredientes: ["leite em pó"] })), E.INCOMPATIVEL); });
 t("[auditoria] várias restrições: resultado por restrição, nenhum some", function () {
   var r = R.analisar(perfil("aplv", "celiaca", "alergia_ovo"), rot({ advertencias: { contem: ["ovo"], podeConter: ["leite"] }, declaracaoGluten: "nao_informado" }), { hoje: HOJE });
-  assert.deepEqual(r.detalhes.map(function (d) { return d.estado; }), [E.CONTAMINACAO, E.INSUFICIENTE, E.INCOMPATIVEL]);
+  /* Marco 3: a pior situação vem primeiro; todas as restrições continuam aparecendo. */
+  assert.deepEqual(r.detalhes.map(function (d) { return d.estado; }), [E.INCOMPATIVEL, E.CONTAMINACAO, E.INSUFICIENTE]);
+  assert.deepEqual(r.detalhes.map(function (d) { return d.restricao; }).sort(), ["alergia_ovo", "aplv", "celiaca"]);
   assert.equal(r.status, E.INCOMPATIVEL);
 });
 t("[auditoria] nenhum texto diz \"seguro\" de forma positiva", function () {
@@ -131,21 +133,50 @@ t("armazém: excluir perfil limpa o ativo", function () { var e = R.estadoVazio(
 t("armazém: dado corrompido ou estranho vira estado vazio", function () { var s = memoria(); s.setItem("k", "{lixo"); assert.deepEqual(R.criarArmazem(s, "k").carregar().perfis, []); s.setItem("k", JSON.stringify({ formato: "elida-perfis", perfis: [{ id: "x" }] })); assert.equal(R.criarArmazem(s, "k").carregar().perfis.length, 0); });
 t("armazém: exportação é JSON com formato e versão", function () { var e = R.estadoVazio(); e.perfis.push(P1); var j = JSON.parse(R.exportar(e)); assert.equal(j.formato, "elida-perfis"); assert.equal(j.versao, 1); });
 
+/* --- Marco 3: rascunho, várias restrições, evidência --- */
+t("rascunho nunca vira 'não identificado', mesmo marcado como completo", function () {
+  ["aplv", "lactose", "celiaca", "alergia_trigo", "alergia_ovo", "alergia_soja", "alergia_amendoim"].forEach(function (tipo) {
+    var r = R.analisar(perfil(tipo), rot({ rascunho: true, declaracaoGluten: "nao_contem", declaracaoLactose: "sem_lactose" }), { hoje: HOJE });
+    assert.notEqual(r.status, E.NAO_IDENTIFICADO, tipo); assert.equal(r.rascunho, true);
+  });
+  var f = R.analisar(perfil("aplv"), rot({ fonte: { identificacao: "OFF", dataVerificacao: HOJE, rascunho: true } }), { hoje: HOJE });
+  assert.equal(f.status, E.INSUFICIENTE); assert.match(f.detalhes[0].motivos.join(" "), /rascunho/);
+});
+t("rascunho ainda mostra incompatibilidade e contaminação", function () {
+  assert.equal(R.analisar(perfil("aplv"), rot({ rascunho: true, ingredientes: ["leite em pó"] }), { hoje: HOJE }).status, E.INCOMPATIVEL);
+  assert.equal(R.analisar(perfil("aplv"), rot({ rascunho: true, advertencias: { contem: "", podeConter: "PODE CONTER LEITE" } }), { hoje: HOJE }).status, E.CONTAMINACAO);
+});
+t("favorável numa restrição não esconde incompatível em outra (geral = pior; pior vem primeiro)", function () {
+  var r = R.analisar(perfil("celiaca", "aplv"), rot({ declaracaoGluten: "nao_contem", advertencias: { contem: "ALÉRGICOS: CONTÉM LEITE", podeConter: "" } }), { hoje: HOJE });
+  assert.equal(r.status, E.INCOMPATIVEL); assert.equal(r.detalhes[0].restricao, "aplv"); assert.equal(r.detalhes[0].estado, E.INCOMPATIVEL);
+  assert.equal(r.detalhes[1].estado, E.NAO_IDENTIFICADO);
+});
+t("resultado guarda fonte, data, evidência e versões do motor e da política", function () {
+  var r = R.analisar(perfil("aplv"), rot({ fonte: { identificacao: "Foto conferida", dataVerificacao: HOJE } }), { hoje: HOJE, agora: "2026-11-19T12:00:00.000Z" });
+  assert.deepEqual(r.fonte, { identificacao: "Foto conferida", dataVerificacao: HOJE }); assert.match(r.evidencia, /^ev-/); assert.equal(r.versaoMotor, "m3-2026.11.19"); assert.ok(r.versaoPolitica); assert.equal(r.carimbo, "2026-11-19T12:00:00.000Z");
+});
+t("evidência muda quando o rótulo deixa de ser rascunho", function () {
+  assert.notEqual(R.analisar(perfil("aplv"), rot({ rascunho: true }), { hoje: HOJE }).evidencia, R.analisar(perfil("aplv"), rot({ rascunho: false }), { hoje: HOJE }).evidencia);
+});
+
 /* --- Convivência com o app atual --- */
 t("app: DietaMotor intacto, chaves da Despensa iguais e motor novo integrado", function () {
   var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   assert.ok(/PFX \+ "mercado-casa-v1"/.test(html));
-  assert.ok(/<script src="dieta\.js"><\/script>\s*<script src="elida-regras\.js"><\/script>\s*<script src="elida-busca\.js"><\/script>/.test(html));
+  assert.ok(/<script src="dieta\.js"><\/script>\s*<script src="elida-regras\.js"><\/script>\s*<script src="elida-busca\.js"><\/script>\s*<script src="elida-ocr\.js"><\/script>/.test(html));
   assert.ok(/IA\.criarArmazem\(window\.localStorage, PFX \+ "elida-perfis-v1"\)/.test(html), "perfis na mesma origem do app, com prefixo de homologação");
-  assert.ok(/provedor: AMB\.catalogoFicticio \? BUS\.provedorFicticio\(\) : null, producao: AMB\.producao/.test(html), "dados fictícios só na homologação");
+  assert.ok(/function criarProvedorIA\(\)\{\s*if\(!AMB\.homologacao\) return null;/.test(html), "produção: nenhum provedor (fictício ou OFF)");
+  assert.ok(/return AMB\.catalogoFicticio \? BUS\.provedorFicticio\(\) : null;/.test(html), "dados fictícios só na homologação");
+  assert.ok(/BUS\.criarBusca\(\{ provedor: criarProvedorIA\(\), producao: AMB\.producao \}\)/.test(html));
   assert.ok(!fs.existsSync(path.join(__dirname, "..", "perfis.html")), "não pode haver segunda experiência isolada");
 });
 t("app: restrições nunca vão para a URL e não há rede nos módulos novos", function () {
-  ["elida-regras.js", "elida-busca.js"].forEach(function (f) { var c = fs.readFileSync(path.join(__dirname, "..", f), "utf8"); assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket|importScripts/.test(c), f); });
+  /* Marco 3: só o elida-busca.js tem rede (provedor OFF, testado em rodar-busca.js). Regras e leitor de foto não têm. */
+  ["elida-regras.js", "elida-ocr.js"].forEach(function (f) { var c = fs.readFileSync(path.join(__dirname, "..", f), "utf8"); assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket|importScripts/.test(c), f); });
   var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   assert.ok(!/location\.(search|hash)\s*=\s*[^;]*perfil/.test(html));
 });
-t("service worker guarda os módulos novos para uso offline", function () { var sw = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8"); assert.ok(/"\.\/elida-regras\.js", "\.\/elida-busca\.js"/.test(sw)); });
+t("service worker guarda os módulos novos para uso offline", function () { var sw = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8"); assert.ok(/"\.\/elida-regras\.js", "\.\/elida-busca\.js", "\.\/elida-ocr\.js"/.test(sw)); assert.ok(/CACHE_OCR = AMB\.prefixoCache \+ "-ocr-1"/.test(sw)); });
 
 console.log("Elida IA · regras: " + ok + " testes passaram, " + falhas.length + " falharam.");
 falhas.forEach(function (f) { console.log("FALHA " + f); });

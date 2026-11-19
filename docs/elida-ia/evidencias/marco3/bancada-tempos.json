@@ -1,0 +1,782 @@
+{
+ "chromium": {
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+  "externas": [],
+  "resultados": {
+   "7891031409404": {
+    "status": "ok",
+    "confianca": 74,
+    "tempos": {
+     "carregarMs": 178,
+     "lerMs": 344,
+     "totalMs": 522
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891095031115": {
+    "status": "ok",
+    "confianca": 79,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 346,
+     "totalMs": 355
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891132019281": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 58,
+    "tempos": {
+     "carregarMs": 5,
+     "lerMs": 2917,
+     "totalMs": 2922
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 58%). Tire outra, de perto, com luz e sem reflexo.",
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7891150027848": {
+    "status": "ok",
+    "confianca": 63,
+    "tempos": {
+     "carregarMs": 7,
+     "lerMs": 670,
+     "totalMs": 677
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891910000197": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 77,
+    "tempos": {
+     "carregarMs": 1,
+     "lerMs": 562,
+     "totalMs": 563
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "B"
+   },
+   "7891962053189": {
+    "status": "ok",
+    "confianca": 86,
+    "tempos": {
+     "carregarMs": 10,
+     "lerMs": 601,
+     "totalMs": 611
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891962057668": {
+    "status": "ok",
+    "confianca": 83,
+    "tempos": {
+     "carregarMs": 7,
+     "lerMs": 1438,
+     "totalMs": 1445
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7892840815783": {
+    "status": "ok",
+    "confianca": 81,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 731,
+     "totalMs": 739
+    },
+    "motivos": [],
+    "tentativas": 2,
+    "preparo": "B"
+   },
+   "7892840817916": {
+    "status": "ok",
+    "confianca": 88,
+    "tempos": {
+     "carregarMs": 12,
+     "lerMs": 1179,
+     "totalMs": 1191
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7893000674233": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 53,
+    "tempos": {
+     "carregarMs": 7,
+     "lerMs": 6667,
+     "totalMs": 6674
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 53%). Tire outra, de perto, com luz e sem reflexo.",
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "B"
+   },
+   "7893000949355": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 48,
+    "tempos": {
+     "carregarMs": 11,
+     "lerMs": 3584,
+     "totalMs": 3595
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 48%). Tire outra, de perto, com luz e sem reflexo."
+    ],
+    "tentativas": 3,
+    "preparo": "R"
+   },
+   "7893333229001": {
+    "status": "ok",
+    "confianca": 74,
+    "tempos": {
+     "carregarMs": 2,
+     "lerMs": 233,
+     "totalMs": 235
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "78939301": {
+    "status": "ok",
+    "confianca": 91,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 1419,
+     "totalMs": 1422
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7894900701753": {
+    "status": "ok",
+    "confianca": 82,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 2535,
+     "totalMs": 2543
+    },
+    "motivos": [],
+    "tentativas": 3,
+    "preparo": "R"
+   },
+   "7894904005482": {
+    "status": "ok",
+    "confianca": 94,
+    "tempos": {
+     "carregarMs": 2,
+     "lerMs": 651,
+     "totalMs": 653
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7896006755517": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 77,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 695,
+     "totalMs": 698
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7896006779674": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 81,
+    "tempos": {
+     "carregarMs": 6,
+     "lerMs": 1477,
+     "totalMs": 1483
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7896423419276": {
+    "status": "ok",
+    "confianca": 83,
+    "tempos": {
+     "carregarMs": 6,
+     "lerMs": 1264,
+     "totalMs": 1270
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7898080640413": {
+    "status": "ok",
+    "confianca": 80,
+    "tempos": {
+     "carregarMs": 4,
+     "lerMs": 368,
+     "totalMs": 372
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7898215151784": {
+    "status": "ok",
+    "confianca": 93,
+    "tempos": {
+     "carregarMs": 1,
+     "lerMs": 556,
+     "totalMs": 557
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   }
+  }
+ },
+ "chromium_cpu4x": {
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+  "externas": [],
+  "resultados": {
+   "7891031409404": {
+    "status": "ok",
+    "confianca": 74,
+    "tempos": {
+     "carregarMs": 268,
+     "lerMs": 521,
+     "totalMs": 789
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891095031115": {
+    "status": "ok",
+    "confianca": 79,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 510,
+     "totalMs": 519
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891132019281": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 58,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 3666,
+     "totalMs": 3674
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 58%). Tire outra, de perto, com luz e sem reflexo.",
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7891150027848": {
+    "status": "ok",
+    "confianca": 63,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 994,
+     "totalMs": 1002
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891910000197": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 77,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 737,
+     "totalMs": 740
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "B"
+   },
+   "7891962053189": {
+    "status": "ok",
+    "confianca": 86,
+    "tempos": {
+     "carregarMs": 13,
+     "lerMs": 678,
+     "totalMs": 691
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891962057668": {
+    "status": "ok",
+    "confianca": 83,
+    "tempos": {
+     "carregarMs": 11,
+     "lerMs": 1612,
+     "totalMs": 1623
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7892840815783": {
+    "status": "ok",
+    "confianca": 81,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 1037,
+     "totalMs": 1045
+    },
+    "motivos": [],
+    "tentativas": 2,
+    "preparo": "B"
+   },
+   "7892840817916": {
+    "status": "ok",
+    "confianca": 88,
+    "tempos": {
+     "carregarMs": 12,
+     "lerMs": 1442,
+     "totalMs": 1454
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7893000674233": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 53,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 7232,
+     "totalMs": 7241
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 53%). Tire outra, de perto, com luz e sem reflexo.",
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "B"
+   },
+   "7893000949355": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 48,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 4216,
+     "totalMs": 4224
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 48%). Tire outra, de perto, com luz e sem reflexo."
+    ],
+    "tentativas": 3,
+    "preparo": "R"
+   },
+   "7893333229001": {
+    "status": "ok",
+    "confianca": 74,
+    "tempos": {
+     "carregarMs": 4,
+     "lerMs": 285,
+     "totalMs": 289
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "78939301": {
+    "status": "ok",
+    "confianca": 91,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 1619,
+     "totalMs": 1622
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7894900701753": {
+    "status": "ok",
+    "confianca": 82,
+    "tempos": {
+     "carregarMs": 16,
+     "lerMs": 3103,
+     "totalMs": 3119
+    },
+    "motivos": [],
+    "tentativas": 3,
+    "preparo": "R"
+   },
+   "7894904005482": {
+    "status": "ok",
+    "confianca": 94,
+    "tempos": {
+     "carregarMs": 19,
+     "lerMs": 742,
+     "totalMs": 761
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7896006755517": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 77,
+    "tempos": {
+     "carregarMs": 4,
+     "lerMs": 909,
+     "totalMs": 913
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7896006779674": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 81,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 2107,
+     "totalMs": 2116
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7896423419276": {
+    "status": "ok",
+    "confianca": 83,
+    "tempos": {
+     "carregarMs": 10,
+     "lerMs": 1558,
+     "totalMs": 1568
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7898080640413": {
+    "status": "ok",
+    "confianca": 80,
+    "tempos": {
+     "carregarMs": 6,
+     "lerMs": 525,
+     "totalMs": 531
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7898215151784": {
+    "status": "ok",
+    "confianca": 93,
+    "tempos": {
+     "carregarMs": 6,
+     "lerMs": 647,
+     "totalMs": 653
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   }
+  }
+ },
+ "webkit": {
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6 Safari/605.1.15",
+  "externas": [],
+  "resultados": {
+   "7891031409404": {
+    "status": "ok",
+    "confianca": 74,
+    "tempos": {
+     "carregarMs": 271,
+     "lerMs": 482,
+     "totalMs": 753
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891095031115": {
+    "status": "ok",
+    "confianca": 78,
+    "tempos": {
+     "carregarMs": 11,
+     "lerMs": 512,
+     "totalMs": 523
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891132019281": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 58,
+    "tempos": {
+     "carregarMs": 7,
+     "lerMs": 3461,
+     "totalMs": 3468
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 58%). Tire outra, de perto, com luz e sem reflexo.",
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7891150027848": {
+    "status": "ok",
+    "confianca": 63,
+    "tempos": {
+     "carregarMs": 7,
+     "lerMs": 892,
+     "totalMs": 899
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891910000197": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 62,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 720,
+     "totalMs": 723
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "B"
+   },
+   "7891962053189": {
+    "status": "ok",
+    "confianca": 87,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 582,
+     "totalMs": 591
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7891962057668": {
+    "status": "ok",
+    "confianca": 83,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 1814,
+     "totalMs": 1823
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7892840815783": {
+    "status": "ok",
+    "confianca": 74,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 1061,
+     "totalMs": 1070
+    },
+    "motivos": [],
+    "tentativas": 2,
+    "preparo": "B"
+   },
+   "7892840817916": {
+    "status": "ok",
+    "confianca": 88,
+    "tempos": {
+     "carregarMs": 11,
+     "lerMs": 1469,
+     "totalMs": 1480
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7893000674233": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 53,
+    "tempos": {
+     "carregarMs": 10,
+     "lerMs": 7334,
+     "totalMs": 7344
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 53%). Tire outra, de perto, com luz e sem reflexo.",
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "B"
+   },
+   "7893000949355": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 48,
+    "tempos": {
+     "carregarMs": 8,
+     "lerMs": 4322,
+     "totalMs": 4330
+    },
+    "motivos": [
+     "A foto ficou pouco legível (confiança 48%). Tire outra, de perto, com luz e sem reflexo."
+    ],
+    "tentativas": 3,
+    "preparo": "R"
+   },
+   "7893333229001": {
+    "status": "ok",
+    "confianca": 71,
+    "tempos": {
+     "carregarMs": 2,
+     "lerMs": 289,
+     "totalMs": 291
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "78939301": {
+    "status": "ok",
+    "confianca": 90,
+    "tempos": {
+     "carregarMs": 4,
+     "lerMs": 1508,
+     "totalMs": 1512
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7894900701753": {
+    "status": "ok",
+    "confianca": 82,
+    "tempos": {
+     "carregarMs": 9,
+     "lerMs": 3352,
+     "totalMs": 3361
+    },
+    "motivos": [],
+    "tentativas": 3,
+    "preparo": "R"
+   },
+   "7894904005482": {
+    "status": "ok",
+    "confianca": 91,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 731,
+     "totalMs": 734
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7896006755517": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 77,
+    "tempos": {
+     "carregarMs": 4,
+     "lerMs": 922,
+     "totalMs": 926
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7896006779674": {
+    "status": "INFORMACAO_INSUFICIENTE",
+    "confianca": 81,
+    "tempos": {
+     "carregarMs": 11,
+     "lerMs": 2278,
+     "totalMs": 2289
+    },
+    "motivos": [
+     "Não achei a palavra \"Ingredientes\" na foto. Fotografe a lista inteira."
+    ],
+    "tentativas": 3,
+    "preparo": "L"
+   },
+   "7896423419276": {
+    "status": "ok",
+    "confianca": 83,
+    "tempos": {
+     "carregarMs": 7,
+     "lerMs": 1549,
+     "totalMs": 1556
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7898080640413": {
+    "status": "ok",
+    "confianca": 80,
+    "tempos": {
+     "carregarMs": 6,
+     "lerMs": 530,
+     "totalMs": 536
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   },
+   "7898215151784": {
+    "status": "ok",
+    "confianca": 94,
+    "tempos": {
+     "carregarMs": 3,
+     "lerMs": 625,
+     "totalMs": 628
+    },
+    "motivos": [],
+    "tentativas": 1,
+    "preparo": "L"
+   }
+  }
+ }
+}

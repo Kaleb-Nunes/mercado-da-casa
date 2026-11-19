@@ -1,0 +1,19 @@
+{
+ "status": 1,
+ "code": "7898215151784",
+ "product": {
+  "code": "7898215151784",
+  "product_name": "Creme de Leite Piracanjuba",
+  "product_name_pt": "Creme de Leite Piracanjuba",
+  "generic_name_pt": "Creme de Leite UHT",
+  "brands": "Piracanjuba",
+  "quantity": "200 g",
+  "ingredients_text_pt": "Creme de leite padronizado a 17% de gordura, leite em pó desnatado, espessantes carragena, carboximetilcelulose sódica e alginato de sódio e estabilizantes citrato de sódio e celulose microcristalina. ALÉRGICOS: CONTÉM LEITE E DERIVADOS. CONTÉM LACTOSE. NÃO CONTÉM GLÚTEN.",
+  "ingredients_text": "Creme de leite padronizado a 17% de gordura, leite em pó desnatado, espessantes carragena, carboximetilcelulose sódica e alginato de sódio e estabilizantes citrato de sódio e celulose microcristalina. ALÉRGICOS: CONTÉM LEITE E DERIVADOS. CONTÉM LACTOSE. NÃO CONTÉM GLÚTEN.",
+  "allergens_tags": [
+   "en:milk"
+  ],
+  "traces_tags": [],
+  "last_modified_t": 1793839066
+ }
+}

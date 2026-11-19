@@ -1,0 +1,19 @@
+{
+ "chamadas": [
+  "https://world.openfoodfacts.org/api/v2/product/7891962053189.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+  "https://search.openfoodfacts.org/search?q=creme%20de%20leite&page_size=5&fields=code,product_name,product_name_pt,brands,quantity&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+  "https://world.openfoodfacts.org/api/v2/product/7898215151784.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19"
+ ],
+ "fora": [
+  "https://world.openfoodfacts.org/api/v2/product/7891962053189.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+  "https://search.openfoodfacts.org/search?q=creme%20de%20leite&page_size=5&fields=code,product_name,product_name_pt,brands,quantity&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19",
+  "https://world.openfoodfacts.org/api/v2/product/7898215151784.json?fields=code,product_name,product_name_pt,generic_name_pt,brands,quantity,ingredients_text_pt,ingredients_text,allergens_tags,traces_tags,last_modified_t&app_name=Elida-homologacao&app_version=c2-m3-2026.11.19"
+ ],
+ "erros": [],
+ "codigo": "1 produto para \"7891962053189\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nTorrada bauduccoRascunho\nBauducco · 142 g · 7891962053189\nTem algo ",
+ "codigo_sem_nao_identificado": true,
+ "nome": "1 produto para \"creme de leite\"\n\nSugestões do Open Food Facts: confirme se é o mesmo produto, sabor e tamanho antes de ver a avaliação.\n\nCreme de LeiteSugestão\nPiracanjuba · 200 g · 7898215151784\n\nConfirme se é o mesmo p",
+ "sugestao_sem_avaliacao": true,
+ "apos_confirmar": "1 produto para \"7898215151784\"\n\nRascunho do Open Food Facts (dado colaborativo): confira a embalagem antes de confiar no resultado.\n\nCreme de Leite PiracanjubaRascunho\nPiracanjuba · 200 g · 7898215151",
+ "so_off_fora": true
+}

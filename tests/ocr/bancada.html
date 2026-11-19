@@ -1,0 +1,29 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Bancada OCR (teste)</title>
+<script src="../../elida-ocr.js"></script>
+<body><p>Bancada de teste do leitor de rótulos. Não faz parte do app.</p>
+<script>
+window.rodar = async function (url, hoje) {
+  const blob = await (await fetch(url)).blob();
+  return ElidaOCR.lerImagem(blob, { base: "../../vendor/ocr/", hoje: hoje || "2026-11-19" });
+};
+</script></body></html>
+<script>
+window.preparar = async function (url) {
+  const blob = await (await fetch(url)).blob(); const c = await ElidaOCR._prepararImagem(blob);
+  return { url: c.toDataURL("image/jpeg", 0.8), info: c._preparo };
+};
+</script>
+<script>
+window.modos = async function (url) {
+  const blob = await (await fetch(url)).blob(); const out = {};
+  const w = await Tesseract.createWorker("por", 1, { workerPath: new URL("../../vendor/ocr/worker.min.js", location).href, corePath: new URL("../../vendor/ocr/", location).href, langPath: new URL("../../vendor/ocr/", location).href, gzip: true, workerBlobURL: false });
+  for (const m of [{canal:"L",inverter:false},{canal:"L",inverter:true},{canal:"R",inverter:false},{canal:"G",inverter:false},{canal:"B",inverter:false},{canal:"R",inverter:true},{canal:"B",inverter:true},{}]) {
+    const c = await ElidaOCR._prepararImagem(blob, m); const t0 = performance.now();
+    const { data } = await w.recognize(c, {}, { text: true });
+    const r = ElidaOCR.interpretar(data.text, { confianca: data.confidence });
+    out[(m.canal || "auto") + (m.inverter ? "i" : "")] = { status: r.status, conf: Math.round(data.confidence), ms: Math.round(performance.now() - t0), ing: r.rotulo.ingredientes.length };
+  }
+  await w.terminate(); return out;
+};
+</script>
+<script src="../../vendor/ocr/tesseract.min.js"></script>

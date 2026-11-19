@@ -14,7 +14,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var VERSAO_MOTOR = "m1-2026.11.18";
+  var VERSAO_MOTOR = "m3-2026.11.19";
   var VERSAO_POLITICA = "pol-2026.11.18 (pendente de revisão profissional)";
   var VERSAO_PERFIS = 1;
   var IDADE_MAX_FONTE_DIAS = 365;
@@ -189,8 +189,10 @@
     var tipo = r.tipo, info = RESTRICOES[tipo];
     var ing = rot.ingredientes, contem = rot.advertencias && rot.advertencias.contem, pode = rot.advertencias && rot.advertencias.podeConter;
     var problemaFonte = fonteOk(rot, hoje);
-    var completo = !!(rot.ingredientesCompletos && rot.advertenciasCompletas) && !problemaFonte;
-    var falta = !rot.ingredientesCompletos ? "lista de ingredientes incompleta" : !rot.advertenciasCompletas ? "advertências de alergênicos incompletas" : problemaFonte;
+    /* Marco 3: rascunho (leitura automática de foto ou base colaborativa) nunca conta como conferido. */
+    var rascunho = !!(rot.rascunho || (rot.fonte && rot.fonte.rascunho));
+    var completo = !!(rot.ingredientesCompletos && rot.advertenciasCompletas) && !problemaFonte && !rascunho;
+    var falta = rascunho ? "dados de rascunho, ainda não conferidos na embalagem" : !rot.ingredientesCompletos ? "lista de ingredientes incompleta" : !rot.advertenciasCompletas ? "advertências de alergênicos incompletas" : problemaFonte;
     if (!info) return res(tipo, ESTADOS.INSUFICIENTE, ["Restrição sem política revisada."]);
     if (tipo === "controle_glicose") return res(tipo, ESTADOS.INFORMATIVO, ["O rótulo sozinho não prevê a resposta glicêmica de cada pessoa."]);
 
@@ -235,7 +237,7 @@
   function evidencia(rot) {
     var s = JSON.stringify([textoDe(rot.ingredientes), textoDe(rot.advertencias && rot.advertencias.contem), textoDe(rot.advertencias && rot.advertencias.podeConter),
       rot.declaracaoGluten || "", rot.declaracaoLactose || "", rot.categoria || "", !!rot.ingredientesCompletos, !!rot.advertenciasCompletas,
-      rot.fonte ? [rot.fonte.identificacao || "", rot.fonte.dataVerificacao || "", !!rot.fonte.desatualizada] : null, !!rot.conflitoFontes, rot.ean || ""]);
+      rot.fonte ? [rot.fonte.identificacao || "", rot.fonte.dataVerificacao || "", !!rot.fonte.desatualizada] : null, !!rot.conflitoFontes, rot.ean || "", !!(rot.rascunho || (rot.fonte && rot.fonte.rascunho))]);
     var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
     return "ev-" + h.toString(36);
   }
@@ -246,6 +248,8 @@
     if (!vp.ok || !vr.ok) return { status: "INVALIDO", erros: vp.erros.concat(vr.erros), versaoMotor: VERSAO_MOTOR };
     var hoje = opcoes.hoje || null;
     var detalhes = perfil.restricoes.map(function (r) { return analisarRestricao(r, rotulo, hoje); });
+    /* A pior situação vem primeiro: um resultado favorável numa restrição nunca aparece antes de um alerta em outra. */
+    detalhes = detalhes.map(function (d, i) { return { d: d, i: i }; }).sort(function (a, b) { return (GRAVIDADE.indexOf(a.d.estado) - GRAVIDADE.indexOf(b.d.estado)) || (a.i - b.i); }).map(function (x) { return x.d; });
     var geral = GRAVIDADE.filter(function (e) { return detalhes.some(function (d) { return d.estado === e; }); })[0] || ESTADOS.INSUFICIENTE;
     var formula = rotulo.categoria === "formula_infantil";
     if (formula && geral !== ESTADOS.INCOMPATIVEL && geral !== ESTADOS.CONTAMINACAO) geral = ESTADOS.PROFISSIONAL;
@@ -256,6 +260,8 @@
       aviso: formula ? "Fórmula infantil: o app não escolhe nem autoriza fórmula. Siga o profissional que acompanha o bebê."
         : "O resultado não garante que o produto seja seguro. Confira a embalagem atual e a orientação profissional.",
       evidencia: evidencia(rotulo), versaoMotor: VERSAO_MOTOR, versaoPolitica: VERSAO_POLITICA,
+      fonte: rotulo.fonte ? { identificacao: rotulo.fonte.identificacao || "", dataVerificacao: rotulo.fonte.dataVerificacao || "" } : null,
+      rascunho: !!(rotulo.rascunho || (rotulo.fonte && rotulo.fonte.rascunho)),
       carimbo: opcoes.agora || new Date().toISOString()
     };
   }
