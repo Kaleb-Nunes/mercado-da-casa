@@ -1,0 +1,22 @@
+{
+ "android-chrome": {
+  "fora": [],
+  "erros": [],
+  "titulo": "Elida",
+  "motor": "m3-2026.11.19",
+  "ocr": "ocr-2026.11.19",
+  "leu": true,
+  "pode": "PODE CONTER LEITE.",
+  "primeira_leitura_s": 2.3
+ },
+ "iphone-webkit": {
+  "fora": [],
+  "erros": [],
+  "titulo": "Elida",
+  "motor": "m3-2026.11.19",
+  "ocr": "ocr-2026.11.19",
+  "leu": true,
+  "pode": "PODE CONTER LEITE.",
+  "primeira_leitura_s": 1.8
+ }
+}

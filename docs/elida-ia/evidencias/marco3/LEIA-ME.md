@@ -4,3 +4,4 @@ Evidências do Marco 3 (19/11/2026).
 - `bancada-tempos.json`: tempo, confiança e tentativas por foto (sem o texto lido).
 - `e2e.json`, `e2e_webkit_off.json`: testes ponta a ponta no app (Chromium e WebKit; OFF com rede simulada).
 - `ao_vivo_off.json`: uma consulta real ao Open Food Facts a partir do app em homologação.
+- `preview-publicado.json`: leitura por foto no preview publicado (Chromium e WebKit), sem requisição para fora.
