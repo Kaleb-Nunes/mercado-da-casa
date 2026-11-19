@@ -432,6 +432,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="w-name"></div>
 
+<script src="ambiente.js"></script>
 <script src="dieta.js"></script>
 <script src="elida-regras.js"></script>
 <script src="elida-busca.js"></script>
@@ -440,8 +441,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   "use strict";
   /* Ambiente. Produção é só o endereço publicado. Qualquer outro (prévia, teste local) é homologação:
      os dados ficam com prefixo próprio e o Firebase de produção não é usado. */
-  var PRODUCAO = location.protocol === "https:" && location.hostname === "kaleb-nunes.github.io" && location.pathname.indexOf("/mercado-da-casa/") === 0;
-  var HML = !PRODUCAO, PFX = HML ? "hml:" : "";
+  /* Ambiente pela configuração explícita de ambiente.js: só endereços da lista de homologação
+     são homologação; qualquer outro (inclusive domínio próprio) é produção. */
+  var AMB = window.ElidaAmbiente ? window.ElidaAmbiente.resolver(location) : { producao: true, homologacao: false, prefixoDados: "", catalogoFicticio: false, dadosDeTeste: false };
+  var PRODUCAO = AMB.producao, HML = AMB.homologacao, PFX = AMB.prefixoDados;
   var KEY = PFX + "mercado-casa-v1";
   var CATS = ["Mercearia","Proteínas","Hortifruti","Bebidas","Bebê","Limpeza e casa","Outros"];
   var TIPOS = ["Mercado","Feira","Açougue","Farmácia","Bebê","Outros"];
@@ -1958,7 +1961,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   var IA = window.ElidaRegras, BUS = window.ElidaBusca;
   var Perfis = IA.criarArmazem(window.localStorage, PFX + "elida-perfis-v1");
   var perfisEstado = Perfis.carregar();
-  var Busca = BUS.criarBusca({ provedor: HML ? BUS.provedorFicticio() : null, producao: PRODUCAO });
+  var Busca = BUS.criarBusca({ provedor: AMB.catalogoFicticio ? BUS.provedorFicticio() : null, producao: AMB.producao });
   var buscaIA = { texto: "", resposta: null, rodando: false };
   var gatilhosIA = IA.criarGatilhos({
     REAVALIAR_RESULTADOS_LOCAIS: function(){ if(ui.view === "rotulos" || ui.view === "perfis") render(); },
@@ -2289,7 +2292,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         ui.armed = null; save(); renderLista(); toast("Lista limpa"); break;
       case "backup": sheetBackup(); break;
       case "hml-dados":
-        if(!HML) break;
+        if(!AMB.dadosDeTeste) break;
         if(ui.armed !== "hml-dados"){ ui.armed = "hml-dados"; toast("Toque de novo para trocar tudo pelos dados de teste"); break; }
         ui.armed = null; state = dadosDeTeste(); fotos = {}; saveFotos(); save(); show("inicio"); toast("Dados de teste carregados"); break;
       case "salvar-backup": salvarArquivoBackup(); break;
@@ -2318,7 +2321,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
-    if(f.id === "form-busca"){ e.preventDefault(); var q = document.getElementById("f-busca").value; gatilhosIA.disparar(/^[\d\s.-]{8,}$/.test(q.trim()) ? "CODIGO_LIDO" : "PESQUISA_SOLICITADA", { origem: "usuario", texto: q }); }
+    if(f.id === "form-busca"){
+      e.preventDefault(); var q = document.getElementById("f-busca").value;
+      var g = gatilhosIA.disparar(/^[\d\s.-]{8,}$/.test(q.trim()) ? "CODIGO_LIDO" : "PESQUISA_SOLICITADA", { origem: "usuario", texto: q });
+      /* Sem fonte aprovada a busca não sai do aparelho, mas a pessoa recebe a resposta "indisponível". */
+      if(g.resultado !== "executado" && !Busca.fornecedor) executarBusca(q);
+    }
     else if(f.id === "form-perfil"){ e.preventDefault(); salvarPerfilIA(); }
     else if(f.id === "form-rd"){ e.preventDefault(); analisarDigitado(); }
   });

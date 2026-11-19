@@ -137,7 +137,7 @@ t("app: DietaMotor intacto, chaves da Despensa iguais e motor novo integrado", f
   assert.ok(/PFX \+ "mercado-casa-v1"/.test(html));
   assert.ok(/<script src="dieta\.js"><\/script>\s*<script src="elida-regras\.js"><\/script>\s*<script src="elida-busca\.js"><\/script>/.test(html));
   assert.ok(/IA\.criarArmazem\(window\.localStorage, PFX \+ "elida-perfis-v1"\)/.test(html), "perfis na mesma origem do app, com prefixo de homologação");
-  assert.ok(/provedor: HML \? BUS\.provedorFicticio\(\) : null, producao: PRODUCAO/.test(html), "dados fictícios só na homologação");
+  assert.ok(/provedor: AMB\.catalogoFicticio \? BUS\.provedorFicticio\(\) : null, producao: AMB\.producao/.test(html), "dados fictícios só na homologação");
   assert.ok(!fs.existsSync(path.join(__dirname, "..", "perfis.html")), "não pode haver segunda experiência isolada");
 });
 t("app: restrições nunca vão para a URL e não há rede nos módulos novos", function () {

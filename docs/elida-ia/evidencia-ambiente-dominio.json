@@ -1,0 +1,46 @@
+{
+ "chrome elida-dominio-proprio.com.br": {
+  "faixa_hml": false,
+  "botao_dados_teste": 0,
+  "aviso_rotulos": "A busca de rótulos ainda não está disponível: falta uma fonte de dados aprovada.",
+  "chaves": [
+   "despensa-ofertas",
+   "mercado-casa-v1"
+  ],
+  "busca_bolo": "Resultado da busca |  | Ainda não há fonte de rótulos aprovada. Confira a ",
+  "erros": []
+ },
+ "chrome elida-homologacao.pages.dev": {
+  "faixa_hml": true,
+  "botao_dados_teste": 1,
+  "aviso_rotulos": "Homologação: a busca usa um catálogo fictício de teste. Ainda não há fonte real ",
+  "chaves": [
+   "hml:despensa-ofertas",
+   "hml:mercado-casa-v1"
+  ],
+  "busca_bolo": "1 produto para \"bolo\" |  | Dados fictícios de teste: não são produtos reai",
+  "erros": []
+ },
+ "safari-webkit elida-dominio-proprio.com.br": {
+  "faixa_hml": false,
+  "botao_dados_teste": 0,
+  "aviso_rotulos": "A busca de rótulos ainda não está disponível: falta uma fonte de dados aprovada.",
+  "chaves": [
+   "despensa-ofertas",
+   "mercado-casa-v1"
+  ],
+  "busca_bolo": "Resultado da busca |  | Ainda não há fonte de rótulos aprovada. Confira a ",
+  "erros": []
+ },
+ "safari-webkit elida-homologacao.pages.dev": {
+  "faixa_hml": true,
+  "botao_dados_teste": 1,
+  "aviso_rotulos": "Homologação: a busca usa um catálogo fictício de teste. Ainda não há fonte real ",
+  "chaves": [
+   "hml:despensa-ofertas",
+   "hml:mercado-casa-v1"
+  ],
+  "busca_bolo": "1 produto para \"bolo\" |  | Dados fictícios de teste: não são produtos reai",
+  "erros": []
+ }
+}
