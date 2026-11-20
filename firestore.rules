@@ -19,7 +19,9 @@ service cloud.firestore {
       return autenticado()
         && (
           (exists(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid))
-           && get(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid)).data.status == 'aprovado')
+           && get(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid)).data.status == 'aprovado'
+           && get(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid)).data.uid == request.auth.uid
+           && get(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid)).data.email == request.auth.token.email)
           || (exists(/databases/$(database)/documents/configuracoesSeguranca/superadmin)
            && get(/databases/$(database)/documents/configuracoesSeguranca/superadmin).data.ativo == true
            && get(/databases/$(database)/documents/configuracoesSeguranca/superadmin).data.uid == request.auth.uid)
@@ -44,6 +46,7 @@ service cloud.firestore {
     match /auditoriaAcessos/{evento} { allow read, write: if false; }
     match /limitesUsuarios/{uid} { allow read, write: if false; }
     match /limitesConvites/{casaId} { allow read, write: if false; }
+    match /limitesAcessos/{uid} { allow read, write: if false; }
 
     match /casas/{casaId} {
       allow get: if membroAtivo(casaId);
