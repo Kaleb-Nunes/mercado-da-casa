@@ -46,5 +46,7 @@ test("somente auth com email verificado e não anônimo é aceito", () => {
   });
   assert.throws(() => usuarioVerificado(null), { code: "unauthenticated" });
   assert.throws(() => usuarioVerificado(autenticar("anonymous", true, "a@b.com")), { code: "permission-denied" });
+  assert.throws(() => usuarioVerificado(autenticar("facebook.com", true, "a@b.com")), { code: "permission-denied" });
+  assert.throws(() => usuarioVerificado(autenticar("custom", true, "a@b.com")), { code: "permission-denied" });
   assert.throws(() => usuarioVerificado(autenticar("google.com", false, "a@b.com")), { code: "permission-denied" });
 });
