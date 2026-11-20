@@ -13,17 +13,37 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
+    // Nenhuma conta recém-criada tem acesso por padrão, mesmo com e-mail verificado.
+    // A aprovação só pode ser alterada por Cloud Functions/Admin SDK.
+    function acessoAprovado() {
+      return autenticado()
+        && (
+          (exists(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid))
+           && get(/databases/$(database)/documents/acessosUsuarios/$(request.auth.uid)).data.status == 'aprovado')
+          || (exists(/databases/$(database)/documents/configuracoesSeguranca/superadmin)
+           && get(/databases/$(database)/documents/configuracoesSeguranca/superadmin).data.ativo == true
+           && get(/databases/$(database)/documents/configuracoesSeguranca/superadmin).data.uid == request.auth.uid)
+        );
+    }
+
     function casaIdValido(casaId) {
       return casaId is string
         && casaId.matches('^[A-Za-z0-9_-]{20,64}$');
     }
 
     function membroAtivo(casaId) {
-      return autenticado()
+      return acessoAprovado()
         && casaIdValido(casaId)
         && exists(/databases/$(database)/documents/casas/$(casaId)/membros/$(request.auth.uid))
         && get(/databases/$(database)/documents/casas/$(casaId)/membros/$(request.auth.uid)).data.ativo == true;
     }
+
+    // Metadados de aprovação e identidade do administrador NUNCA são públicos.
+    match /acessosUsuarios/{uid} { allow read, write: if false; }
+    match /configuracoesSeguranca/{doc} { allow read, write: if false; }
+    match /auditoriaAcessos/{evento} { allow read, write: if false; }
+    match /limitesUsuarios/{uid} { allow read, write: if false; }
+    match /limitesConvites/{casaId} { allow read, write: if false; }
 
     match /casas/{casaId} {
       allow get: if membroAtivo(casaId);
