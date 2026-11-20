@@ -9,6 +9,7 @@ const markup=fs.readFileSync("index.html","utf8");
 const app=fs.readFileSync("elida-app.js","utf8");
 const html=markup+"\n"+app;
 const conta=fs.readFileSync("elida-conta.js","utf8");
+const aprovacao=fs.readFileSync("elida-aprovacao.js","utf8");
 const config=fs.readFileSync("elida-firebase-config.js","utf8");
 const headers=fs.readFileSync("_headers","utf8");
 const sw=fs.readFileSync("sw.js","utf8");
@@ -17,6 +18,8 @@ async function teste(nome,fn){try{await fn();ok++;console.log("OK "+nome);}catch
 (async()=>{
 await teste("Sintaxe JS de autenticação, criptografia e app integrado",()=>{
  new vm.Script(conta);
+ new vm.Script(aprovacao);
+ assert.match(markup, /elida-aprovacao\.js/);
  new vm.Script(fs.readFileSync("elida-backup-seguro.js","utf8"));
  assert.match(markup, /<script src="elida-app\.js"><\/script>/);
  assert.doesNotMatch(markup, /<script>\s*\(async function/);
