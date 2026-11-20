@@ -53,7 +53,9 @@ function prepararSW() {
   const handlers = {};
   const loc = new URL("https://app.elida.com.br/");
   const self = {location: loc, clients: {claim: () => Promise.resolve()}, addEventListener: (name, fn) => handlers[name] = fn};
-  const ctx = {self, URL, Set, Promise, console, caches: {}, fetch: async () => ({ok: true, status: 200, type: "basic", headers: new Map(), clone(){return this;}})};
+  const fakeCache = {match: async () => null, put: async () => undefined};
+  const cacheAPI = {open: async () => fakeCache, match: async () => null, keys: async () => [], delete: async () => true};
+  const ctx = {self, URL, Set, Promise, console, caches: cacheAPI, fetch: async () => ({ok: true, status: 200, type: "basic", headers: new Map(), clone(){return this;}})};
   vm.createContext(ctx);
   ctx.importScripts = (p) => vm.runInContext(ler(p.replace(/^\.\//, "")), ctx);
   vm.runInContext(sw, ctx);
@@ -61,7 +63,7 @@ function prepararSW() {
 }
 function capturada(h, uri, mode) {
   let chamada = false;
-  h.fetch({request:{method:"GET",url:"https://app.elida.com.br/" + uri,mode:mode||"cors"},respondWith(){chamada=true;}});
+  h.fetch({request:{method:"GET",url:"https://app.elida.com.br/" + uri,mode:mode||"cors"},respondWith(p){chamada=true; if(p && typeof p.catch === "function") p.catch(()=>{});},waitUntil(){}});
   return chamada;
 }
 t("SW não intercepta dados de API, JSON desconhecido, URLs com query ou outros domínios", () => {
