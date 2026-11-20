@@ -58,6 +58,27 @@ jobs:
           path: _homologacao
           retention-days: 14
 
+  browser-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar controle do Chrome
+        run: npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.55.0
+      - name: Exercitar botões e formulários no Chromium real, sem credenciais
+        run: node tests/browser-botoes.cjs
+      - name: Guardar relatório e captura em caso de falha
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-chromium-botoes-${{ github.sha }}
+          path: qa-resultados/
+          if-no-files-found: ignore
+          retention-days: 7
+
   elida-ia:
     # Pipeline separado: Elida IA (regras, busca, leitura de rótulo por foto). Não afeta o Elida Familiar.
     runs-on: ubuntu-latest
