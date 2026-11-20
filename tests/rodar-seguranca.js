@@ -19,6 +19,7 @@ function t(nome, teste) {
 }
 t("Firestore exige pertencimento ativo e UID autenticado", () => {
   assert.match(rules, /request\.auth\s*!=\s*null/);
+  assert.match(rules, /request\.auth\.token\.email_verified\s*==\s*true/);
   assert.match(rules, /membroAtivo\(casaId\)/);
   assert.match(rules, /membros\/\$\(request\.auth\.uid\)/);
   assert.match(rules, /\.data\.ativo\s*==\s*true/);
