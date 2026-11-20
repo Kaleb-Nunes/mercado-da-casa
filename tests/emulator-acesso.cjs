@@ -67,7 +67,7 @@ async function main(){
     await devePermitir("membro ativo lê sua casa",getDoc(doc(dono,"casas",casa)));
     await devePermitir("membro ativo lê item da própria casa",getDoc(doc(dono,"casas",casa,"itens","item1")));
     await deveNegar("membro aprovado não contorna quota gravando diretamente no Firestore",setDoc(doc(dono,"casas",casa,"itens","item2"),{nome:"Arroz fictício"}));
-    await devePermitir("membro ativo lista itens da própria casa",getDocs(collection(dono,"casas",casa,"itens")));
+    await deveNegar("listagem direta de itens bloqueada: exige API com quota",getDocs(collection(dono,"casas",casa,"itens")));
     await deveNegar("outro usuário autenticado não lê a casa",getDoc(doc(estranho,"casas",casa)));
     await deveNegar("outro usuário autenticado não lê item",getDoc(doc(estranho,"casas",casa,"itens","item1")));
     await deveNegar("outro usuário autenticado não altera item",setDoc(doc(estranho,"casas",casa,"itens","invadido"),{nome:"Não deve entrar"}));
