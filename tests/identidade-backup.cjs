@@ -10,7 +10,7 @@ const app=fs.readFileSync("elida-app.js","utf8");
 const html=markup+"\n"+app;
 const conta=fs.readFileSync("elida-conta.js","utf8");
 const aprovacao=fs.readFileSync("elida-aprovacao.js","utf8");
-const config=fs.readFileSync("elida-firebase-config.js","utf8");
+const config=fs.readFileSync("elida-supabase-config.js","utf8");
 const headers=fs.readFileSync("_headers","utf8");
 const sw=fs.readFileSync("sw.js","utf8");
 let ok=0;
@@ -25,34 +25,23 @@ await teste("Sintaxe JS de autenticação, criptografia e app integrado",()=>{
  assert.doesNotMatch(markup, /<script>\s*\(async function/);
  new vm.Script(app,{filename:"elida-app.js"});
 });
-await teste("Firebase Web público usa projeto certo e só permite homologação",()=>{
- function carregar(host){const win={location:{hostname:host}};vm.runInNewContext(config,{window:win});return win.__ELIDA_FIREBASE_CONFIG__;}
- const h=carregar("elida-homologacao.pages.dev");
- assert.equal(h.projectId,"projeto-elida-aplv");
- assert.equal(h.authDomain,"projeto-elida-aplv.firebaseapp.com");
- assert.equal(h.appId,"1:90562321638:web:5959134668dcb4f0a42f27");
- assert.equal(h.apiKey,"AIzaSyBIPtpWQ1fmsNTL9GZ2OiXO8D5x2DX8xu8");
- assert.ok(carregar("feature-perfis-inteligentes.elida-homologacao.pages.dev"));
- assert.equal(carregar("kaleb-nunes.github.io"),null);
- assert.equal(carregar("elida-homologacao.pages.dev.atacante.example"),null);
- assert.doesNotMatch(config,/getAnalytics\s*\(/);
- assert.doesNotMatch(config,/private_key|serviceAccountKey|client_secret\s*:/);
+await teste("SDK local e configuração Supabase da prévia",()=>{
+ new vm.Script(config);
+ assert.ok(markup.includes('src="vendor/supabase/sdk.js"'));
+ assert.ok(markup.includes('src="elida-supabase-config.js"'));
+ assert.ok(!markup.includes('src="elida-firebase-config.js"'));
 });
-await teste("Login não inicia rede para visitantes e não habilita sync familiar",()=>{
- assert.match(conta,/if\(modo==="conta"\)/);
- assert.match(conta,/browserSessionPersistence/);
- assert.doesNotMatch(conta,/signInAnonymously\(/);
- assert.match(conta,/signInWithPopup\(/);
- assert.match(conta,/signInWithEmailAndPassword\(/);
- assert.match(conta,/sendEmailVerification\(/);
- assert.match(conta,/ElidaAprovacao\.verificar/);
- assert.match(conta,/acesso\.status==="aprovado"/);
- assert.match(aprovacao,/ReCaptchaEnterpriseProvider/);
+await teste("Login em sessão, OAuth com PKCE e aprovação no servidor",()=>{
+ assert.ok(conta.includes('flowType:"pkce"'));
+ assert.ok(conta.includes('signInWithOAuth'));
+ assert.ok(conta.includes('signInWithPassword'));
+ assert.ok(conta.includes('ElidaAprovacao.verificar'));
+ assert.ok(aprovacao.includes('elida_meu_acesso'));
  assert.match(html,/SYNC_FAMILIAR_ACL_HOMOLOGADA = false/);
  assert.match(html,/PFX = AMB\.prefixoDados \+ \(window\.ElidaConta/);
 });
 await teste("Modo visitante tem prefixo legado e conta tem prefixo próprio",()=>{
- const win={__ELIDA_FIREBASE_CONFIG__:null,localStorage:{getItem:()=>null}};
+ const win={ELIDA_SUPABASE:null,localStorage:{getItem:()=>null}};
  vm.runInNewContext(conta,{window:win,console});
  assert.equal(win.ElidaConta.sufixo(),"");
  assert.equal(win.ElidaConta.configurada(),false);
@@ -99,14 +88,15 @@ await teste("Cabeçalhos de Cloudflare têm CSP, antiframing e CSP de login Goog
  assert.match(headers,/script-src-attr 'none'/);
  assert.match(headers,/X-Frame-Options: DENY/);
  assert.match(headers,/same-origin-allow-popups/);
- assert.match(headers,/identitytoolkit\.googleapis\.com/);
- assert.match(headers,/www\.gstatic\.com/);
+ assert.doesNotMatch(headers,/identitytoolkit\.googleapis\.com/);
+ assert.match(headers,/connect-src 'self'/);
  assert.match(headers,/GitHub Pages IGNORA/);
 });
 await teste("PWA faz cache dos módulos públicos sem guardar dados privados",()=>{
- for(const file of ["elida-backup-seguro.js","elida-firebase-config.js","elida-conta.js","elida-aprovacao.js"])assert.ok(sw.includes('"./'+file+'"'));
+ for(const file of ["vendor/supabase/sdk.js","elida-backup-seguro.js","elida-supabase-config.js","elida-conta.js","elida-aprovacao.js"])assert.ok(sw.includes('"./'+file+'"'));
  assert.match(sw,/if \(url\.origin !== self\.location\.origin \|\| url\.search\) return;/);
 });
 console.log("Segurança Elida IA integrada: "+ok+"/11 testes");
 if(process.exitCode)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
