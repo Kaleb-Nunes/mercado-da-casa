@@ -29,6 +29,12 @@ jobs:
           node tests/identidade-backup.cjs
           node tests/seguranca-identidade-backup.cjs
 
+      - name: Validar backend seguro de famílias (sem deploy real)
+        run: |
+          node --check functions/index.js
+          node --check functions/lib/validacao.cjs
+          npm --prefix functions test
+
       - name: Testes reais de permissões (Firestore Emulator)
         env:
           GCLOUD_PROJECT: demo-elida-acl
