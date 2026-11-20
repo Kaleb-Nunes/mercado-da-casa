@@ -28,11 +28,14 @@ jobs:
         run: |
           node tests/identidade-backup.cjs
           node tests/seguranca-identidade-backup.cjs
+          node tests/aprovacao-acesso.cjs
 
       - name: Validar backend seguro de famílias (sem deploy real)
         run: |
           node --check functions/index.js
           node --check functions/lib/validacao.cjs
+          node --check functions/lib/acesso.cjs
+          node --check elida-aprovacao.js
           npm --prefix functions test
 
       - name: Testes reais de permissões (Firestore Emulator)
@@ -47,7 +50,7 @@ jobs:
       - name: Pacote de homologação
         run: |
           mkdir -p _homologacao
-          cp -r index.html elida-app.js elida-backup-seguro.js elida-conta.js elida-firebase-config.js _headers ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
+          cp -r index.html elida-app.js elida-backup-seguro.js elida-aprovacao.js elida-conta.js elida-firebase-config.js _headers ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
       - uses: actions/upload-artifact@v4
         with:
           name: homologacao-${{ github.sha }}
