@@ -10,7 +10,7 @@
   function modoGuardado(){try{return localStorage.getItem(CHAVE_MODO)==="conta"?"conta":"visitante";}catch(e){return "visitante";}}
   function guardarModo(m){try{localStorage.setItem(CHAVE_MODO,m);}catch(e){}}
   function configValida(){
-    return CONFIG && CONFIG.origem===location.origin && /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(CONFIG.url)
+    return !!CONFIG && CONFIG.origem===location.origin && /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(CONFIG.url)
       && /^sb_publishable_[A-Za-z0-9_-]+$/.test(CONFIG.chavePublicavel);
   }
   function obterCliente(){
@@ -278,4 +278,5 @@
   }
   root.ElidaConta=Object.freeze({cliente:obterCliente,bootstrap:bootstrap,sufixo:sufixo,abrir:mostrar,configurada:configValida});
 })(typeof window!=="undefined"?window:this);
+
 
