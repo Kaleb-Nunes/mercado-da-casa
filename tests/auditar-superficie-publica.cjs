@@ -14,6 +14,7 @@ async function request(url,method){
  const r=await fetch(url,{method,redirect:"manual",signal:timeout(),headers:{Accept:"text/html", "User-Agent":"Elida-Authorized-Passive-Security-Check/1.0 (GitHub CI)"}});
  return r;
 }
+async function main(){
 for(const [nome,url] of destinos){
  let out={nome,url};
  try{
@@ -45,3 +46,6 @@ for(const [nome,url] of destinos){
 fs.mkdirSync("auditoria-seguranca",{recursive:true});
 fs.writeFileSync("auditoria-seguranca/auditoria-passiva-publica.json",JSON.stringify(resultado,null,2));
 console.log("Auditoria passiva salva. Não foram feitas chamadas a APIs privadas.");
+
+}
+main().catch((e)=>{console.error(e.stack||e.message);process.exitCode=1;});
