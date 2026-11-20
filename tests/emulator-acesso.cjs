@@ -1,0 +1,69 @@
+"use strict";
+/* Testes REAIS de autorização no Firestore Emulator.
+   Somente projeto 'demo-...': nenhuma credencial ou produção. */
+const fs = require("node:fs");
+const assert = require("node:assert/strict");
+const {
+  initializeTestEnvironment, assertSucceeds, assertFails
+} = require("@firebase/rules-unit-testing");
+const {
+  doc, collection, setDoc, getDoc, getDocs, updateDoc, deleteDoc
+} = require("firebase/firestore");
+const casa = "AbC_defGhijkLMNoPQrsTUVwxyz1";
+const outraCasa = "Bbc_defGhijkLMNoPQrsTUVwxyz2";
+const uDono="dono",uEstranho="estranho",uRemovido="removido";
+let feitos=0;
+async function devePermitir(nome, promessa) {
+  await assertSucceeds(promessa);
+  feitos++; console.log("PERMITIDO: "+nome);
+}
+async function deveNegar(nome, promessa) {
+  await assertFails(promessa);
+  feitos++; console.log("NEGADO: "+nome);
+}
+async function main(){
+  if(!process.env.FIRESTORE_EMULATOR_HOST) throw Error("Recusado: FIRESTORE_EMULATOR_HOST ausente; teste não executa em produção");
+  if(!process.env.GCLOUD_PROJECT?.startsWith("demo-") && !process.env.FIREBASE_PROJECT_ID?.startsWith("demo-"))
+    throw Error("Recusado: projeto deve começar com demo-");
+  const host = process.env.FIRESTORE_EMULATOR_HOST.split(":");
+  const env=await initializeTestEnvironment({
+    projectId:"demo-elida-acl",
+    firestore:{host:host[0],port:Number(host[1]),rules:fs.readFileSync("firestore.rules","utf8")}
+  });
+  try {
+    await env.withSecurityRulesDisabled(async (ctx)=>{
+      const db=ctx.firestore();
+      for(const [id,owner] of [[casa,uDono],[outraCasa,uEstranho]]){
+        await setDoc(doc(db,"casas",id),{nome:"Casa de teste",criador:owner,v:1});
+        await setDoc(doc(db,"casas",id,"membros",owner),{ativo:true,nome:"Titular"});
+        await setDoc(doc(db,"casas",id,"itens","item1"),{nome:"Produto inventado"});
+      }
+      await setDoc(doc(db,"casas",casa,"membros",uRemovido),{ativo:false,nome:"Antigo membro"});
+    });
+    const dono=env.authenticatedContext(uDono).firestore();
+    const estranho=env.authenticatedContext(uEstranho).firestore();
+    const removido=env.authenticatedContext(uRemovido).firestore();
+    const semLogin=env.unauthenticatedContext().firestore();
+    await devePermitir("membro ativo lê sua casa",getDoc(doc(dono,"casas",casa)));
+    await devePermitir("membro ativo lê item da própria casa",getDoc(doc(dono,"casas",casa,"itens","item1")));
+    await devePermitir("membro ativo escreve item próprio",setDoc(doc(dono,"casas",casa,"itens","item2"),{nome:"Arroz fictício"}));
+    await devePermitir("membro ativo lista itens da própria casa",getDocs(collection(dono,"casas",casa,"itens")));
+    await deveNegar("outro usuário autenticado não lê a casa",getDoc(doc(estranho,"casas",casa)));
+    await deveNegar("outro usuário autenticado não lê item",getDoc(doc(estranho,"casas",casa,"itens","item1")));
+    await deveNegar("outro usuário autenticado não altera item",setDoc(doc(estranho,"casas",casa,"itens","invadido"),{nome:"Não deve entrar"}));
+    await deveNegar("membro removido não lê",getDoc(doc(removido,"casas",casa,"itens","item1")));
+    await deveNegar("usuário sem autenticação não lê",getDoc(doc(semLogin,"casas",casa,"itens","item1")));
+    await deveNegar("usuário sem autenticação não escreve",setDoc(doc(semLogin,"casas",casa,"itens","item1"),{nome:"alterado"}));
+    await deveNegar("cliente não cria casa",setDoc(doc(dono,"casas","Ccc_defGhijkLMNoPQrsTUVwxyz3"),{nome:"Nova"}));
+    await deveNegar("cliente não modifica casa",updateDoc(doc(dono,"casas",casa),{nome:"Ataque"}));
+    await deveNegar("cliente não edita autorização de outro membro",setDoc(doc(dono,"casas",casa,"membros",uEstranho),{ativo:true}));
+    await deveNegar("cliente não se reativa",updateDoc(doc(removido,"casas",casa,"membros",uRemovido),{ativo:true}));
+    await deveNegar("cliente não apaga dono",deleteDoc(doc(dono,"casas",casa,"membros",uDono)));
+    await deveNegar("cliente não lista todas as casas",getDocs(collection(dono,"casas")));
+    await deveNegar("membro de uma casa não lê outra",getDoc(doc(dono,"casas",outraCasa,"itens","item1")));
+    await deveNegar("coleção desconhecida permanece negada",getDoc(doc(dono,"casas",casa,"dadosSaude","segredo")));
+    assert.equal(feitos,18);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/18 cenários de autorização aprovados");
+  } finally {await env.cleanup();}
+}
+main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
