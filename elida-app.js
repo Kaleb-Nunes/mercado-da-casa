@@ -1871,7 +1871,8 @@
     var b = e.target.closest ? e.target.closest("[data-act]") : null;
     if(!b) return;
     var act = b.dataset.act, id = b.dataset.id, it;
-    switch(act){
+    try {
+      switch(act){
       case "nav": show(b.dataset.view); break;
       case "novo-perfil": sheetPerfil(null); break;
       case "editar-perfil": sheetPerfil(perfisEstado.perfis.filter(function(p){ return p.id === id; })[0] || null); break;
@@ -2030,6 +2031,12 @@
       case "desfazer-restaurar": desfazerRestauracao(); break;
       case "restaurar": sheetRestaurar(); break;
       case "confirmar-restaurar": var colado=(document.getElementById("f-restaurar") || {}).value || ""; previaRestaurar(colado.trim() || (ui.sheet && ui.sheet.arquivoBackupTexto) || ""); break;
+      }
+    } catch(err) {
+      /* Não deixar um botão parecer sem resposta se algum estado local estiver inválido.
+         Não registrar conteúdo de gastos, perfis ou rótulos no diagnóstico. */
+      try{ console.error("Elida: ação não concluída", String(act || "indefinida")); }catch(e){}
+      toast("Esta ação não pôde ser concluída. Confira os dados ou atualize o aplicativo.", 4200);
     }
   });
   document.addEventListener("input", function(e){
