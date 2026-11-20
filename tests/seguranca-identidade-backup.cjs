@@ -29,12 +29,18 @@ async function executar(){
    assert.match(headers,/frame-ancestors 'none'/);
    assert.match(headers,/X-Content-Type-Options: nosniff/);
  });
- await test("configuração Firebase não possui dados reais nem credenciais privadas",()=>{
-   assert.match(cfg,/window\.__ELIDA_FIREBASE_CONFIG__ = null;/);
+ await test("configuração Web pública só existe na homologação",()=>{
+   const execute=host=>{const w={location:{hostname:host}};vm.runInNewContext(cfg,{window:w});return w.__ELIDA_FIREBASE_CONFIG__;};
+   const c=execute("elida-homologacao.pages.dev");
+   assert.equal(c.projectId,"projeto-elida-aplv");
+   assert.equal(c.authDomain,"projeto-elida-aplv.firebaseapp.com");
+   assert.equal(c.appId,"1:90562321638:web:5959134668dcb4f0a42f27");
+   assert.ok(execute("localhost"));
+   assert.equal(execute("kaleb-nunes.github.io"),null);
+   assert.equal(execute("fake-elida-homologacao.pages.dev.example"),null);
    assert.doesNotMatch(cfg,/private_key\s*:/);
    assert.doesNotMatch(cfg,/serviceAccount\s*:/);
    assert.match(authSource,/projectId==="projeto-elida-aplv"/);
-   assert.match(authSource,/authDomain==="projeto-elida-aplv\.firebaseapp\.com"/);
  });
  await test("backup cifrado permite restaurar campos de compras e perfis",async()=>{
    const original={formato:"elida-backup",versao:2,estado:{items:[{nome:"AVEIA",preco:9.5}],meses:{"2026-11":{orc:500,gastos:[]}}},perfis:{perfis:[{apelido:"Criança de teste",restricoes:[{tipo:"LEITE"}]}]}};
