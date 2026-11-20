@@ -33,7 +33,7 @@ self.addEventListener("fetch", (e) => {
 
   if (url.pathname.startsWith(OCR_PREFIX)) {
     /* Restringe o cache do OCR a arquivos locais conhecidos, sem rotas dinâmicas. */
-    if (!/\\.(?:js|gz|wasm)(?:\\.js)?$/.test(url.pathname)) return;
+    if (!/\.(?:js|gz|wasm)(?:\.js)?$/.test(url.pathname)) return;
     e.respondWith(caches.open(CACHE_OCR).then((c) =>
       c.match(req).then((r) => r || fetch(req).then((res) => {
         if (res.ok && res.type === "basic" && !res.headers.has("set-cookie")
@@ -49,7 +49,8 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(fetch(req).then((res) => {
     if (estatico && res.ok && res.type === "basic" && !res.headers.has("set-cookie")
         && !/private|no-store/i.test(res.headers.get("cache-control") || "")) {
-      e.waitUntil(caches.open(CACHE).then((c) => c.put(req, res.clone())));
+      const copia = res.clone();
+      e.waitUntil(caches.open(CACHE).then((c) => c.put(req, copia)));
     }
     return res;
   }).catch((err) => {
