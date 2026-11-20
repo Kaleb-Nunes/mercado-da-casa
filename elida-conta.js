@@ -64,7 +64,10 @@
       if(a==="fechar" && modo!=="conta") {fundo.hidden=true;return;}
       b.disabled=true;
       Promise.resolve(acao(a)).catch(function(e){
-        if(a!=="recuperar")mensagem("Não foi possível concluir. Verifique os dados, a conexão e as configurações de acesso.");
+        if(a!=="recuperar"){
+          var codigo=e && /^auth\/[a-z-]+$/.test(e.code) ? " ("+e.code+")" : "";
+          mensagem("Não foi possível concluir. Verifique os dados, a conexão e as configurações de acesso."+codigo);
+        }
       }).finally(function(){b.disabled=false;});
     });
     document.body.appendChild(fundo);
