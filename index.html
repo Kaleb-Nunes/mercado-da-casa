@@ -413,6 +413,12 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 #elida-conta-painel button{min-height:45px;padding:9px 5px;border:1px solid #0F3B2E;border-radius:8px;background:#0F3B2E;color:white;font:600 13px system-ui}
 #elida-conta-painel button[data-elida-action=visitante],#elida-conta-painel button[data-elida-action=fechar]{background:white;color:#0F3B2E}
 #elida-conta-painel button:disabled{opacity:.5}
+#elida-conta-painel [hidden]{display:none!important}
+#elida-conta-painel .elida-admin-linha{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-top:1px solid #e0e8e1;padding:12px 0}
+#elida-conta-painel .elida-admin-linha span{flex:1 1 100%;overflow-wrap:anywhere}
+#elida-conta-painel [data-elida-admin] button{margin:4px 5px 4px 0}
+#elida-conta-painel [data-elida-lista]{max-height:35vh;overflow:auto}
+
 html[data-elida-bloqueada=true] body > :not(#elida-conta-painel):not(script){visibility:hidden!important}
 html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important}
 </style>
@@ -461,6 +467,7 @@ html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important
 <script src="elida-ocr.js"></script>
 <script src="elida-backup-seguro.js"></script>
 <script src="elida-firebase-config.js"></script>
+<script src="elida-aprovacao.js"></script>
 <script src="elida-conta.js"></script>
 <script src="elida-app.js"></script>
 </body>
