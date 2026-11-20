@@ -39,7 +39,7 @@ teste("ícone de item vindo de backup não executa HTML",()=>{
   const out=ctx.thumb({id:"teste",nome:"ABC",cat:"Mercearia",icon:'</span><img src=x onerror=alert(1)>'});
   assert.ok(out.includes("&lt;/span&gt;"));
   assert.ok(!out.includes("<img "));
-  assert.ok(!out.includes(" onerror="));
+  assert.ok(out.includes("&lt;img"));
 });
 teste("foto vinda de backup não pode injetar onerror no src",()=>{
   ctx.fotos.teste='data:image/jpeg;base64,AAAA" onerror="alert(1)';
@@ -55,7 +55,7 @@ teste("foto base64 válida é preservada",()=>{
 teste("todos os links de origem de ofertas passam por filtro HTTPS",()=>{
   assert.ok(html.includes("esc(urlExternaSegura(a.fonte.url))"));
   assert.ok(html.includes("esc(urlExternaSegura(e.url))"));
-  assert.ok(html.includes("esc(urlExternaSegura(f.urlProduto))"));
+  assert.ok(html.includes("esc(urlExternaSegura(f.urlProduto) ||"));
   assert.ok(!html.includes("esc(a.fonte.url)"));
   assert.ok(!html.includes("esc(e.url)"));
 });
