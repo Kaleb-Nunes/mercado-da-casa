@@ -9,7 +9,8 @@ const vm = require("node:vm");
 const root = path.resolve(__dirname, "..");
 const ler = (p) => fs.readFileSync(path.join(root, p), "utf8");
 const rules = ler("firestore.rules");
-const html = ler("index.html");
+const html = ler("elida-app.js");
+const htmlShell = ler("index.html");
 const sw = ler("sw.js");
 const headers = ler("_headers");
 let ok = 0;
@@ -19,6 +20,7 @@ function t(nome, teste) {
 }
 t("Firestore exige pertencimento ativo e UID autenticado", () => {
   assert.match(rules, /request\.auth\s*!=\s*null/);
+  assert.match(rules, /request\.auth\.token\.email_verified\s*==\s*true/);
   assert.match(rules, /membroAtivo\(casaId\)/);
   assert.match(rules, /membros\/\$\(request\.auth\.uid\)/);
   assert.match(rules, /\.data\.ativo\s*==\s*true/);
@@ -77,6 +79,9 @@ t("SW não intercepta dados de API, JSON desconhecido, URLs com query ou outros 
   assert.equal(capturada(h,"vendor/ocr/segredo.txt"),false);
 });
 t("Cloudflare exige CSP, antiframing e bloqueio de scripts por atributo", () => {
+  assert.match(htmlShell, /<script src="elida-app\.js"><\/script>/);
+  assert.doesNotMatch(htmlShell, /<script>\s*\(/);
+  assert.doesNotMatch(headers, /script-src[^;]*'unsafe-inline'/);
   assert.match(headers, /Content-Security-Policy:/);
   assert.match(headers, /frame-ancestors 'none'/);
   assert.match(headers, /script-src-attr 'none'/);

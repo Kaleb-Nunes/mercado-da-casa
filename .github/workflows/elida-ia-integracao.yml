@@ -1,0 +1,57 @@
+name: Elida IA - seguranca, identidade e backup
+on:
+  push:
+    branches:
+      - feature/elida-ia-auth-backup-seguro-20261120
+  pull_request:
+    branches:
+      - security/elida-acesso-familiar-20261119
+permissions:
+  contents: read
+jobs:
+  seguranca-e-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxe, XSS e integridade de interfaces
+        run: |
+          node --check elida-backup-seguro.js
+          node --check elida-conta.js
+          node --check elida-app.js
+          node --check elida-firebase-config.js
+          node tests/rodar-seguranca.js
+          node tests/rodar-entradas-nao-confiaveis.cjs
+      - name: Login fail-closed e criptografia de backup (AES-256-GCM)
+        run: |
+          node tests/identidade-backup.cjs
+          node tests/seguranca-identidade-backup.cjs
+      - name: Preparar pacote estático apenas para homologação
+        run: |
+          mkdir -p dist
+          cp index.html elida-app.js ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js elida-backup-seguro.js elida-conta.js elida-firebase-config.js sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png _headers dist/
+          cp -r vendor fonts dist/
+          (cd dist && zip -qr ../elida-ia-rc-segura.zip .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elida-ia-rc-segura-homologacao
+          path: elida-ia-rc-segura.zip
+          retention-days: 14
+  autorizacao-firestore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar ferramentas de teste sem credenciais reais
+        run: npm install --no-save --no-package-lock --ignore-scripts firebase-tools@14.24.0 firebase@12.4.0 @firebase/rules-unit-testing@5.0.0
+      - name: Testar 19 cenarios de acesso com Firestore Emulator (demo)
+        env:
+          GCLOUD_PROJECT: demo-elida-acl
+          CI: 'true'
+        run: npx firebase emulators:exec --only firestore --project demo-elida-acl "node tests/emulator-acesso.cjs"

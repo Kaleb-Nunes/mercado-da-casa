@@ -24,6 +24,11 @@ jobs:
       - name: Entradas não confiáveis, imagens e links
         run: node tests/rodar-entradas-nao-confiaveis.cjs
 
+      - name: Integração de login e criptografia
+        run: |
+          node tests/identidade-backup.cjs
+          node tests/seguranca-identidade-backup.cjs
+
       - name: Testes reais de permissões (Firestore Emulator)
         env:
           GCLOUD_PROJECT: demo-elida-acl
@@ -36,7 +41,7 @@ jobs:
       - name: Pacote de homologação
         run: |
           mkdir -p _homologacao
-          cp -r index.html ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
+          cp -r index.html elida-app.js elida-backup-seguro.js elida-conta.js elida-firebase-config.js _headers ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
       - uses: actions/upload-artifact@v4
         with:
           name: homologacao-${{ github.sha }}
