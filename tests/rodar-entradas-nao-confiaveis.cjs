@@ -2,7 +2,7 @@
 /* Exploração controlada de entradas não confiáveis (sem rede).
  * Confirma que conteúdo restaurado de backup não vira HTML executável. */
 const fs=require("node:fs"),assert=require("node:assert/strict"),vm=require("node:vm");
-const html=fs.readFileSync("index.html","utf8");
+const html=fs.readFileSync("elida-app.js","utf8");
 function trecho(inicio,fim){
  const i=html.indexOf(inicio),j=html.indexOf(fim,i+inicio.length);
  assert.ok(i>=0&&j>i, "trecho não localizado: "+inicio);
