@@ -18,7 +18,7 @@ results=[]
 
 def check(pg,name,fn):
     try:
-        fn()
+        fn(pg)
         assert pg.locator("#view-inicio").count()==1
         results.append((name,True,""))
         print("OK",name,flush=True)
