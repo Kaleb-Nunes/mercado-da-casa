@@ -78,3 +78,21 @@ jobs:
           name: auditoria-http-${{ github.sha }}
           path: auditoria-seguranca/auditoria-passiva-publica.json
           retention-days: 14
+
+  zap-passivo-producao:
+    # Somente o PR de segurança. Scanner passivo autorizado, sem fuzzing/ataques ativos.
+    if: github.event_name == 'pull_request' && github.head_ref == 'security/elida-acesso-familiar-20261119'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: OWASP ZAP Baseline (passivo, spider 1 minuto)
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: https://kaleb-nunes.github.io/mercado-da-casa/
+          cmd_options: '-m 1'
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: zap-passivo-elida-${{ github.sha }}
