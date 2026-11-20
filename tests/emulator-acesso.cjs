@@ -49,14 +49,16 @@ async function main(){
       await setDoc(doc(db,"casas",casa,"membros",uPendente),{ativo:true,nome:"Pendente"});
       await setDoc(doc(db,"casas",casa,"membros",uSuspenso),{ativo:true,nome:"Suspenso"});
     });
-    const dono=env.authenticatedContext(uDono,{email_verified:true}).firestore();
-    const estranho=env.authenticatedContext(uEstranho,{email_verified:true}).firestore();
-    const removido=env.authenticatedContext(uRemovido,{email_verified:true}).firestore();
+    const dono=env.authenticatedContext(uDono,{email_verified:true,email:"dono@teste.example"}).firestore();
+    const estranho=env.authenticatedContext(uEstranho,{email_verified:true,email:"estranho@teste.example"}).firestore();
+    const removido=env.authenticatedContext(uRemovido,{email_verified:true,email:"removido@teste.example"}).firestore();
     const semLogin=env.unauthenticatedContext().firestore();
-    const pendente=env.authenticatedContext(uPendente,{email_verified:true}).firestore();
-    const suspenso=env.authenticatedContext(uSuspenso,{email_verified:true}).firestore();
+    const pendente=env.authenticatedContext(uPendente,{email_verified:true,email:"pendente@teste.example"}).firestore();
+    const suspenso=env.authenticatedContext(uSuspenso,{email_verified:true,email:"suspenso@teste.example"}).firestore();
     const naoVerificado=env.authenticatedContext(uDono,{email_verified:false}).firestore();
+    const emailAlterado=env.authenticatedContext(uDono,{email_verified:true,email:"alterado@teste.example"}).firestore();
     await deveNegar("e-mail não verificado não lê casa mesmo sendo dono",getDoc(doc(naoVerificado,"casas",casa)));
+    await deveNegar("troca de e-mail do mesmo UID invalida aprovação",getDoc(doc(emailAlterado,"casas",casa)));
     await deveNegar("cadastro pendente não lê mesmo com vínculo de família",getDoc(doc(pendente,"casas",casa)));
     await deveNegar("cadastro suspenso não lê mesmo com vínculo de família",getDoc(doc(suspenso,"casas",casa)));
     await deveNegar("cadastro não pode se autoaprovar",setDoc(doc(pendente,"acessosUsuarios",uPendente),{uid:uPendente,status:"aprovado"}));
@@ -85,8 +87,8 @@ async function main(){
     await deveNegar("membro ativo não lê token de convite",getDoc(doc(dono,"casas",casa,"convites","tokenHash")));
     await deveNegar("membro ativo não cria convite no cliente",setDoc(doc(dono,"casas",casa,"convites","tokenHash"),{email:"alvo@example.test"}));
     await deveNegar("membro ativo não lista convites",getDocs(collection(dono,"casas",casa,"convites")));
-    assert.equal(feitos,29);
-    console.log("FIRESTORE EMULATOR: "+feitos+"/29 cenários de autorização aprovados");
+    assert.equal(feitos,30);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/30 cenários de autorização aprovados");
   } finally {await env.cleanup();}
 }
 main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
