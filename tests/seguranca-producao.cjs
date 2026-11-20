@@ -44,7 +44,7 @@ function intercepta(h,url,mode="cors"){
 }
 async function run(){
  await teste("sintaxe do JavaScript inline em produção",()=>{
-   const codigo=trecho("<script>","</script>");
+   const codigo=trecho("<script>","</script>").slice("<script>".length);
    new vm.Script(codigo,{filename:"script-index.html"});
  });
  await teste("mantém chaves e funções de produção sem mudar estrutura",()=>{
