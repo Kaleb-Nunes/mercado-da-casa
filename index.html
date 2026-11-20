@@ -413,6 +413,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 #elida-conta-painel button{min-height:45px;padding:9px 5px;border:1px solid #0F3B2E;border-radius:8px;background:#0F3B2E;color:white;font:600 13px system-ui}
 #elida-conta-painel button[data-elida-action=visitante],#elida-conta-painel button[data-elida-action=fechar]{background:white;color:#0F3B2E}
 #elida-conta-painel button:disabled{opacity:.5}
+#elida-conta-painel [data-elida-permissao]{font-weight:650;color:#0F3B2E;background:#edf5ef;padding:9px;border-radius:8px}
+#elida-conta-painel [data-elida-lista]{display:grid;gap:8px;max-height:35vh;overflow:auto}
+#elida-conta-painel .elida-solicitacao{padding:10px;border:1px solid #e1e7e2;border-radius:9px}
+#elida-conta-painel .elida-solicitacao button{display:inline-block;width:auto;min-width:90px;margin:4px 5px 0 0;padding:9px}
+
 html[data-elida-bloqueada=true] body > :not(#elida-conta-painel):not(script){visibility:hidden!important}
 html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important}
 </style>
