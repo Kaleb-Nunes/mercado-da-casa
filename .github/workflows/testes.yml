@@ -91,6 +91,8 @@ jobs:
           node-version: 22
       - name: Auditar headers HTTP e configuração visível nas três páginas
         run: node tests/auditar-superficie-publica.cjs
+      - name: Verificar CORS, CSP e cache em homologação
+        run: node tests/cors-cache-hml.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: auditoria-http-${{ github.sha }}
