@@ -26,7 +26,7 @@ test("abas de navegação correspondem a telas existentes",()=>{
   }
 });
 test("todos os botões do painel de conta têm ação de clique",()=>{
-  const labels=[...new Set([...account.matchAll(/data-elida-action=\\"([a-z-]+)\\"/g)].map(m=>m[1]))];
+  const labels=[...new Set([...account.matchAll(/data-elida-action=["']([a-z-]+)["']/g)].map(m=>m[1]))];
   assert.ok(labels.length>=12);
   for(const a of labels){
     assert.ok(account.includes('a==="'+a+'"') || account.includes('a==="aprovar"||a==="rejeitar"||a==="bloquear"') && ["rejeitar","bloquear"].includes(a),
