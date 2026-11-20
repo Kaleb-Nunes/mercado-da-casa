@@ -863,7 +863,9 @@
     var b, conteudo=String(txt || "");
     if(conteudo.length>30*1024*1024){toast("Arquivo grande demais");return;}
     try{
-      var env=JSON.parse(conteudo);
+      var primeiro=conteudo.indexOf("{");
+      if(primeiro<0 || primeiro>4096) throw new Error("Arquivo inválido");
+      var env=JSON.parse(conteudo.slice(primeiro));
       if(window.ElidaBackupSeguro && window.ElidaBackupSeguro.identificar(env)){
         var input=document.getElementById("f-senha-restaurar");
         var senha=input && input.value || "";
@@ -2027,7 +2029,7 @@
       case "aplicar-restaurar": if(ui.sheet && ui.sheet.backup) aplicarRestauracao(ui.sheet.backup); break;
       case "desfazer-restaurar": desfazerRestauracao(); break;
       case "restaurar": sheetRestaurar(); break;
-      case "confirmar-restaurar": previaRestaurar((document.getElementById("f-restaurar") || {}).value || ""); break;
+      case "confirmar-restaurar": var colado=(document.getElementById("f-restaurar") || {}).value || ""; previaRestaurar(colado.trim() || (ui.sheet && ui.sheet.arquivoBackupTexto) || ""); break;
     }
   });
   document.addEventListener("input", function(e){
@@ -2067,7 +2069,9 @@
     if(e.target.name === "perfil-ativo"){ perfisEstado.ativo = e.target.value; salvarPerfis(); gatilhosIA.disparar("PERFIL_SALVO"); toast("Perfil em uso: " + (perfilAtivo() || {}).apelido); return; }
     if(e.target.matches && e.target.matches("[data-restr], #f-pf")){ atualizarFormPerfil(); return; }
     if(e.target.id === "f-arquivo" && e.target.files && e.target.files[0]){
-      var rd = new FileReader(); rd.onload = function(){ previaRestaurar(String(rd.result || "")); };
+      if(e.target.files[0].size > 30*1024*1024){toast("Arquivo acima do limite de 30 MB");return;}
+      var rd = new FileReader();
+      rd.onload = function(){ if(ui.sheet && ui.sheet.type==="restaurar"){ ui.sheet.arquivoBackupTexto=String(rd.result || ""); toast("Arquivo selecionado. Informe a senha e clique em Analisar backup."); } };
       rd.onerror = function(){ toast("Não deu para ler o arquivo"); }; rd.readAsText(e.target.files[0]); return;
     }
     if(e.target.id !== "foto-input" || !e.target.files || !e.target.files[0] || !ui.sheet) return;
