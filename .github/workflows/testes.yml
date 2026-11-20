@@ -28,6 +28,7 @@ jobs:
         run: |
           node tests/identidade-backup.cjs
           node tests/seguranca-identidade-backup.cjs
+          node --test tests/aprovacao-acesso.cjs
           node --check elida-aprovacao.js
           node --check elida-conta.js
 
