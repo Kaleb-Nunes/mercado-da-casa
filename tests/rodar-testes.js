@@ -232,7 +232,7 @@ confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height
   confere(/formato: "elida-backup"/.test(html) && /fotos: fotos/.test(html), "arquivo de backup deveria levar estado e fotos");
   confere(/function previaRestaurar/.test(html) && /data-act="aplicar-restaurar"/.test(html), "restauração deveria mostrar o conteúdo antes de trocar");
   confere(/BK_ANTES/.test(html) && /function desfazerRestauracao/.test(html), "restauração deveria guardar cópia para desfazer");
-  confere(/não mande em grupo/.test(bk), "tela de backup deveria avisar que o arquivo não tem senha");
+  confere(/Criptografado|criptografado|cifrado|AES-256-GCM/.test(bk), "tela de backup deve avisar sobre cifragem e senha");
   confere(/case "hml-dados":\s*if\(!AMB\.dadosDeTeste\) break;/.test(html), "dados de teste só podem existir na homologação");
 })();
 
