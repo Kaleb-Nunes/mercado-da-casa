@@ -110,3 +110,28 @@ jobs:
           allow_issue_writing: false
           fail_action: false
           artifact_name: zap-passivo-elida-${{ github.sha }}
+
+  interface-real:
+    name: Botões e formulários em Chromium real
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar Playwright e Chromium
+        run: |
+          python -m pip install --disable-pip-version-check 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Testar cliques, formulários, navegação e UI móvel
+        run: python tests/ui-interacoes.py
+      - name: Evidências de falhas de interface
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: elida-falhas-botoes-${{ github.sha }}
+          path: qa-evidencias
+          retention-days: 7
