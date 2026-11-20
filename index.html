@@ -1639,7 +1639,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(HML) return (inj && /^demo-/.test(inj.projectId || "")) ? inj : FB_CONFIG_HML; /* homologação: só emulador ou projeto de teste */
     return inj || FB_CONFIG;
   }
-  function syncDisponivel(){ return !!fbCfg(); }
+  /* BLOQUEIO DE SEGURANÇA — ACL ainda sem onboarding: nenhum navegador inicia a
+     sincronização legada por config injetada. NÃO trocar para true sem migração,
+     testes de regras no emulador e aprovação explícita do fundador. */
+  var SYNC_FAMILIAR_ACL_HOMOLOGADA = false;
+  function syncDisponivel(){ return SYNC_FAMILIAR_ACL_HOMOLOGADA && !!fbCfg(); }
   function loadCasa(){ try{ var c = JSON.parse(localStorage.getItem(CASA_KEY) || "null"); if(c && c.id && c.id.length >= 20) return c; }catch(e){} return null; }
   function saveCasa(c){ try{ if(c) localStorage.setItem(CASA_KEY, JSON.stringify(c)); else localStorage.removeItem(CASA_KEY); }catch(e){} }
   function novoIdCasa(){ var b = new Uint8Array(20), s = ""; crypto.getRandomValues(b); for(var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
