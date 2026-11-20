@@ -124,7 +124,9 @@ def account(pg):
 
 try:
     with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True)
+        motor=os.environ.get("ELIDA_QA_BROWSER","chromium")
+        if motor not in ("chromium","webkit"):raise ValueError("Motor de navegador não permitido")
+        browser=getattr(p,motor).launch(headless=True)
         for width in (390,375):
             context=browser.new_context(viewport={"width":width,"height":844},device_scale_factor=1,
                                         is_mobile=True,has_touch=True,locale="pt-BR")
