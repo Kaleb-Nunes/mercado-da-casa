@@ -57,8 +57,20 @@ exports.criarCasa = onCall(OPCOES, async (req) => {
   const id = randomBytes(20).toString("base64url");
   const ref = casaRef(id);
   const membro = ref.collection("membros").doc(u.uid);
+  const quotaRef = db.collection("limitesUsuarios").doc(u.uid);
 
   await db.runTransaction(async (tx) => {
+    const quotaAtual = await tx.get(quotaRef);
+    let quota;
+    try {
+      quota = validacao.novoConsumo(quotaAtual.exists ? quotaAtual.data() : null,
+        validacao.diaUTC(Date.now()), validacao.LIMITES.casasPorDia,
+        validacao.LIMITES.casasPorUsuario);
+    } catch (err) {
+      throw new HttpsError(err.code === "resource-exhausted" ? err.code : "internal",
+        "Limite de criação de famílias atingido");
+    }
+    tx.set(quotaRef, quota);
     tx.create(ref, {
       nome, criada: FieldValue.serverTimestamp(),
       v: 1, criador: u.uid
@@ -89,11 +101,23 @@ exports.criarConvite = onCall(OPCOES, async (req) => {
   const token = randomBytes(32).toString("base64url");
   const hash = hashToken(token);
   const conviteRef = ref.collection("convites").doc(hash);
+  const quotaRef = db.collection("limitesConvites").doc(casaId);
   const expiraEm = Date.now() + UM_DIA_MS;
 
   await db.runTransaction(async (tx) => {
-    const membro = await tx.get(ref.collection("membros").doc(u.uid));
+    const [membro, quotaAtual] = await Promise.all([
+      tx.get(ref.collection("membros").doc(u.uid)), tx.get(quotaRef)
+    ]);
     exigirDono(membro, u.uid);
+    let quota;
+    try {
+      quota = validacao.novoConsumo(quotaAtual.exists ? quotaAtual.data() : null,
+        validacao.diaUTC(Date.now()), validacao.LIMITES.convitesPorCasaDia);
+    } catch (err) {
+      throw new HttpsError(err.code === "resource-exhausted" ? err.code : "internal",
+        "Limite diário de convites atingido");
+    }
+    tx.set(quotaRef, quota);
     tx.create(conviteRef, {
       email: destinatario,
       criadoPor: u.uid,
