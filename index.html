@@ -979,7 +979,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     }
     if(!lines.length) lines.push(["📰", "Nenhum encarte valendo agora. A lista volta a encher na próxima atualização."]);
     return '<button class="ofcard" type="button" data-act="nav" data-view="ofertas">' +
-      lines.map(function(l){ return '<span class="of-line"><span class="ti" aria-hidden="true">' + l[0] + '</span><span>' + l[1] + '</span></span>'; }).join("") +
+      lines.map(function(l){ return '<span class="of-line"><span class="ti" aria-hidden="true">' + esc(l[0]) + '</span><span>' + l[1] + '</span></span>'; }).join("") +
       '<span class="of-go">Ver ofertas da semana ›</span></button>';
   }
   function comPor(g){ if(Sync.casa && Sync.casa.eu) g.por = Sync.casa.eu; return g; }
@@ -1523,7 +1523,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     var hoje = rotinasDoDia(w), amanha = rotinasDoDia((w + 1) % 7).filter(function(r){ return hoje.indexOf(r) < 0 && r.tipo !== "Semanal"; });
     if(remote && (remote.rotinas || []).length){
       h += '<div class="section"><div class="s-head"><span class="s-title">Hoje, ' + DIAS[w] + '</span></div>';
-      if(hoje.length) h += hoje.map(function(r){ return '<div class="today"><span class="ti" aria-hidden="true">' + (r.icone || '🏷️') + '</span><div><b>' + esc(cap(tipoTxt(r))) + ' no ' + esc(r.m) + '</b><span>' + esc(r.texto) + '</span></div></div>'; }).join("");
+      if(hoje.length) h += hoje.map(function(r){ return '<div class="today"><span class="ti" aria-hidden="true">' + esc(r.icone || '🏷️') + '</span><div><b>' + esc(cap(tipoTxt(r))) + ' no ' + esc(r.m) + '</b><span>' + esc(r.texto) + '</span></div></div>'; }).join("");
       else h += '<div class="card pad"><p class="note-sm">Hoje não tem dia fixo de oferta nos mercados acompanhados.</p></div>';
       if(amanha.length) h += '<p class="note-sm" style="padding:0 4px">Amanhã: ' + amanha.map(function(r){ return esc(tipoTxt(r)) + ' no ' + esc(r.m); }).join(" · ") + '.</p>';
       h += '</div>';
@@ -1565,7 +1565,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(rot.length){
       h += '<div class="section"><div class="s-head"><span class="s-title">Dias de oferta</span></div><div class="card"><ul class="rows">' + rot.map(function(r){
         var on = (r.dias || []).indexOf(w) >= 0;
-        return '<li><div class="rot"><span class="ti" aria-hidden="true">' + (r.icone || '🏷️') + '</span><b>' + esc(r.m) + ' · ' + esc(r.tipo) + (on ? '<span class="pill ok">hoje</span>' : '') + '</b>' +
+        return '<li><div class="rot"><span class="ti" aria-hidden="true">' + esc(r.icone || '🏷️') + '</span><b>' + esc(r.m) + ' · ' + esc(r.tipo) + (on ? '<span class="pill ok">hoje</span>' : '') + '</b>' +
           '<span>' + esc(cap(diasTxt(r.dias))) + '. ' + esc(r.texto) + (r.certeza === "provavel" ? ' Confirme no encarte da semana.' : '') + '</span></div></li>';
       }).join("") + '</ul></div></div>';
     }
