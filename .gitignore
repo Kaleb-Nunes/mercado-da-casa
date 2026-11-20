@@ -1,2 +1,37 @@
 .privacidade-local
 node_modules/
+
+# Segredos e credenciais: NUNCA versionar, mesmo em repositório privado.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*service-account*.json
+*service_account*.json
+*firebase-adminsdk*.json
+*credentials*.json
+*secret*.json
+
+# Informações e artefatos do usuário
+*.elida
+*.sqlite
+*.sqlite3
+*.db
+*.log
+*backup*.zip
+*backup*.json
+.firebase/
+functions/node_modules/
+dist/
+_homologacao/
+qa-evidencias/
+__pycache__/
+*.pyc
