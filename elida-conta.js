@@ -15,9 +15,19 @@
   }
   function obterCliente(){
     if(!configValida())throw Error("Configuração Supabase pendente");
-    if(!cliente)cliente=root.supabase.createClient(CONFIG.url,CONFIG.chavePublicavel,{
-      auth:{flowType:"pkce",storage:sessionStorage,detectSessionInUrl:false}
-    });
+    if(!cliente){
+      // Links de e-mail podem retornar em outra aba. Somente o verificador PKCE
+      // é compartilhado entre abas; os tokens da sessão ficam na aba atual.
+      const armazenamento=(chave)=>chave.endsWith("-code-verifier")?localStorage:sessionStorage;
+      const storage={
+        getItem:(chave)=>armazenamento(chave).getItem(chave),
+        setItem:(chave,valor)=>armazenamento(chave).setItem(chave,valor),
+        removeItem:(chave)=>armazenamento(chave).removeItem(chave)
+      };
+      cliente=root.supabase.createClient(CONFIG.url,CONFIG.chavePublicavel,{
+        auth:{flowType:"pkce",storage,detectSessionInUrl:false}
+      });
+    }
     return cliente;
   }
   function usuarioPermitido(u){return !!(u && u.email_confirmed_at && !u.is_anonymous);}
