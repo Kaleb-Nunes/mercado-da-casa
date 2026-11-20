@@ -15,4 +15,7 @@
     projectId: "projeto-elida-aplv",
     appId: "1:90562321638:web:5959134668dcb4f0a42f27"
   }) : null;
+  // Preencher SOMENTE depois de registrar site em Firebase App Check (reCAPTCHA v3).
+  // Chave de SITE pública; nunca coloque secretKey ou token privado no front-end.
+  root.__ELIDA_APPCHECK_SITE_KEY__ = null;
 })(window);
