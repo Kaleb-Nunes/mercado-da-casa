@@ -1,16 +1,51 @@
 rules_version = '2';
-// Elida: cada casa é um documento com id aleatório de 27 caracteres.
-// Só quem tem o link da casa (o id) lê e escreve nela. Ninguém consegue listar as casas.
+
+// Elida — ACL por pertencimento à família.
+// IMPORTANTE: a sincronização do navegador permanece DESATIVADA enquanto não houver
+// onboarding autenticado e concessão/revogação segura de membros por backend confiável.
+// Firebase Authentication anônimo, sozinho, NÃO autoriza acesso a uma família.
+// Somente um serviço privilegiado (Admin SDK) pode criar casas e conceder membros;
+// clientes não podem criar ou modificar documentos de autorização.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function casaIdValido(casaId) {
+      return casaId is string
+        && casaId.matches('^[A-Za-z0-9_-]{20,64}$');
+    }
+
+    function membroAtivo(casaId) {
+      return autenticado()
+        && casaIdValido(casaId)
+        && exists(/databases/$(database)/documents/casas/$(casaId)/membros/$(request.auth.uid))
+        && get(/databases/$(database)/documents/casas/$(casaId)/membros/$(request.auth.uid)).data.ativo == true;
+    }
+
     match /casas/{casaId} {
-      allow get: if request.auth != null && casaId.size() >= 20;
-      allow create, update: if request.auth != null && casaId.size() >= 20
-        && request.resource.data.keys().hasOnly(['nome', 'criada', 'v', 'criador']);
-      allow delete, list: if false;
-      match /{sub}/{docId} {
-        allow read, write: if request.auth != null && casaId.size() >= 20
-          && sub in ['itens', 'gastos', 'meses', 'config', 'ofertas', 'membros'];
+      allow get: if membroAtivo(casaId);
+      allow list: if false;
+      // A criação/edição de casas exige um backend confiável, nunca o cliente.
+      allow create, update, delete: if false;
+
+      // Dados compartilhados: o usuário deve possuir vínculo ATIVO nesta casa.
+      match /{colecao}/{docId} {
+        allow get, list, create, update, delete: if membroAtivo(casaId)
+          && colecao in ['itens', 'gastos', 'meses', 'config', 'ofertas'];
+      }
+
+      match /membros/{uid} {
+        // Membros autenticados podem consultar a composição da própria casa.
+        allow get, list: if membroAtivo(casaId);
+        // Nenhum cliente concede acesso, torna alguém administrador ou se reativa.
+        allow create, update, delete: if false;
+      }
+
+      // Negação explícita para coleções/rotas futuras não revisadas.
+      match /{demais=**} {
+        allow read, write: if false;
       }
     }
   }
