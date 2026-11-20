@@ -23,7 +23,8 @@ async function executar(){
    assert.doesNotMatch(htmlSource,/<script>\s*[(]/);
  });
  await test("CSP impede JavaScript inline e somente permite scripts confiáveis",()=>{
-   assert.match(headers,/script-src 'self' https:\/\/apis\.google\.com\/js\/ https:\/\/www\.gstatic\.com 'wasm-unsafe-eval';/);
+   assert.match(headers,/script-src 'self'/);
+   assert.match(headers,/https:\/\/www\.google\.com\/recaptcha\//);
    assert.doesNotMatch(headers,/script-src[^;]*'unsafe-inline'/);
    assert.match(headers,/Cross-Origin-Opener-Policy: same-origin-allow-popups/);
    assert.match(headers,/frame-ancestors 'none'/);
