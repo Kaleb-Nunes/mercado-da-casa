@@ -36,6 +36,12 @@ service cloud.firestore {
           && colecao in ['itens', 'gastos', 'meses', 'config', 'ofertas'];
       }
 
+      // Convites são emitidos e consumidos exclusivamente pelo Admin SDK.
+      // O token puro jamais é salvo em documentos legíveis pelo cliente.
+      match /convites/{tokenHash} {
+        allow read, write: if false;
+      }
+
       match /membros/{uid} {
         // Membros autenticados podem consultar a composição da própria casa.
         allow get, list: if membroAtivo(casaId);
