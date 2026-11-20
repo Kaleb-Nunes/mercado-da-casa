@@ -1,6 +1,17 @@
 # ELIDA IA — Portões de homologação e implantação segura (20/11/2026)
 
-**Estado atual:** candidato de homologação na branch \`feature/elida-ia-auth-backup-seguro-20261120\`. Não foi publicado nem foi conectado ao Firebase real. \`elida-firebase-config.js\` permanece \`null\`; sincronização familiar legada permanece bloqueada.
+**Estado atual:** homologação isolada na branch `feature/elida-ia-auth-backup-seguro-20261120`; configuração pública do Firebase Web incorporada, sem merge nem deploy da versão atual. Sincronização familiar bloqueada e regras do Firestore real não publicadas.
+
+## Atualização verificada em 20/11/2026 — cadastro Firebase Web
+
+- O usuário registrou o aplicativo **Elida Web** no Console do projeto `projeto-elida-aplv` e forneceu a configuração **pública** do SDK Web.
+- `elida-firebase-config.js` agora contém os quatro parâmetros públicos oficiais (`apiKey`, `authDomain`, `projectId`, `appId`), somente para os hosts de homologação permitidos. Em produção o objeto permanece `null`.
+- O Google Analytics **não foi incluído** no aplicativo; `measurementId` não é utilizado.
+- As ferramentas de testes não verificaram login OAuth no navegador real. Configurar **Authentication > Configurações > Domínios autorizados** com os endereços de homologação exatos antes dos testes em celular. Não usar curingas, nem cadastrar hospedagem desconhecida.
+- O app de homologação usa credenciais de Authentication do projeto real para login, mas **não acessa Firestore** e não compartilha dados entre contas. Para testar exclusivamente com dados fictícios, idealmente usar um projeto Firebase dedicado de testes.
+- O Firestore real não foi criado/configurado nesta entrega; `firebase deploy`, App Check e Functions não foram executados. O backend de convites está **preparado separadamente no PR #2**, não implantado.
+- Duas pipelines de CI aprovaram testes estáticos, fluxo local e regras no Emulator após a configuração Web. **OAuth Google, recuperação de senha e UX em Chrome Android/iPhone ainda dependem de teste real**.
+- O site `https://feature-perfis-inteligentes.elida-homologacao.pages.dev/` é uma prévia anterior: não assumir que já está servindo essa branch sem verificar o deploy do Cloudflare.
 
 ## 1. Escopo e proteção de dados
 - Visitante: lista, orçamento e perfis permanecem locais; não há chamada ao Firebase enquanto o usuário não escolhe a conta.
@@ -29,18 +40,15 @@ firebase deploy --only firestore:rules --project projeto-elida-aplv
 \`\`\`
 Esse comando afeta o Firestore REAL. **Não executar nesta etapa.** Nunca enviar token, senha, chave privada de conta de serviço ou segredo ao chat/repositório.
 
-## 3. Login Firebase real — ainda inativo
-Authentication já estava com Google e e-mail/senha habilitados em captura do Console. A aba de visão geral mostrava "Adicione um app" e a tela Firestore mostrava "Criar banco de dados"; conferir novamente antes de agir.
+## 3. Login Firebase — código configurado, teste real pendente
 
-Para ligar o login:
-1. Firebase Console > Configurações do projeto > Seus aplicativos > **Adicionar app Web**.
-2. Cadastrar aplicativo \`Elida Web\`; copiar só os campos públicos \`apiKey\`, \`authDomain\`, \`projectId\`, \`appId\`.
-3. Verificar o endereço exato de homologação em Authentication > Configurações > Domínios autorizados; não adicionar domínios amplos ou desconhecidos.
-4. Verificar proteção contra enumeração de e-mails e política de senhas no Firebase.
-5. Preencher \`elida-firebase-config.js\` **somente em uma branch de homologação**, com os valores oficiais. \`projectId\` deve ser \`projeto-elida-aplv\`, \`authDomain\` deve ser \`projeto-elida-aplv.firebaseapp.com\`.
-6. Em ambiente de teste isolado, testar conta Google, cadastro/e-mail verificado, senha errada, recuperação, logout, sessão expirada, navegador offline e dispositivo Android/iOS.
-7. Verificar que UID A não lê dados locais de UID B nem dados do visitante, e que Firestore real **nega** acesso quando não existe vínculo de membro.
-8. Não usar chaves de SDK Web como substituto de regras Firestore; elas **não são credenciais de administrador**.
+- App **Elida Web** registrado; configuração SDK Web pública incorporada a `elida-firebase-config.js` **apenas para homologação**. `getAnalytics` não é utilizado.
+- Os provedores Google e e-mail/senha devem ser conferidos em Authentication > Método de login; as configurações e domínios devem ser verificados no Console.
+- Antes de tentar autenticar, em Authentication > Configurações > Domínios autorizados, liberar somente o host exato efetivamente usado em testes (ex.: `feature-perfis-inteligentes.elida-homologacao.pages.dev`, se este receber a nova branch). Não autorizar host aleatório nem domínio com curingas.
+- Validar em ambiente hospedado: popup Google em Android/iPhone, cadastro e e-mail verificado, senha inválida, recuperação e logout, perda da sessão e modo visitante offline.
+- O login permite identificar contas, mas o armazenamento local continua em `localStorage` sem cifra; dados de pessoas diferentes ficam em namespaces distintos por UID, **sem proteção contra quem controla o mesmo dispositivo/navegador**.
+- **Não há sincronização nem provisionamento de família nesta PR.** Emulador com ACL não substitui teste no Firestore real. Não publicar regras/deploy ou habilitar Blaze sem análise separada.
+- As chaves do SDK Web são públicas e **não** autorizam operações de administração. Não guardar credenciais sensíveis no código-fonte.
 
 ## 4. Cabeçalhos HTTP e hospedagem
 \`_headers\` aplica cabeçalhos em Cloudflare Pages, não em GitHub Pages. Production \`https://kaleb-nunes.github.io/mercado-da-casa/\` exige outro host, proxy ou migração antes que as proteções HTTP (CSP, frame-ancestors, HSTS, X-Content-Type-Options, COOP, Permissions-Policy) surtam efeito.
