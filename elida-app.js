@@ -882,14 +882,12 @@
     openSheet('<h3 class="sh-title" id="sh-title">Restaurar este backup?</h3>' +
       '<div class="warnbox" role="alert"><b>Backup' + (b.criado ? ' de ' + esc(dShort(b.criado)) : '') + ':</b> ' + esc(resumoEstado(b.estado,b.fotos)) + '.<br>' +
       (b.perfis && b.perfis.perfis.length ? 'O backup também tem ' + b.perfis.perfis.length + (b.perfis.perfis.length===1 ? ' perfil alimentar' : ' perfis alimentares') + '.<br>' : '') +
-      '<b>Agora no app:</b> ' + esc(resumoEstado(state,fotos)) + '.<br>O que está no app será trocado. Uma cópia anterior será guardada localmente, se houver espaço.</div>' +
+      '<b>Agora no app:</b> ' + esc(resumoEstado(state,fotos)) + '.<br>O que está no app será trocado. Não haverá cópia automática para desfazer. Faça antes um backup criptografado dos seus dados atuais.</div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="aplicar-restaurar">Confirmar restauração</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div>');
   }
   function aplicarRestauracao(b){
-    var copia = {em: todayStr(), estado: state, fotos: fotos, perfis: perfisEstado.guardar ? perfisEstado : undefined}, guardou = false;
-    try{ localStorage.setItem(BK_ANTES, JSON.stringify(copia)); guardou = true; }catch(e){
-      try{ localStorage.setItem(BK_ANTES, JSON.stringify({em: copia.em, estado: state})); guardou = true; }catch(e2){}
-    }
+    /* Não produzir cópia automática em texto claro no armazenamento do navegador.
+       Exporte primeiro um backup criptografado se quiser preservar o estado anterior. */
     var s = b.estado;
     s.dieta = DietaMotor.migrar(s.dieta);
     var marcas = {}; (state.items || []).forEach(function(x){ if(x.ev) marcas[x.id] = x.ev; });
@@ -898,7 +896,7 @@
     if(b.fotos){ fotos = b.fotos; saveFotos(); }
     if(b.perfis && b.perfis.perfis.length){ perfisEstado = b.perfis; perfisEstado.guardar = true; perfisEstado.consentidoEm = perfisEstado.consentidoEm || todayStr(); salvarPerfis(); }
     save(); closeSheet(); show("inicio");
-    toast(guardou ? "Backup restaurado" : "Backup restaurado. Sem espaço para guardar a cópia de antes");
+    toast("Backup restaurado. Nenhuma cópia sem criptografia foi criada.");
   }
   function desfazerRestauracao(){
     var c = null; try{ c = JSON.parse(localStorage.getItem(BK_ANTES) || "null"); }catch(e){}
