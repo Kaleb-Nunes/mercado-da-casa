@@ -536,6 +536,20 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     return isFinite(n) && n >= 0 ? Math.round(n*100)/100 : null;
   }
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  /* Sanitização de URLs/miniaturas: valores de backups e códigos importados NÃO são HTML confiável. */
+  function urlExternaSegura(valor){
+    if(typeof valor !== "string" || valor.length > 2048) return "";
+    try {
+      var u = new URL(valor);
+      return u.protocol === "https:" && !u.username && !u.password ? u.href : "";
+    } catch(e){ return ""; }
+  }
+  function miniaturaSegura(valor){
+    if(typeof valor !== "string" || valor.length > 1500000) return "";
+    /* Miniaturas do app são codificadas em base64. SVG e URLs remotas não são permitidos. */
+    return /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.test(valor) ? valor : "";
+  }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
   function isKg(it){ return it.por === "kg"; }
   function cur(it){ return it.hist && it.hist.length ? it.hist[it.hist.length-1] : null; }
@@ -559,9 +573,10 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function loadFotos(){ try{ var r = localStorage.getItem(FOTO_KEY); if(r){ var o = JSON.parse(r); if(o && typeof o === "object") fotos = o; } }catch(e){} }
   function saveFotos(){ try{ localStorage.setItem(FOTO_KEY, JSON.stringify(fotos)); return true; }catch(e){ toast("Sem espaço pra mais fotos neste celular"); return false; } }
   function thumb(it, cls, icon, foto){
-    var f = foto !== undefined ? foto : fotos[it.id];
-    if(f) return '<span class="thumb ' + (cls || '') + '"><img src="' + f + '" alt=""></span>';
-    return '<span class="thumb ' + (cls || '') + '" aria-hidden="true">' + (icon || it.icon || autoIcon(it.nome, it.cat)) + '</span>';
+    var f = miniaturaSegura(foto !== undefined ? foto : fotos[it.id]);
+    var classe = esc(cls || "");
+    if(f) return '<span class="thumb ' + classe + '"><img src="' + esc(f) + '" alt=""></span>';
+    return '<span class="thumb ' + classe + '" aria-hidden="true">' + esc(icon || it.icon || autoIcon(it.nome, it.cat)) + '</span>';
   }
   function fileToThumb(file, cb){
     var url = URL.createObjectURL(file), img = new Image();
@@ -964,7 +979,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     }
     if(!lines.length) lines.push(["📰", "Nenhum encarte valendo agora. A lista volta a encher na próxima atualização."]);
     return '<button class="ofcard" type="button" data-act="nav" data-view="ofertas">' +
-      lines.map(function(l){ return '<span class="of-line"><span class="ti" aria-hidden="true">' + l[0] + '</span><span>' + l[1] + '</span></span>'; }).join("") +
+      lines.map(function(l){ return '<span class="of-line"><span class="ti" aria-hidden="true">' + esc(l[0]) + '</span><span>' + l[1] + '</span></span>'; }).join("") +
       '<span class="of-go">Ver ofertas da semana ›</span></button>';
   }
   function comPor(g){ if(Sync.casa && Sync.casa.eu) g.por = Sync.casa.eu; return g; }
@@ -1501,14 +1516,14 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 
     avisosAtivos().forEach(function(a){
       h += '<div class="tip"><b>' + esc((a.icone ? a.icone + ' ' : '') + a.titulo) + '</b><span>' + esc(a.texto) + '</span>' +
-        (a.fonte && a.fonte.url ? '<span class="src">Fonte: <a href="' + esc(a.fonte.url) + '" target="_blank" rel="noopener">' + esc(a.fonte.nome || 'link') + '</a></span>' : '') +
+        (a.fonte && a.fonte.url ? '<span class="src">Fonte: <a href="' + esc(urlExternaSegura(a.fonte.url)) + '" target="_blank" rel="noopener">' + esc(a.fonte.nome || 'link') + '</a></span>' : '') +
         '<button class="x" type="button" data-act="aviso-lido" data-id="' + esc(a.id) + '">Entendi</button></div>';
     });
 
     var hoje = rotinasDoDia(w), amanha = rotinasDoDia((w + 1) % 7).filter(function(r){ return hoje.indexOf(r) < 0 && r.tipo !== "Semanal"; });
     if(remote && (remote.rotinas || []).length){
       h += '<div class="section"><div class="s-head"><span class="s-title">Hoje, ' + DIAS[w] + '</span></div>';
-      if(hoje.length) h += hoje.map(function(r){ return '<div class="today"><span class="ti" aria-hidden="true">' + (r.icone || '🏷️') + '</span><div><b>' + esc(cap(tipoTxt(r))) + ' no ' + esc(r.m) + '</b><span>' + esc(r.texto) + '</span></div></div>'; }).join("");
+      if(hoje.length) h += hoje.map(function(r){ return '<div class="today"><span class="ti" aria-hidden="true">' + esc(r.icone || '🏷️') + '</span><div><b>' + esc(cap(tipoTxt(r))) + ' no ' + esc(r.m) + '</b><span>' + esc(r.texto) + '</span></div></div>'; }).join("");
       else h += '<div class="card pad"><p class="note-sm">Hoje não tem dia fixo de oferta nos mercados acompanhados.</p></div>';
       if(amanha.length) h += '<p class="note-sm" style="padding:0 4px">Amanhã: ' + amanha.map(function(r){ return esc(tipoTxt(r)) + ' no ' + esc(r.m); }).join(" · ") + '.</p>';
       h += '</div>';
@@ -1534,7 +1549,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(enc.length){
       h += '<div class="card"><ul class="rows">' + enc.map(function(e){
         var hot = e.fim && daysUntil(e.fim) <= 1;
-        return '<li><a class="enc" href="' + esc(e.url) + '" target="_blank" rel="noopener">' + mkBadge(e.m) +
+        return '<li><a class="enc" href="' + esc(urlExternaSegura(e.url)) + '" target="_blank" rel="noopener">' + mkBadge(e.m) +
           '<span class="r-main"><span class="r-name">' + esc(e.titulo) + (mine[mkKey(e.m)] ? '<span class="pill ok">você compra aqui</span>' : '') + '</span>' +
           '<span class="r-meta">' + esc(e.m) + (e.loja ? ' · ' + esc(e.loja) : '') + '</span>' +
           (e.fim ? '<span class="r-meta"><span class="pill' + (hot ? ' hot' : '') + '" style="margin-left:0">' + esc(ateTxt(e.fim)) + '</span></span>' : '') +
@@ -1550,7 +1565,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(rot.length){
       h += '<div class="section"><div class="s-head"><span class="s-title">Dias de oferta</span></div><div class="card"><ul class="rows">' + rot.map(function(r){
         var on = (r.dias || []).indexOf(w) >= 0;
-        return '<li><div class="rot"><span class="ti" aria-hidden="true">' + (r.icone || '🏷️') + '</span><b>' + esc(r.m) + ' · ' + esc(r.tipo) + (on ? '<span class="pill ok">hoje</span>' : '') + '</b>' +
+        return '<li><div class="rot"><span class="ti" aria-hidden="true">' + esc(r.icone || '🏷️') + '</span><b>' + esc(r.m) + ' · ' + esc(r.tipo) + (on ? '<span class="pill ok">hoje</span>' : '') + '</b>' +
           '<span>' + esc(cap(diasTxt(r.dias))) + '. ' + esc(r.texto) + (r.certeza === "provavel" ? ' Confirme no encarte da semana.' : '') + '</span></div></li>';
       }).join("") + '</ul></div></div>';
     }
@@ -1639,7 +1654,11 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
     if(HML) return (inj && /^demo-/.test(inj.projectId || "")) ? inj : FB_CONFIG_HML; /* homologação: só emulador ou projeto de teste */
     return inj || FB_CONFIG;
   }
-  function syncDisponivel(){ return !!fbCfg(); }
+  /* BLOQUEIO DE SEGURANÇA — ACL ainda sem onboarding: nenhum navegador inicia a
+     sincronização legada por config injetada. NÃO trocar para true sem migração,
+     testes de regras no emulador e aprovação explícita do fundador. */
+  var SYNC_FAMILIAR_ACL_HOMOLOGADA = false;
+  function syncDisponivel(){ return SYNC_FAMILIAR_ACL_HOMOLOGADA && !!fbCfg(); }
   function loadCasa(){ try{ var c = JSON.parse(localStorage.getItem(CASA_KEY) || "null"); if(c && c.id && c.id.length >= 20) return c; }catch(e){} return null; }
   function saveCasa(c){ try{ if(c) localStorage.setItem(CASA_KEY, JSON.stringify(c)); else localStorage.removeItem(CASA_KEY); }catch(e){} }
   function novoIdCasa(){ var b = new Uint8Array(20), s = ""; crypto.getRandomValues(b); for(var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
@@ -2062,7 +2081,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   }
   function chipEstado(estado, texto){ return '<span class="ia-chip ia-' + esc(estado) + '">' + esc(texto || IA.TEXTO_ESTADO[estado]) + '</span>'; }
   function fonteTexto(f){ return esc(f.provedor) + ' · ' + esc(f.identificacao) + ' · consultado em ' + esc(f.dataVerificacao.split("-").reverse().join("/")) + (f.ficticio ? ' · <b>fictício</b>' : '') +
-    (f.rascunho ? ' · <a class="link" href="' + esc(f.urlProduto || "https://world.openfoodfacts.org") + '" target="_blank" rel="noopener noreferrer">Dados: Open Food Facts (ODbL)</a>' : ''); }
+    (f.rascunho ? ' · <a class="link" href="' + esc(urlExternaSegura(f.urlProduto) || "https://world.openfoodfacts.org") + '" target="_blank" rel="noopener noreferrer">Dados: Open Food Facts (ODbL)</a>' : ''); }
   function avaliarProduto(p){ var pa = perfilAtivo(); return pa ? IA.analisar(pa, BUS.rotuloParaRegras(p), { hoje: todayStr() }) : null; }
   function renderRotulosIA(){
     var v = document.getElementById("view-rotulos"), pa = perfilAtivo(), r = buscaIA.resposta;

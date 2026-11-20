@@ -19,6 +19,18 @@ jobs:
         env:
           PRIVACIDADE_TERMOS: ${{ secrets.PRIVACIDADE_TERMOS }}
         run: node tests/rodar-testes.js
+      - name: Segurança de acesso e cache
+        run: node tests/rodar-seguranca.js
+      - name: Entradas não confiáveis, imagens e links
+        run: node tests/rodar-entradas-nao-confiaveis.cjs
+
+      - name: Testes reais de permissões (Firestore Emulator)
+        env:
+          GCLOUD_PROJECT: demo-elida-acl
+          CI: "true"
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts firebase-tools@14.24.0 firebase@12.4.0 @firebase/rules-unit-testing@5.0.0
+          npx firebase emulators:exec --only firestore --project demo-elida-acl "node tests/emulator-acesso.cjs"
       - name: Rótulos reais (diagnóstico, não bloqueia)
         run: node tests/rodar-rotulos.js || true
       - name: Pacote de homologação
@@ -50,3 +62,37 @@ jobs:
           name: elida-ia-${{ github.sha }}
           path: relatorio-elida-ia.txt
           retention-days: 14
+
+  auditoria-publica-passiva:
+    # Sem ataques ao servidor: 3 HEAD + 3 GET públicos, somente metadados.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Auditar headers HTTP e configuração visível nas três páginas
+        run: node tests/auditar-superficie-publica.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auditoria-http-${{ github.sha }}
+          path: auditoria-seguranca/auditoria-passiva-publica.json
+          retention-days: 14
+
+  zap-passivo-producao:
+    # Somente o PR de segurança. Scanner passivo autorizado, sem fuzzing/ataques ativos.
+    if: github.event_name == 'pull_request' && github.head_ref == 'security/elida-acesso-familiar-20261119'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: OWASP ZAP Baseline (passivo, spider 1 minuto)
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: https://kaleb-nunes.github.io/mercado-da-casa/
+          cmd_options: '-m 1'
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: zap-passivo-elida-${{ github.sha }}

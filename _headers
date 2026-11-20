@@ -1,6 +1,11 @@
-# Usado só pela hospedagem de homologação (Cloudflare Pages). O GitHub Pages ignora este arquivo.
+# Elida — cabeçalhos para Cloudflare Pages (não funciona no GitHub Pages).
+# Defesa em profundidade, ainda exige QA visual e de OCR antes de qualquer deploy.
 /*
   X-Robots-Tag: noindex, nofollow
   X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000
+  Cross-Origin-Resource-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://world.openfoodfacts.org https://search.openfoodfacts.org; manifest-src 'self'; upgrade-insecure-requests
