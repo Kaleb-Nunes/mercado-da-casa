@@ -36,19 +36,13 @@ O `ofertas.json` tem:
 
 Preço de oferta por produto também entra por código, igual ao cupom: foto do encarte → Claude lê → `tools/gerar_ofertas.py encarte.json` gera a mensagem com `#ofertas=...`. No app, cada oferta aparece comparada com o último preço pago, marcada com "evitar" se tiver um termo da dieta, e o botão **+ Lista** põe o item na lista com o preço da oferta. Ao finalizar a compra no mesmo mercado da oferta, o preço guardado é o da oferta.
 
-## Tempo real (Firebase)
+## Tempo real (Firebase) — **em preparação, não ativado**
 
-Dois ou mais celulares na mesma "casa": o que um anota, os outros veem em segundos. Sem sinal, fica guardado no celular e sobe quando a internet volta.
+A sincronização antiga por login anônimo e convite baseado só no ID da casa apresentava riscos de acesso indevido. Por isso, o código da branch de segurança mantém o bloqueio de sincronização e a funcionalidade não é liberada por apenas preencher a configuração Firebase.
 
-- Banco: Cloud Firestore, plano grátis (Spark), login anônimo. Cada casa tem um id aleatório de 27 caracteres que vai no link do convite (`#casa=...`).
-- Dados: `casas/{id}/itens`, `gastos`, `meses`, `config` (dieta, geral), `ofertas`, `membros`. Só os campos que mudaram são enviados, então duas pessoas mexendo no mesmo item em coisas diferentes (preço e carrinho, por exemplo) não se atropelam.
-- Regras de segurança: `firestore.rules` (ninguém lista as casas; sem login, nada).
-- SDK: `vendor/firebase.js` (Firebase JS 13.4.0, gerado de `tools/firebase-entry.js` com esbuild), servido daqui e guardado no cache offline.
-- Ligar: preencher `FB_CONFIG` no `index.html` com o `firebaseConfig` do projeto. Enquanto estiver `null`, o tempo real fica escondido e o app funciona como antes.
-- Entrar numa casa: Android toca no link; iPhone abre o app pela tela de início, toca em **Tenho um convite** e cola a mensagem (o iPhone guarda Safari e tela de início separados).
-- Se o mesmo item estiver nos dois celulares na hora de entrar, vale o da casa. O que só existia no celular de quem entrou vai junto.
+O backend seguro proposto nesta branch cria casas com dono autenticado, emite convites de uso único associados a e-mail verificado e revoga membros. As regras limitam leitura e escrita aos membros ativos da família. **Ainda faltam** o login no app, a integração do SDK com essas Functions, a migração segura, testes reais e aprovação explícita.
 
-Criar o projeto (10 min): console.firebase.google.com → Criar projeto → Authentication → Anônimo → Ativar → Firestore Database → Criar (southamerica-east1, modo produção) → Regras: colar `firestore.rules` → Publicar → Configurações do projeto → Seus apps → Web → copiar o `firebaseConfig`.
+Leia [docs/FIREBASE_HOMOLOGACAO.md](docs/FIREBASE_HOMOLOGACAO.md) para os testes, custos do plano Blaze, configuração separada de homologação, App Check e critérios de publicação. **Não fazer deploy nem merge para main sem autorização.**
 
 ## Dieta: três avisos
 

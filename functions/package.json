@@ -1,0 +1,18 @@
+{
+  "name": "elida-familia-backend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Backend seguro de famílias do aplicativo Élida (não publicar sem homologação)",
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "check": "node --check index.js && node --check lib/validacao.cjs",
+    "test": "node --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "14.5.1",
+    "firebase-functions": "^7.2.0"
+  }
+}
