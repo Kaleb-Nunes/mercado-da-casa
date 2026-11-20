@@ -442,6 +442,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <script src="elida-regras.js"></script>
 <script src="elida-busca.js"></script>
 <script src="elida-ocr.js"></script>
+<script src="elida-backup-seguro.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1257,41 +1258,77 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   function sheetBackup(){
     ui.sheet = {type:"backup"};
     var ult = ""; try{ ult = localStorage.getItem(BK_ULTIMO) || ""; }catch(e){}
-    openSheet('<h3 class="sh-title" id="sh-title">Backup</h3><p class="sh-sub">Salva um arquivo com ' + esc(resumoEstado(state, fotos)) + '. Guarde no seu Drive ou nos Arquivos do celular. Ele não tem senha: não mande em grupo.' + (ult ? ' Último backup: ' + esc(dShort(ult)) + '.' : '') + '</p>' +
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-backup">Salvar arquivo de backup</button>' +
-      '<button class="quiet" type="button" data-act="copiar-backup">Copiar como texto (sem fotos)</button>' +
-      '<button class="quiet" type="button" data-act="fechar">Fechar</button></div>' +
-      '<textarea class="inp" id="f-backup" readonly hidden aria-hidden="true"></textarea>');
+    openSheet('<h3 class="sh-title" id="sh-title">Backup criptografado</h3>' +
+      '<p class="sh-sub">O backup contém dados pessoais, gastos, fotos e possivelmente perfis de saúde. Ele será cifrado no próprio aparelho com AES-256-GCM. Nenhuma senha será enviada para servidores. Se perder sua senha, não conseguirá recuperar o arquivo.' +
+      (ult ? ' Último backup: ' + esc(dShort(ult)) + '.' : '') + '</p>' +
+      '<div class="form"><label class="fl">Senha exclusiva (mínimo de 12 caracteres)<input class="inp" type="password" id="f-senha-backup" autocomplete="new-password" minlength="12" maxlength="512" required></label>' +
+      '<label class="fl">Confirme a senha<input class="inp" type="password" id="f-senha-backup-2" autocomplete="new-password" minlength="12" maxlength="512" required></label></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="salvar-backup">Criar backup criptografado</button>' +
+      '<button class="quiet" type="button" data-act="fechar">Cancelar</button></div>', "f-senha-backup");
   }
-  function salvarArquivoBackup(){
-    var nome = "elida-backup-" + todayStr() + ".json", txt = JSON.stringify(pacoteBackup());
-    var feito = function(){ try{ localStorage.setItem(BK_ULTIMO, todayStr()); }catch(e){} toast("Backup pronto. Confira se o arquivo foi salvo"); };
-    var blob = new Blob([txt], {type: "application/json"});
+  async function salvarArquivoBackup(){
+    if(!window.ElidaBackupSeguro || !window.crypto || !crypto.subtle){ toast("Este navegador não permite backup criptografado"); return; }
+    var a=document.getElementById("f-senha-backup"), b=document.getElementById("f-senha-backup-2");
+    var senha=a && a.value || "", confirmacao=b && b.value || "";
+    if(senha.length<12 || senha!==confirmacao){ toast("Informe e confirme uma senha de pelo menos 12 caracteres"); return; }
+    if(a)a.value=""; if(b)b.value="";
+    var btn=sheet.querySelector('[data-act="salvar-backup"]');
+    if(btn)btn.disabled=true;
     try{
-      var f = new File([blob], nome, {type: "application/json"});
-      if(navigator.canShare && navigator.canShare({files: [f]})){ navigator.share({files: [f]}).then(feito, function(){}); return; }
-    }catch(e){}
-    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click();
-    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500); feito();
+      var env=await window.ElidaBackupSeguro.criar(pacoteBackup(),senha);
+      var nome="elida-backup-criptografado-"+todayStr()+".elida";
+      var blob=new Blob([JSON.stringify(env)],{type:"application/json"});
+      var feito=function(){try{localStorage.setItem(BK_ULTIMO,todayStr());}catch(e){} toast("Backup criptografado criado. Guarde também a senha em local separado.");};
+      try{
+        var file=new File([blob],nome,{type:"application/json"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file]});
+          feito();return;
+        }
+      }catch(e){if(e && e.name==="AbortError")return;}
+      var link=document.createElement("a"),url=URL.createObjectURL(blob);
+      link.href=url;link.download=nome;document.body.appendChild(link);link.click();
+      setTimeout(function(){URL.revokeObjectURL(url);link.remove();},1500);
+      feito();
+    }catch(e){toast("Falha ao cifrar backup: "+String(e && e.message || "verifique o navegador").slice(0,120));}
+    finally{senha="";confirmacao="";if(btn)btn.disabled=false;}
   }
   function sheetRestaurar(){
     ui.sheet = {type:"restaurar"};
     var antes = null; try{ antes = JSON.parse(localStorage.getItem(BK_ANTES) || "null"); }catch(e){}
-    openSheet('<h3 class="sh-title" id="sh-title">Restaurar backup</h3><p class="sh-sub">Escolha o arquivo do backup ou cole o texto. Antes de trocar, o app mostra o que tem no backup.</p>' +
-      '<div class="form"><label class="bigbtn" for="f-arquivo" style="cursor:pointer">Escolher arquivo</label><input type="file" id="f-arquivo" accept=".json,application/json,text/plain" style="position:absolute;width:1px;height:1px;opacity:0">' +
-      '<div class="fl"><label for="f-restaurar">Ou cole o texto do backup</label><textarea class="inp" id="f-restaurar"></textarea></div>' +
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Ver o que tem no backup</button>' +
-      (antes && antes.estado ? '<button class="quiet" type="button" data-act="desfazer-restaurar">Desfazer a última restauração (' + esc(dShort(antes.em || "")) + ')</button>' : '') +
-      '<button class="quiet" type="button" data-act="fechar">Cancelar</button></div></div>');
+    openSheet('<h3 class="sh-title" id="sh-title">Restaurar backup</h3><p class="sh-sub">Escolha seu arquivo .elida criptografado ou cole o conteúdo. Informe a senha usada na exportação. Backups antigos sem criptografia continuam aceitos somente para migração e exigem cuidado.</p>' +
+      '<div class="form"><label class="fl">Arquivo de backup<input type="file" id="f-arquivo" class="inp" accept=".elida,.json,application/json"></label>' +
+      '<label class="fl">Senha do backup criptografado<input class="inp" id="f-senha-restaurar" type="password" autocomplete="off" maxlength="512"></label>' +
+      '<label class="fl">Ou cole o texto do backup<textarea class="inp" id="f-restaurar" rows="4" placeholder="Cole o conteúdo do arquivo, caso necessário"></textarea></label></div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="confirmar-restaurar">Analisar backup</button>' +
+      (antes && valid(antes.estado) ? '<button class="quiet" type="button" data-act="desfazer-restaurar">Desfazer última restauração</button>' : '') +
+      '<button class="quiet" type="button" data-act="fechar">Cancelar</button></div>', "f-arquivo");
   }
-  function previaRestaurar(txt){
-    var b;
-    try{ b = lerBackup(txt); }catch(err){ toast("Esse arquivo ou texto não é um backup válido"); return; }
-    ui.sheet = {type:"restaurar-previa", backup: b};
+  async function previaRestaurar(txt){
+    var b, conteudo=String(txt || "");
+    if(conteudo.length>30*1024*1024){toast("Arquivo grande demais");return;}
+    try{
+      var env=JSON.parse(conteudo);
+      if(window.ElidaBackupSeguro && window.ElidaBackupSeguro.identificar(env)){
+        var input=document.getElementById("f-senha-restaurar");
+        var senha=input && input.value || "";
+        if(input)input.value="";
+        var aberto=await window.ElidaBackupSeguro.abrir(env,senha);
+        senha="";
+        b=lerBackup(JSON.stringify(aberto));
+      }else{
+        b=lerBackup(conteudo);
+      }
+    }catch(err){
+      toast("Não foi possível abrir: senha incorreta, arquivo alterado ou backup inválido");
+      return;
+    }
+    ui.sheet={type:"restaurar-previa",backup:b};
     openSheet('<h3 class="sh-title" id="sh-title">Restaurar este backup?</h3>' +
-      '<div class="warnbox" role="alert"><b>Backup' + (b.criado ? ' de ' + esc(dShort(b.criado)) : '') + ':</b> ' + esc(resumoEstado(b.estado, b.fotos)) + '.<br>' +
-      (b.perfis && b.perfis.perfis.length ? 'O backup também tem ' + b.perfis.perfis.length + (b.perfis.perfis.length === 1 ? ' perfil alimentar' : ' perfis alimentares') + '.<br>' : '') + '<b>Agora no app:</b> ' + esc(resumoEstado(state, fotos)) + '.<br>O que está no app será trocado pelo backup. O app guarda uma cópia do que está aqui agora para você poder desfazer.</div>' +
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="aplicar-restaurar">Restaurar este backup</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div>');
+      '<div class="warnbox" role="alert"><b>Backup' + (b.criado ? ' de ' + esc(dShort(b.criado)) : '') + ':</b> ' + esc(resumoEstado(b.estado,b.fotos)) + '.<br>' +
+      (b.perfis && b.perfis.perfis.length ? 'O backup também tem ' + b.perfis.perfis.length + (b.perfis.perfis.length===1 ? ' perfil alimentar' : ' perfis alimentares') + '.<br>' : '') +
+      '<b>Agora no app:</b> ' + esc(resumoEstado(state,fotos)) + '.<br>O que está no app será trocado. Uma cópia anterior será guardada localmente, se houver espaço.</div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="aplicar-restaurar">Confirmar restauração</button><button class="quiet" type="button" data-act="fechar">Cancelar</button></div>');
   }
   function aplicarRestauracao(b){
     var copia = {em: todayStr(), estado: state, fotos: fotos, perfis: perfisEstado.guardar ? perfisEstado : undefined}, guardou = false;
@@ -2433,7 +2470,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
         if(ui.armed !== "hml-dados"){ ui.armed = "hml-dados"; toast("Toque de novo para trocar tudo pelos dados de teste"); break; }
         ui.armed = null; state = dadosDeTeste(); fotos = {}; saveFotos(); save(); show("inicio"); toast("Dados de teste carregados"); break;
       case "salvar-backup": salvarArquivoBackup(); break;
-      case "copiar-backup": var fb = document.getElementById("f-backup"); if(fb){ fb.value = JSON.stringify(state); } copy(JSON.stringify(state), fb); break;
+      case "copiar-backup": toast("Exportação sem criptografia desativada. Use o arquivo protegido por senha."); break;
       case "aplicar-restaurar": if(ui.sheet && ui.sheet.backup) aplicarRestauracao(ui.sheet.backup); break;
       case "desfazer-restaurar": desfazerRestauracao(); break;
       case "restaurar": sheetRestaurar(); break;
