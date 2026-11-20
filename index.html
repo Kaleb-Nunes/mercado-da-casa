@@ -399,6 +399,23 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
   h2.title{font-size:26px}
 }
 </style>
+<style id="elida-conta-estilos">
+#elida-conta-botao{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;z-index:9995;min-height:36px;padding:7px 13px;border:1px solid #aab9af;border-radius:28px;background:#fff;color:#0F3B2E;font:600 14px system-ui;box-shadow:0 2px 9px #0002}
+#elida-conta-painel[hidden]{display:none!important}
+#elida-conta-painel{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:16px;background:rgba(5,21,15,.88);overflow:auto;color:#10261F}
+#elida-conta-painel .elida-account-card{box-sizing:border-box;width:min(100%,440px);max-height:95vh;overflow:auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 15px 55px #0005}
+#elida-conta-painel h2{font:700 24px system-ui;margin:0 0 8px}
+#elida-conta-painel p{font:14px/1.45 system-ui;color:#44564b}
+#elida-conta-painel label{display:block;font:600 13px system-ui;margin:12px 0}
+#elida-conta-painel input{box-sizing:border-box;display:block;width:100%;min-height:44px;padding:10px;margin-top:5px;border:1px solid #a5b4ab;border-radius:8px;background:#fff;color:#101c13;font-size:16px}
+#elida-conta-painel [data-elida-msg]:not(:empty){padding:8px 12px;background:#edf5ef;border-radius:8px}
+#elida-conta-painel .elida-account-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:18px}
+#elida-conta-painel button{min-height:45px;padding:9px 5px;border:1px solid #0F3B2E;border-radius:8px;background:#0F3B2E;color:white;font:600 13px system-ui}
+#elida-conta-painel button[data-elida-action=visitante],#elida-conta-painel button[data-elida-action=fechar]{background:white;color:#0F3B2E}
+#elida-conta-painel button:disabled{opacity:.5}
+html[data-elida-bloqueada=true] body > :not(#elida-conta-painel):not(script){visibility:hidden!important}
+html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important}
+</style>
 </head>
 <body>
 
@@ -443,15 +460,18 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 <script src="elida-busca.js"></script>
 <script src="elida-ocr.js"></script>
 <script src="elida-backup-seguro.js"></script>
+<script src="elida-firebase-config.js"></script>
+<script src="elida-conta.js"></script>
 <script>
-(function(){
+(async function(){
   "use strict";
+  if(window.ElidaConta && window.ElidaConta.bootstrap) await window.ElidaConta.bootstrap();
   /* Ambiente. Produção é só o endereço publicado. Qualquer outro (prévia, teste local) é homologação:
      os dados ficam com prefixo próprio e o Firebase de produção não é usado. */
   /* Ambiente pela configuração explícita de ambiente.js: só endereços da lista de homologação
      são homologação; qualquer outro (inclusive domínio próprio) é produção. */
   var AMB = window.ElidaAmbiente ? window.ElidaAmbiente.resolver(location) : { producao: true, homologacao: false, prefixoDados: "", catalogoFicticio: false, dadosDeTeste: false };
-  var PRODUCAO = AMB.producao, HML = AMB.homologacao, PFX = AMB.prefixoDados;
+  var PRODUCAO = AMB.producao, HML = AMB.homologacao, PFX = AMB.prefixoDados + (window.ElidaConta ? window.ElidaConta.sufixo() : "");
   var KEY = PFX + "mercado-casa-v1";
   var CATS = ["Mercearia","Proteínas","Hortifruti","Bebidas","Bebê","Limpeza e casa","Outros"];
   var TIPOS = ["Mercado","Feira","Açougue","Farmácia","Bebê","Outros"];
