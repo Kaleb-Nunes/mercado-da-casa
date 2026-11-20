@@ -11,7 +11,7 @@ const {
 } = require("firebase/firestore");
 const casa = "AbC_defGhijkLMNoPQrsTUVwxyz1";
 const outraCasa = "Bbc_defGhijkLMNoPQrsTUVwxyz2";
-const uDono="dono",uEstranho="estranho",uRemovido="removido";
+const uDono="dono",uEstranho="estranho",uRemovido="removido",uPendente="pendente",uSuspenso="suspenso";
 let feitos=0;
 async function devePermitir(nome, promessa) {
   await assertSucceeds(promessa);
@@ -33,19 +33,35 @@ async function main(){
   try {
     await env.withSecurityRulesDisabled(async (ctx)=>{
       const db=ctx.firestore();
+      for(const u of [uDono,uEstranho,uRemovido]){
+        await setDoc(doc(db,"acessosUsuarios",u),{uid:u,status:"aprovado",email:u+"@teste.example"});
+      }
+      await setDoc(doc(db,"acessosUsuarios",uPendente),{uid:uPendente,status:"pendente",email:"pendente@teste.example"});
+      await setDoc(doc(db,"acessosUsuarios",uSuspenso),{uid:uSuspenso,status:"suspenso",email:"suspenso@teste.example"});
+      await setDoc(doc(db,"configuracoesSeguranca","superadmin"),{uid:"administrador",ativo:true});
+
       for(const [id,owner] of [[casa,uDono],[outraCasa,uEstranho]]){
         await setDoc(doc(db,"casas",id),{nome:"Casa de teste",criador:owner,v:1});
         await setDoc(doc(db,"casas",id,"membros",owner),{ativo:true,nome:"Titular"});
         await setDoc(doc(db,"casas",id,"itens","item1"),{nome:"Produto inventado"});
       }
       await setDoc(doc(db,"casas",casa,"membros",uRemovido),{ativo:false,nome:"Antigo membro"});
+      await setDoc(doc(db,"casas",casa,"membros",uPendente),{ativo:true,nome:"Pendente"});
+      await setDoc(doc(db,"casas",casa,"membros",uSuspenso),{ativo:true,nome:"Suspenso"});
     });
     const dono=env.authenticatedContext(uDono,{email_verified:true}).firestore();
     const estranho=env.authenticatedContext(uEstranho,{email_verified:true}).firestore();
     const removido=env.authenticatedContext(uRemovido,{email_verified:true}).firestore();
     const semLogin=env.unauthenticatedContext().firestore();
+    const pendente=env.authenticatedContext(uPendente,{email_verified:true}).firestore();
+    const suspenso=env.authenticatedContext(uSuspenso,{email_verified:true}).firestore();
     const naoVerificado=env.authenticatedContext(uDono,{email_verified:false}).firestore();
     await deveNegar("e-mail não verificado não lê casa mesmo sendo dono",getDoc(doc(naoVerificado,"casas",casa)));
+    await deveNegar("cadastro pendente não lê mesmo com vínculo de família",getDoc(doc(pendente,"casas",casa)));
+    await deveNegar("cadastro suspenso não lê mesmo com vínculo de família",getDoc(doc(suspenso,"casas",casa)));
+    await deveNegar("cadastro não pode se autoaprovar",setDoc(doc(pendente,"acessosUsuarios",uPendente),{uid:uPendente,status:"aprovado"}));
+    await deveNegar("admin não pode criar aprovações diretamente pelo cliente",setDoc(doc(dono,"configuracoesSeguranca","superadmin"),{uid:uDono,ativo:true}));
+    await deveNegar("admin do cliente não lê histórico administrativo",getDoc(doc(dono,"auditoriaAcessos","evento1")));
     await devePermitir("membro ativo lê sua casa",getDoc(doc(dono,"casas",casa)));
     await devePermitir("membro ativo lê item da própria casa",getDoc(doc(dono,"casas",casa,"itens","item1")));
     await devePermitir("membro ativo escreve item próprio",setDoc(doc(dono,"casas",casa,"itens","item2"),{nome:"Arroz fictício"}));
@@ -69,8 +85,8 @@ async function main(){
     await deveNegar("membro ativo não lê token de convite",getDoc(doc(dono,"casas",casa,"convites","tokenHash")));
     await deveNegar("membro ativo não cria convite no cliente",setDoc(doc(dono,"casas",casa,"convites","tokenHash"),{email:"alvo@example.test"}));
     await deveNegar("membro ativo não lista convites",getDocs(collection(dono,"casas",casa,"convites")));
-    assert.equal(feitos,24);
-    console.log("FIRESTORE EMULATOR: "+feitos+"/24 cenários de autorização aprovados");
+    assert.equal(feitos,29);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/29 cenários de autorização aprovados");
   } finally {await env.cleanup();}
 }
 main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
