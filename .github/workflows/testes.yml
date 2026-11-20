@@ -39,6 +39,7 @@ jobs:
           node --check functions/index.js
           node --check functions/lib/validacao.cjs
           node --check functions/lib/acesso.cjs
+          node --check functions/scripts/provisionar-superadmin.cjs
           node --check elida-aprovacao.js
           npm --prefix functions test
 
