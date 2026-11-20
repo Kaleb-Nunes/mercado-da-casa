@@ -24,6 +24,10 @@ jobs:
       - name: Entradas não confiáveis, imagens e links
         run: node tests/rodar-entradas-nao-confiaveis.cjs
 
+      - name: Backend familiar - validação sem credenciais reais
+        run: |
+          node --check functions/index.js
+          node --test functions/test/*.test.cjs
       - name: Testes reais de permissões (Firestore Emulator)
         env:
           GCLOUD_PROJECT: demo-elida-acl
