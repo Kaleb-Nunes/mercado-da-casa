@@ -5,7 +5,9 @@ const vm=require("node:vm");
 const {webcrypto}=require("node:crypto");
 assert.ok(globalThis.crypto && globalThis.crypto.subtle, "Web Crypto indisponível no Node");
 const c=require("../elida-backup-seguro.js");
-const html=fs.readFileSync("index.html","utf8");
+const markup=fs.readFileSync("index.html","utf8");
+const app=fs.readFileSync("elida-app.js","utf8");
+const html=markup+"\n"+app;
 const conta=fs.readFileSync("elida-conta.js","utf8");
 const config=fs.readFileSync("elida-firebase-config.js","utf8");
 const headers=fs.readFileSync("_headers","utf8");
@@ -16,9 +18,9 @@ async function teste(nome,fn){try{await fn();ok++;console.log("OK "+nome);}catch
 await teste("Sintaxe JS de autenticação, criptografia e app integrado",()=>{
  new vm.Script(conta);
  new vm.Script(fs.readFileSync("elida-backup-seguro.js","utf8"));
- const ini=html.indexOf("<script>\n(async function(){"),fim=html.lastIndexOf("</script>");
- assert.ok(ini>=0&&fim>ini);
- new vm.Script(html.slice(ini+8,fim),{filename:"inline-Elida-IA.js"});
+ assert.match(markup, /<script src="elida-app\.js"><\/script>/);
+ assert.doesNotMatch(markup, /<script>\s*\(async function/);
+ new vm.Script(app,{filename:"elida-app.js"});
 });
 await teste("Nenhuma configuração de Firebase de produção inventada",()=>{
  assert.match(config,/window\.__ELIDA_FIREBASE_CONFIG__ = null;/);
