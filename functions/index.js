@@ -8,6 +8,7 @@ const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 const { randomBytes, createHash } = require("node:crypto");
 const validacao = require("./lib/validacao.cjs");
+const acesso = require("./lib/acesso.cjs");
 
 initializeApp();
 const db = getFirestore();
@@ -32,6 +33,85 @@ function entrada(fn) {
   try { return fn(); }
   catch (err) { throw new HttpsError("invalid-argument", err.message); }
 }
+
+// Usuários podem autenticar-se, mas a autorização é separada do Firebase Auth.
+// O superadministrador só é identificado por UID configurado com credenciais
+// privilegiadas em configuracoesSeguranca/superadmin {uid,ativo:true}.
+const ADMIN_REF = db.collection("configuracoesSeguranca").doc("superadmin");
+const USUARIOS_REF = db.collection("acessosUsuarios");
+const AUDITORIA_REF = db.collection("auditoriaAcessos");
+function resumoRegistro(s){return s && s.exists ? acesso.estadoSolicitacao(s.data()) : "nao_solicitado";}
+async function superadmin(u){
+  const snap = await ADMIN_REF.get();
+  return acesso.ehSuperadmin(snap.exists ? snap.data():null,u.uid);
+}
+async function exigirSuperadmin(u){
+  if(!(await superadmin(u)))semPermissao();
+}
+async function usuarioAprovado(req){
+  const u=usuario(req);
+  if(await superadmin(u))return u;
+  const registro=await USUARIOS_REF.doc(u.uid).get();
+  if(!registro.exists||!acesso.acessoAprovado(registro.data(),u)||
+     registro.data().email!==u.email)semPermissao();
+  return u;
+}
+/* A consulta da própria situação não concede acesso a documentos familiares. */
+exports.consultarMeuAcesso = onCall(OPCOES,async(req)=>{
+  const u=usuario(req);
+  if(await superadmin(u))return {status:"aprovado",administrador:true};
+  const registro=await USUARIOS_REF.doc(u.uid).get();
+  const d=registro.exists?registro.data():null;
+  return {status:d&&d.email===u.email?acesso.estadoSolicitacao(d):"nao_solicitado",administrador:false};
+});
+/* Primeira solicitação atômica; usuário recusado não pode auto-reativar. */
+exports.solicitarAcesso = onCall(OPCOES,async(req)=>{
+  const u=usuario(req);
+  if(await superadmin(u))return {status:"aprovado",administrador:true};
+  const ref=USUARIOS_REF.doc(u.uid);
+  const status=await db.runTransaction(async(tx)=>{
+    const s=await tx.get(ref);
+    if(s.exists) {
+      const d=s.data();
+      if(d.email!==u.email)throw new HttpsError("permission-denied","Conta alterada. Contate o administrador.");
+      return acesso.estadoSolicitacao(d);
+    }
+    tx.create(ref,{...acesso.novaSolicitacao(u),solicitadoEm:FieldValue.serverTimestamp(),atualizadoEm:FieldValue.serverTimestamp()});
+    return "pendente";
+  });
+  return {status,administrador:false};
+});
+/* Nunca é permitido atribuir o papel de superadmin pelo cliente. */
+exports.listarSolicitacoes = onCall(OPCOES,async(req)=>{
+  const u=usuario(req);await exigirSuperadmin(u);
+  const docs=await USUARIOS_REF.orderBy("solicitadoEm","desc").limit(100).get();
+  return {usuarios:docs.docs.map(s=>({
+    uid:s.id,
+    email:s.data().email,
+    status:acesso.estadoSolicitacao(s.data())
+  }))};
+});
+exports.decidirAcesso = onCall(OPCOES,async(req)=>{
+  const u=usuario(req);await exigirSuperadmin(u);
+  const alvo=req.data && req.data.uid;
+  const acao=req.data && req.data.acao;
+  try{acesso.validarAcao(acao,alvo,u.uid);}
+  catch(e){throw new HttpsError("invalid-argument","Ação ou usuário inválido");}
+  const ref=USUARIOS_REF.doc(alvo);
+  const log=AUDITORIA_REF.doc();
+  const resultado=await db.runTransaction(async(tx)=>{
+    const s=await tx.get(ref);
+    if(!s.exists)throw new HttpsError("not-found","Solicitação não encontrada");
+    let status;
+    try{status=acesso.proximoEstado(acao,s.data().status);}
+    catch(e){throw new HttpsError("failed-precondition","Ação incompatível com o estado atual");}
+    tx.update(ref,{status,atualizadoEm:FieldValue.serverTimestamp(),decididoPor:u.uid});
+    tx.create(log,{alvo,acao,status,administrador:u.uid,criadoEm:FieldValue.serverTimestamp()});
+    return status;
+  });
+  return {status:resultado,uid:alvo};
+});
+
 function casaRef(id) { return db.collection("casas").doc(id); }
 function hashToken(token) {
   return createHash("sha256").update(token, "utf8").digest("hex");
@@ -51,7 +131,7 @@ function exigirDono(membro, uid) {
  * Exige login não anônimo, verificação de e-mail e App Check.
  */
 exports.criarCasa = onCall(OPCOES, async (req) => {
-  const u = usuario(req);
+  const u = await usuarioAprovado(req);
   const nome = entrada(() => validacao.textoCurto(req.data && req.data.nome, "Nome da casa", 60));
   const pessoa = entrada(() => validacao.textoCurto(req.data && req.data.pessoa, "Seu nome", 60));
   const id = randomBytes(20).toString("base64url");
@@ -88,7 +168,7 @@ exports.criarCasa = onCall(OPCOES, async (req) => {
  * O segredo em texto puro é retornado somente ao titular, nunca persistido.
  */
 exports.criarConvite = onCall(OPCOES, async (req) => {
-  const u = usuario(req);
+  const u = await usuarioAprovado(req);
   const casaId = req.data && req.data.casaId;
   if (!validacao.idCasaValido(casaId)) {
     throw new HttpsError("invalid-argument", "Casa inválida");
@@ -131,7 +211,7 @@ exports.criarConvite = onCall(OPCOES, async (req) => {
 
 /** O uso do token é transacional e está associado ao e-mail verificado. */
 exports.aceitarConvite = onCall(OPCOES, async (req) => {
-  const u = usuario(req);
+  const u = await usuarioAprovado(req);
   const casaId = req.data && req.data.casaId;
   const token = req.data && req.data.token;
   const pessoa = entrada(() => validacao.textoCurto(req.data && req.data.pessoa, "Seu nome", 60));
@@ -169,7 +249,7 @@ exports.aceitarConvite = onCall(OPCOES, async (req) => {
 
 /** Apenas o titular pode desativar outra pessoa; não revoga o próprio titular. */
 exports.revogarMembro = onCall(OPCOES, async (req) => {
-  const u = usuario(req);
+  const u = await usuarioAprovado(req);
   const casaId = req.data && req.data.casaId;
   const uid = req.data && req.data.uid;
   if (!validacao.idCasaValido(casaId) ||
