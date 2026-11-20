@@ -42,6 +42,7 @@
     var codigo=String(e && e.code || "");
     var detalhes=String(e && e.message || "");
     if(/App Check/i.test(detalhes))return "A aprovação ainda está indisponível: falta configurar o App Check no Firebase. Use o modo visitante enquanto isso.";
+    if(/Firebase Web não configurado/i.test(detalhes))return "O login ainda não está configurado neste endereço. Use a prévia autorizada ou o modo visitante.";
     var mensagens={
       "auth/unauthorized-domain":"Este endereço ainda não está autorizado no Firebase. Cadastre o domínio da prévia em Authentication → Domínios autorizados.",
       "auth/popup-blocked":"O navegador bloqueou a janela do Google. Permita pop-ups e tente novamente.",
