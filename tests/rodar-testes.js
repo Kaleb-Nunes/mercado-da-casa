@@ -142,7 +142,7 @@ arquivos().forEach(function (f) {
 });
 
 /* 7. Firebase desligado e homologação separada */
-var html = fs.readFileSync(path.join(RAIZ, "index.html"), "utf8");
+var html = fs.readFileSync(path.join(RAIZ, "index.html"), "utf8") + "\n" + fs.readFileSync(path.join(RAIZ, "elida-app.js"), "utf8");
 confere(/var FB_CONFIG = null;/.test(html), "Firebase: FB_CONFIG de produção deveria continuar null");
 confere(/var FB_CONFIG_HML = null;/.test(html), "Firebase: FB_CONFIG_HML deveria existir e estar null");
 var chamadas = html.match(/localStorage\.(getItem|setItem|removeItem)\(\s*([A-Za-z_]+)/g) || [];
@@ -231,7 +231,7 @@ confere(/\.link\{[^}]*min-height:44px/.test(html) && /\.tip \.x\{[^}]*min-height
   confere(!/wa\.me/.test(bk), "backup não pode oferecer envio pelo WhatsApp");
   confere(/formato: "elida-backup"/.test(html) && /fotos: fotos/.test(html), "arquivo de backup deveria levar estado e fotos");
   confere(/function previaRestaurar/.test(html) && /data-act="aplicar-restaurar"/.test(html), "restauração deveria mostrar o conteúdo antes de trocar");
-  confere(/BK_ANTES/.test(html) && /function desfazerRestauracao/.test(html), "restauração deveria guardar cópia para desfazer");
+  confere(!/localStorage\.setItem\(BK_ANTES/.test(bk), "restauração não deve criar cópia de dados em texto puro");
   confere(/Criptografado|criptografado|cifrado|AES-256-GCM/.test(bk), "tela de backup deve avisar sobre cifragem e senha");
   confere(/case "hml-dados":\s*if\(!AMB\.dadosDeTeste\) break;/.test(html), "dados de teste só podem existir na homologação");
 })();
