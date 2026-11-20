@@ -125,7 +125,7 @@ jobs:
       - name: Instalar Playwright e Chromium
         run: |
           python -m pip install --disable-pip-version-check 'playwright==1.56.0'
-          python -m playwright install --with-deps chromium
+          python -m playwright install --with-deps chromium webkit
       - name: Testar cliques e formulários com servidor local (390px e 375px)
         run: python tests/ui-interacoes.py
       - name: Aguardar disponibilização da prévia Cloudflare desta branch
@@ -146,6 +146,15 @@ jobs:
         env:
           ELIDA_QA_BASE: https://release-elida-ia-familias-ca.elida-homologacao.pages.dev/
           ELIDA_QA_REQUIRE_ADMIN: '0'
+        run: python tests/ui-interacoes.py
+      - name: Safari WebKit - testar toques e formulários localmente
+        env:
+          ELIDA_QA_BROWSER: webkit
+        run: python tests/ui-interacoes.py
+      - name: Safari WebKit - testar toques na prévia online
+        env:
+          ELIDA_QA_BROWSER: webkit
+          ELIDA_QA_BASE: https://feature-elida-aprovacao-admi.elida-homologacao.pages.dev/
         run: python tests/ui-interacoes.py
       - name: Evidências de falhas de interface
         if: failure()
