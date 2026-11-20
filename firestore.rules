@@ -13,17 +13,35 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
+    function acessoAprovado() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/acessos/$(request.auth.uid))
+        && get(/databases/$(database)/documents/acessos/$(request.auth.uid)).data.status == 'aprovado';
+    }
+
     function casaIdValido(casaId) {
       return casaId is string
         && casaId.matches('^[A-Za-z0-9_-]{20,64}$');
     }
 
     function membroAtivo(casaId) {
-      return autenticado()
+      return acessoAprovado()
         && casaIdValido(casaId)
         && exists(/databases/$(database)/documents/casas/$(casaId)/membros/$(request.auth.uid))
         && get(/databases/$(database)/documents/casas/$(casaId)/membros/$(request.auth.uid)).data.ativo == true;
     }
+
+    // Cada usuário vê somente o próprio status; aprovação é exclusiva do Admin SDK.
+    match /acessos/{uid} {
+      allow get: if autenticado() && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+    // A fila de cadastros contém informações pessoais e jamais é pública.
+    match /solicitacoesAcesso/{uid} {
+      allow read, write: if false;
+    }
+    match /limitesUsuarios/{uid} { allow read, write: if false; }
+    match /limitesConvites/{casaId} { allow read, write: if false; }
 
     match /casas/{casaId} {
       allow get: if membroAtivo(casaId);
