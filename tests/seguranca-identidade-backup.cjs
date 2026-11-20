@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const vm=require("node:vm");
 const {webcrypto}=require("node:crypto");
-globalThis.crypto=webcrypto;
+assert.ok(globalThis.crypto && globalThis.crypto.subtle, "Node WebCrypto indisponível");
 const Backup=require("../elida-backup-seguro.js");
 const authSource=fs.readFileSync("elida-conta.js","utf8");
 const appSource=fs.readFileSync("elida-app.js","utf8");
