@@ -167,3 +167,27 @@ jobs:
           name: elida-falhas-botoes-${{ github.sha }}
           path: qa-evidencias
           retention-days: 7
+
+  pentest-passivo-homologacao:
+    name: OWASP ZAP - auditoria passiva em ambiente de teste
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aguardar prévia de homologação da branch
+        run: |
+          for n in $(seq 1 24); do
+            if curl --fail --silent --show-error --max-time 8 https://feature-elida-aprovacao-admi.elida-homologacao.pages.dev/elida-aprovacao.js | grep -q ElidaAprovacao; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: OWASP ZAP - spider limitado, apenas análise passiva, sem credenciais
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: https://feature-elida-aprovacao-admi.elida-homologacao.pages.dev/
+          cmd_options: '-m 1 -T 2'
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: elida-zap-passivo-${{ github.sha }}
