@@ -37,6 +37,11 @@ service cloud.firestore {
           && colecao in ['itens', 'gastos', 'meses', 'config', 'ofertas'];
       }
 
+      // Convites e tokens são exclusivos do backend confiável.
+      match /convites/{tokenHash} {
+        allow read, write: if false;
+      }
+
       match /membros/{uid} {
         // Membros autenticados podem consultar a composição da própria casa.
         allow get, list: if membroAtivo(casaId);
