@@ -47,7 +47,7 @@ jobs:
           node-version: '22'
       - name: Instalar ferramentas de teste sem credenciais reais
         run: npm install --no-save --no-package-lock --ignore-scripts firebase-tools@14.24.0 firebase@12.4.0 @firebase/rules-unit-testing@5.0.0
-      - name: Testar 18 cenarios de acesso com Firestore Emulator (demo)
+      - name: Testar 19 cenarios de acesso com Firestore Emulator (demo)
         env:
           GCLOUD_PROJECT: demo-elida-acl
           CI: 'true'
