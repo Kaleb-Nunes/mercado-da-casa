@@ -38,6 +38,29 @@
   function limpar(){
     ["email","password"].forEach(function(n){var e=panel().querySelector("[data-elida-"+n+"]");if(e)e.value="";});
   }
+  function erroLegivel(e){
+    var codigo=String(e && e.code || "");
+    var detalhes=String(e && e.message || "");
+    if(/App Check/i.test(detalhes))return "A aprovação ainda está indisponível: falta configurar o App Check no Firebase. Use o modo visitante enquanto isso.";
+    var mensagens={
+      "auth/unauthorized-domain":"Este endereço ainda não está autorizado no Firebase. Cadastre o domínio da prévia em Authentication → Domínios autorizados.",
+      "auth/popup-blocked":"O navegador bloqueou a janela do Google. Permita pop-ups e tente novamente.",
+      "auth/popup-closed-by-user":"A entrada com Google foi cancelada.",
+      "auth/network-request-failed":"Não foi possível conectar ao Firebase. Confira a internet e tente novamente.",
+      "auth/invalid-email":"Digite um e-mail válido.",
+      "auth/email-already-in-use":"Este e-mail já possui cadastro. Use Entrar por e-mail ou Recuperar senha.",
+      "auth/weak-password":"Escolha uma senha mais forte, com pelo menos 12 caracteres.",
+      "auth/too-many-requests":"Muitas tentativas. Aguarde antes de tentar novamente.",
+      "auth/operation-not-allowed":"Este método de login não está habilitado no Firebase.",
+      "auth/invalid-credential":"E-mail ou senha incorretos, ou conta indisponível.",
+      "functions/permission-denied":"Esta ação exige aprovação do administrador.",
+      "functions/unauthenticated":"Sua sessão expirou. Entre novamente para continuar.",
+      "functions/unavailable":"O serviço de aprovação está indisponível. Tente novamente mais tarde.",
+      "functions/deadline-exceeded":"O servidor demorou demais. Verifique a conexão e tente novamente."
+    };
+    return mensagens[codigo] || "Não foi possível concluir esta ação. Verifique a conexão e os dados informados. Se persistir, contate o administrador.";
+  }
+
   function panel(){
     if(painel)return painel;
     var fundo=document.createElement("div");
@@ -69,11 +92,21 @@
       var b=ev.target.closest("[data-elida-action]");
       if(!b)return;
       var a=b.getAttribute("data-elida-action");
-      if(a==="fechar" && modo!=="conta") {fundo.hidden=true;return;}
+      if(a==="fechar" && (modo!=="conta" || (uid && acesso.status==="aprovado"))) {
+        fundo.hidden=true;return;
+      }
+      if(b.disabled)return;
       b.disabled=true;
+      var textoAntes=b.textContent;
+      b.setAttribute("aria-busy","true");
+      b.textContent="Aguarde…";
       Promise.resolve(acao(a, b.dataset.uid)).catch(function(e){
-        if(a!=="recuperar")mensagem("Não foi possível concluir. Verifique os dados, a conexão e as configurações de acesso.");
-      }).finally(function(){b.disabled=false;});
+        mensagem(erroLegivel(e));
+      }).finally(function(){
+        b.disabled=false;
+        b.removeAttribute("aria-busy");
+        b.textContent=textoAntes;
+      });
     });
     document.body.appendChild(fundo);
     painel=fundo;fundo.hidden=true;
@@ -88,6 +121,9 @@
     cadastro.forEach(function(b){b.hidden=!!valido;});
     e.querySelectorAll('label').forEach(function(lbl){lbl.hidden=!!valido;});
     e.querySelector('[data-elida-action="sair"]').hidden=!valido;
+    /* Não oferecer Fechar se a conta ainda não foi aprovada e a interface está isolada. */
+    e.querySelector('[data-elida-action="fechar"]').hidden=!!(modo==="conta" && !aprovado);
+    e.querySelector('[data-elida-action="visitante"]').hidden=false;
     e.querySelector('[data-elida-action="solicitar"]').hidden=!(pendente && acesso.status==="nao_solicitado");
     e.querySelector('[data-elida-action="atualizar-status"]').hidden=!pendente;
     e.querySelector('[data-elida-admin]').hidden=!(aprovado && acesso.papel==="superadmin");
@@ -191,7 +227,11 @@
       if(auth)await sdk.signOut(auth);
       location.reload();return;
     }
-    if(a==="fechar"){if(modo!=="conta")panel().hidden=true;return;}
+    if(a==="fechar"){
+      if(modo!=="conta" || (uid && acesso.status==="aprovado")) panel().hidden=true;
+      else mensagem("Acesso à conta pendente. Escolha Continuar como visitante ou Sair da conta.");
+      return;
+    }
     if(a==="sair"){
       if(auth)await sdk.signOut(auth);
       limpar();guardarModo("visitante");location.reload();return;
