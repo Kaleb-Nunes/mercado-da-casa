@@ -11,6 +11,7 @@ const ler = (p) => fs.readFileSync(path.join(root, p), "utf8");
 const rules = ler("firestore.rules");
 const html = ler("index.html");
 const sw = ler("sw.js");
+const headers = ler("_headers");
 let ok = 0;
 function t(nome, teste) {
   try { teste(); ++ok; console.log("OK " + nome); }
@@ -75,5 +76,13 @@ t("SW não intercepta dados de API, JSON desconhecido, URLs com query ou outros 
   assert.equal(capturada(h,"vendor/ocr/worker.min.js"),true);
   assert.equal(capturada(h,"vendor/ocr/segredo.txt"),false);
 });
-console.log("Testes de segurança aprovados: " + ok + "/7");
+t("Cloudflare exige CSP, antiframing e bloqueio de scripts por atributo", () => {
+  assert.match(headers, /Content-Security-Policy:/);
+  assert.match(headers, /frame-ancestors 'none'/);
+  assert.match(headers, /script-src-attr 'none'/);
+  assert.match(headers, /object-src 'none'/);
+  assert.match(headers, /X-Frame-Options: DENY/);
+  assert.match(headers, /Permissions-Policy:/);
+});
+console.log("Testes de segurança aprovados: " + ok + "/8");
 if(process.exitCode) process.exit(process.exitCode);
