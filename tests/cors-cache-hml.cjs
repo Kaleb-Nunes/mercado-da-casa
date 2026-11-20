@@ -25,7 +25,11 @@ async function main(){
   if(acac.toLowerCase()==="true" && (acao==="*"||acao===origem)) falhas.push(path+": CORS permite credenciais para origem não confiável");
   if(path==="" && !h["content-security-policy"].includes("object-src 'none'"))falhas.push("CSP obrigatória ausente");
   if(path==="elida-firebase-config.js" && !h["cache-control"].includes("no-store"))falhas.push("Cache-control no-store ausente na configuração pública");
-  if(r.status!==200)falhas.push(path+": HTTP "+r.status);
+  // Cloudflare Pages redireciona /index.html para / (308): comportamento esperado.
+  const redirecionaIndex=path==="index.html" && [301,302,307,308].includes(r.status)
+    && !!r.headers.get("location")
+    && new URL(r.headers.get("location"),base).origin===new URL(base).origin;
+  if(r.status!==200 && !redirecionaIndex)falhas.push(path+": HTTP "+r.status);
  }
  const r=await pedir("index.html","GET");
  if(r.ok){
