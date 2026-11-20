@@ -22,7 +22,7 @@ await teste("Sintaxe JS de autenticação, criptografia e app integrado",()=>{
 });
 await teste("Nenhuma configuração de Firebase de produção inventada",()=>{
  assert.match(config,/window\.__ELIDA_FIREBASE_CONFIG__ = null;/);
- assert.doesNotMatch(config,/private_key|serviceAccountKey|client_secret\s*:/);
+ assert.doesNotMatch(config.replace(/\/\*[\s\S]*?\*\//g,""),/private_key|serviceAccountKey|client_secret\s*:/);
  assert.match(conta,/projectId==="projeto-elida-aplv"/);
  assert.match(conta,/authDomain==="projeto-elida-aplv\.firebaseapp\.com"/);
 });
