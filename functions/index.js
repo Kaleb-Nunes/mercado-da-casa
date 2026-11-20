@@ -49,7 +49,7 @@ const QUOTAS_DIARIAS = Object.freeze({
 });
 async function limitarChamadas(uid,acao){
   const max=QUOTAS_DIARIAS[acao];
-  if(!max || !validacao.idCasaValido("AbC_defGhijkLMNoPQrsTUVwxyz1"))throw new Error("Quota indisponível");
+  if(!max)throw new Error("Quota indisponível");
   const ref=db.collection("limitesAcessos").doc(uid+"_"+acao);
   const dia=validacao.diaUTC(Date.now());
   await db.runTransaction(async(tx)=>{
