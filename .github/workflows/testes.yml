@@ -21,6 +21,14 @@ jobs:
         run: node tests/rodar-testes.js
       - name: Segurança de acesso e cache
         run: node tests/rodar-seguranca.js
+
+      - name: Testes reais de permissões (Firestore Emulator)
+        env:
+          GCLOUD_PROJECT: demo-elida-acl
+          CI: "true"
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts firebase-tools@14.24.0 firebase@12.4.0 @firebase/rules-unit-testing@5.0.0
+          npx firebase emulators:exec --only firestore --project demo-elida-acl "node tests/emulator-acesso.cjs"
       - name: Rótulos reais (diagnóstico, não bloqueia)
         run: node tests/rodar-rotulos.js || true
       - name: Pacote de homologação
