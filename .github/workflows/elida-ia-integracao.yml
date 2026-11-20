@@ -21,6 +21,7 @@ jobs:
         run: |
           node --check elida-backup-seguro.js
           node --check elida-conta.js
+          node --check elida-aprovacao.js
           node --check elida-app.js
           node --check elida-firebase-config.js
           node tests/rodar-seguranca.js
@@ -32,7 +33,7 @@ jobs:
       - name: Preparar pacote estático apenas para homologação
         run: |
           mkdir -p dist
-          cp index.html elida-app.js ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js elida-backup-seguro.js elida-conta.js elida-firebase-config.js sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png _headers dist/
+          cp index.html elida-app.js ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js elida-backup-seguro.js elida-conta.js elida-aprovacao.js elida-firebase-config.js sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png _headers dist/
           cp -r vendor fonts dist/
           (cd dist && zip -qr ../elida-ia-rc-segura.zip .)
       - uses: actions/upload-artifact@v4
