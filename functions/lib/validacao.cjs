@@ -44,7 +44,30 @@ function usuarioVerificado(auth) {
   return { uid: auth.uid, email: emailNormalizado(auth.token.email) };
 }
 
+
+/* Limites defensivos, aplicados transacionalmente por Firebase Functions.
+   O estado de controle vive em documentos privados inacessíveis ao cliente. */
+const LIMITES = Object.freeze({
+  casasPorUsuario: 3,
+  casasPorDia: 1,
+  convitesPorCasaDia: 10
+});
+function novoConsumo(controle, dia, limite, totalMaximo){
+  if(typeof dia!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(dia))throw new TypeError("Dia de quota inválido");
+  if(!Number.isInteger(limite) || limite<=0)throw new TypeError("Limite de quota inválido");
+  const c=controle && typeof controle==="object" ? controle : {};
+  const contagem=c.dia===dia ? (Number.isSafeInteger(c.contagemDia) ? c.contagemDia : 0) : 0;
+  const total=Number.isSafeInteger(c.total) ? c.total : 0;
+  if(contagem>=limite || (Number.isInteger(totalMaximo) && total>=totalMaximo)){
+    const erro=new Error("Limite de operações atingido. Tente novamente mais tarde.");
+    erro.code="resource-exhausted";
+    throw erro;
+  }
+  return {dia,contagemDia:contagem+1,total:total+1};
+}
+function diaUTC(data){return new Date(data).toISOString().slice(0,10);}
+
 module.exports = {
   textoCurto, emailNormalizado, idCasaValido,
-  tokenConviteValido, usuarioVerificado
+  tokenConviteValido, usuarioVerificado, LIMITES, novoConsumo, diaUTC
 };
