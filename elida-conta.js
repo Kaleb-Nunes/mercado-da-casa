@@ -17,6 +17,11 @@
       && typeof CONFIG.apiKey==="string" && CONFIG.apiKey.length>20
       && typeof CONFIG.appId==="string" && CONFIG.appId.length>5;
   }
+  function usuarioPermitido(u){
+    return !!u && !u.isAnonymous && !!u.email && u.emailVerified===true
+      && Array.isArray(u.providerData)
+      && u.providerData.some(function(p){return p.providerId==="google.com" || p.providerId==="password";});
+  }
   function sufixo(){
     if(modo!=="conta")return "";
     return PREFIXO_CONTA+(uid || "bloqueado")+":";
@@ -105,7 +110,7 @@
     if(modo==="conta"){
       try{
         await carregarSDK();
-        if(auth && auth.currentUser && (auth.currentUser.emailVerified || !auth.currentUser.providerData.some(p=>p.providerId==="password"))){
+        if(auth && usuarioPermitido(auth.currentUser)){
           uid=auth.currentUser.uid;
         }else{uid="";}
       }catch(e){uid="";}
@@ -156,7 +161,7 @@
         mensagem("Verifique seu e-mail antes de acessar a conta.");return;
       }
     }else return;
-    if(!auth.currentUser)throw new Error("Sem usuário");
+    if(!usuarioPermitido(auth.currentUser)){ await sdk.signOut(auth); throw new Error("Conta não verificada ou provedor não permitido"); }
     limpar();uid=auth.currentUser.uid;guardarModo("conta");location.reload();
   }
   root.ElidaConta=Object.freeze({bootstrap:bootstrap,sufixo:sufixo,abrir:mostrar,configurada:configValida});
