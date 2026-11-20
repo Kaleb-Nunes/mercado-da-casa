@@ -34,7 +34,10 @@ service cloud.firestore {
       // Dados compartilhados: o usuário deve possuir vínculo ATIVO nesta casa.
       match /{colecao}/{docId} {
         allow get, list, create, update, delete: if membroAtivo(casaId)
-          && colecao in ['itens', 'gastos', 'meses', 'config', 'ofertas'];
+          && colecao in ['itens', 'gastos', 'meses', 'config', 'ofertas']
+          // Informações sobre restrições alimentares são privadas por padrão.
+          // Apenas config/geral é compartilhável; config/dieta permanece local.
+          && (colecao != 'config' || docId == 'geral');
       }
 
       // Convites e tokens são exclusivos do backend confiável.
