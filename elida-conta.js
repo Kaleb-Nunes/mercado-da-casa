@@ -7,7 +7,8 @@
   var CONFIG=root.__ELIDA_FIREBASE_CONFIG__ || null;
   var CHAVE_MODO="elida-modo-identidade-v1";
   var PREFIXO_CONTA="conta:";
-  var modo="visitante", uid="",auth=null, sdk=null, pronta=null, painel=null;
+  var modo="visitante", uid="",auth=null, sdk=null, pronta=null, painel=null, firebaseApp=null;
+  var acesso={status:"nao_solicitado",papel:"usuario"};
   var iniciarApp=false;
   function modoGuardado(){try{return localStorage.getItem(CHAVE_MODO)==="conta"?"conta":"visitante";}catch(e){return "visitante";}}
   function guardarModo(m){try{localStorage.setItem(CHAVE_MODO,m);}catch(e){}}
@@ -54,6 +55,13 @@
       '<button type="button" data-elida-action="login">Entrar por e-mail</button>'+
       '<button type="button" data-elida-action="cadastro">Criar conta</button>'+
       '<button type="button" data-elida-action="recuperar">Recuperar senha</button>'+
+      '<button type="button" data-elida-action="solicitar" hidden>Solicitar acesso ao Elida</button>'+
+      '<button type="button" data-elida-action="atualizar-status" hidden>Verificar aprovação</button>'+
+      '<section data-elida-admin hidden><h3>Administração de acessos</h3>'+
+      '<p>Pedidos aguardando sua aprovação. A senha dos usuários nunca é exibida.</p>'+
+      '<button type="button" data-elida-action="listar-pedidos">Ver solicitações pendentes</button>'+
+      '<button type="button" data-elida-action="listar-contas">Gerenciar usuários cadastrados</button>'+
+      '<div data-elida-lista role="region" aria-live="polite" aria-label="Contas e solicitações"></div></section>'+
       '<button type="button" data-elida-action="sair" hidden>Sair da conta</button>'+
       '<button type="button" data-elida-action="visitante">Continuar como visitante</button>'+
       '<button type="button" data-elida-action="fechar">Fechar</button></div></div>';
@@ -63,7 +71,7 @@
       var a=b.getAttribute("data-elida-action");
       if(a==="fechar" && modo!=="conta") {fundo.hidden=true;return;}
       b.disabled=true;
-      Promise.resolve(acao(a)).catch(function(e){
+      Promise.resolve(acao(a, b.dataset.uid)).catch(function(e){
         if(a!=="recuperar")mensagem("Não foi possível concluir. Verifique os dados, a conexão e as configurações de acesso.");
       }).finally(function(){b.disabled=false;});
     });
@@ -73,13 +81,61 @@
   }
   function mostrar(){
     var e=panel(), rotulo=e.querySelector("[data-elida-estado]");
-    var u=auth && auth.currentUser;
-    rotulo.textContent=u && modo==="conta" ? "Conta: "+(u.email || "autenticada")+" — dados locais separados do visitante. A sincronização familiar permanece desativada." : "Use uma conta Google ou e-mail verificado. Sem login, dados ficam no modo visitante local.";
-    e.querySelector('[data-elida-action="sair"]').hidden=!(u && modo==="conta");
+    var u=auth && auth.currentUser, valido=usuarioPermitido(u) && modo==="conta";
+    var aprovado=valido && acesso.status==="aprovado";
+    var pendente=valido && acesso.status!=="aprovado";
+    var cadastro=e.querySelectorAll('[data-elida-action="google"],[data-elida-action="login"],[data-elida-action="cadastro"],[data-elida-action="recuperar"]');
+    cadastro.forEach(function(b){b.hidden=!!valido;});
+    e.querySelectorAll('label').forEach(function(lbl){lbl.hidden=!!valido;});
+    e.querySelector('[data-elida-action="sair"]').hidden=!valido;
+    e.querySelector('[data-elida-action="solicitar"]').hidden=!(pendente && acesso.status==="nao_solicitado");
+    e.querySelector('[data-elida-action="atualizar-status"]').hidden=!pendente;
+    e.querySelector('[data-elida-admin]').hidden=!(aprovado && acesso.papel==="superadmin");
+    if(aprovado){
+      rotulo.textContent="Conta aprovada: "+(u.email || "autenticada")+
+        (acesso.papel==="superadmin"?" — Superadministrador":" — Usuário")+
+        ". Dados pessoais permanecem separados por conta.";
+    }else if(pendente){
+      var detalhes={
+        nao_solicitado:"Sua conta ainda não solicitou a liberação de acesso.",
+        pendente:"Cadastro enviado. Aguarde a aprovação do superadministrador.",
+        rejeitado:"Esta solicitação não foi aprovada.",
+        bloqueado:"O acesso desta conta está bloqueado.",
+        indisponivel:"Não foi possível confirmar as permissões com o servidor. Acesso protegido até nova verificação."
+      };
+      rotulo.textContent="Conta: "+(u.email || "verificada")+". "+(detalhes[acesso.status] || detalhes.indisponivel);
+    }else{
+      rotulo.textContent="Use uma conta Google ou e-mail verificado. Sem login, seus dados ficam apenas neste aparelho.";
+    }
     if(!configValida())mensagem("Login aguardando configuração do aplicativo Web no Firebase. O modo visitante permanece disponível.");
+    else if(pendente && acesso.status==="indisponivel")
+      mensagem("Aprovação indisponível: verifique a conexão, o App Check e as Functions. Conta não liberada.");
     else mensagem("");
     e.hidden=false;
-    e.querySelector('[data-elida-action="visitante"]').focus();
+    var alvo=e.querySelector('[data-elida-action="visitante"]');
+    if(alvo)alvo.focus();
+  }
+  async function listarAdmin(tipo){
+    if(acesso.papel!=="superadmin" || acesso.status!=="aprovado")throw Error("Sem autorização");
+    var api=root.ElidaAprovacao;
+    var dados=tipo==="pedidos" ? await api.listarSolicitacoes() : await api.listarAcessos();
+    var area=panel().querySelector("[data-elida-lista]");
+    while(area.firstChild)area.removeChild(area.firstChild);
+    if(!dados.length){area.textContent="Nenhuma conta nesta lista.";return;}
+    dados.forEach(function(d){
+      if(!d || typeof d.uid!=="string" || !/^[A-Za-z0-9_-]{6,128}$/.test(d.uid))return;
+      var linha=document.createElement("div");linha.className="elida-admin-linha";
+      var nome=document.createElement("span");
+      nome.textContent=String(d.email || "Usuário sem e-mail")+" · "+String(d.status || "pendente");
+      linha.appendChild(nome);
+      var decisoes=tipo==="pedidos"?["aprovar","rejeitar"]:["aprovar","bloquear"];
+      decisoes.forEach(function(decisao){
+        var b=document.createElement("button");b.type="button";b.textContent=decisao==="aprovar"?"Aprovar":decisao==="rejeitar"?"Rejeitar":"Bloquear";
+        b.setAttribute("data-elida-action",decisao);b.dataset.uid=d.uid;
+        linha.appendChild(b);
+      });
+      area.appendChild(linha);
+    });
   }
   async function carregarSDK(){
     if(!configValida())throw new Error("Firebase Web não configurado");
@@ -92,6 +148,7 @@
       sdk=Object.assign({},m[1]);
       var app=m[0].getApps().filter(x=>x.name==="elida-identidade")[0] ||
         m[0].initializeApp(CONFIG,"elida-identidade");
+      firebaseApp=app;
       auth=sdk.getAuth(app);
       await sdk.setPersistence(auth,sdk.browserSessionPersistence);
       await new Promise(function(resolve,reject){
@@ -111,9 +168,10 @@
       try{
         await carregarSDK();
         if(auth && usuarioPermitido(auth.currentUser)){
-          uid=auth.currentUser.uid;
+          acesso=await root.ElidaAprovacao.verificar(firebaseApp,auth);
+          uid=acesso.status==="aprovado" ? auth.currentUser.uid : "";
         }else{uid="";}
-      }catch(e){uid="";}
+      }catch(e){uid="";acesso={status:"indisponivel",papel:"usuario"};}
     }
     /* Botão criado antes da aplicação, sem iniciar rede no modo visitante. */
     var botao=document.createElement("button");
@@ -127,7 +185,7 @@
       setTimeout(mostrar,0);
     }
   }
-  async function acao(a){
+  async function acao(a, alvoUid){
     if(a==="visitante"){
       limpar();guardarModo("visitante");
       if(auth)await sdk.signOut(auth);
@@ -139,6 +197,29 @@
       limpar();guardarModo("visitante");location.reload();return;
     }
     await carregarSDK();
+    if(a==="atualizar-status"){
+      if(!usuarioPermitido(auth.currentUser))throw Error("É necessário entrar e verificar e-mail");
+      acesso=await root.ElidaAprovacao.verificar(firebaseApp,auth);
+      if(acesso.status==="aprovado"){location.reload();return;}
+      mostrar();return;
+    }
+    if(a==="solicitar"){
+      if(!usuarioPermitido(auth.currentUser))throw Error("É necessário entrar e verificar e-mail");
+      await root.ElidaAprovacao.configurar(firebaseApp,auth);
+      acesso=await root.ElidaAprovacao.solicitar();
+      mostrar();mensagem("Solicitação registrada. Aguarde a análise do administrador.");return;
+    }
+    if(a==="listar-pedidos"||a==="listar-contas"){
+      await listarAdmin(a==="listar-pedidos"?"pedidos":"contas");return;
+    }
+    if(a==="aprovar"||a==="rejeitar"||a==="bloquear"){
+      if(acesso.papel!=="superadmin"||acesso.status!=="aprovado")throw Error("Sem autorização");
+      if(typeof alvoUid!=="string"||!/^[A-Za-z0-9_-]{6,128}$/.test(alvoUid))throw Error("Usuário inválido");
+      if(!window.confirm("Confirma "+a+" para esta conta?"))return;
+      await root.ElidaAprovacao.decidir(alvoUid,a);
+      await listarAdmin(a==="bloquear"?"contas":"pedidos");
+      mensagem("Permissão atualizada no servidor.");return;
+    }
     var email=campo("email").trim(),senha=campo("password");
     if(a==="recuperar"){
       if(!email){mensagem("Informe seu e-mail.");return;}
@@ -162,7 +243,7 @@
       }
     }else return;
     if(!usuarioPermitido(auth.currentUser)){ await sdk.signOut(auth); throw new Error("Conta não verificada ou provedor não permitido"); }
-    limpar();uid=auth.currentUser.uid;guardarModo("conta");location.reload();
+    limpar();guardarModo("conta");location.reload();
   }
   root.ElidaConta=Object.freeze({bootstrap:bootstrap,sufixo:sufixo,abrir:mostrar,configurada:configValida});
 })(typeof window!=="undefined"?window:this);
