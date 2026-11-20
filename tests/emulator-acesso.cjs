@@ -66,11 +66,15 @@ async function main(){
     await deveNegar("admin do cliente não lê histórico administrativo",getDoc(doc(dono,"auditoriaAcessos","evento1")));
     await devePermitir("membro ativo lê sua casa",getDoc(doc(dono,"casas",casa)));
     await devePermitir("membro ativo lê item da própria casa",getDoc(doc(dono,"casas",casa,"itens","item1")));
-    await devePermitir("membro ativo escreve item próprio",setDoc(doc(dono,"casas",casa,"itens","item2"),{nome:"Arroz fictício"}));
+    await deveNegar("membro aprovado não contorna quota gravando diretamente no Firestore",setDoc(doc(dono,"casas",casa,"itens","item2"),{nome:"Arroz fictício"}));
     await devePermitir("membro ativo lista itens da própria casa",getDocs(collection(dono,"casas",casa,"itens")));
     await deveNegar("outro usuário autenticado não lê a casa",getDoc(doc(estranho,"casas",casa)));
     await deveNegar("outro usuário autenticado não lê item",getDoc(doc(estranho,"casas",casa,"itens","item1")));
     await deveNegar("outro usuário autenticado não altera item",setDoc(doc(estranho,"casas",casa,"itens","invadido"),{nome:"Não deve entrar"}));
+    await deveNegar("usuário aprovado não pode sobrescrever 1 MB de dados para aumentar cobrança",
+      setDoc(doc(dono,"casas",casa,"itens","spam"),{nome:"A".repeat(300000)}));
+    await deveNegar("usuário aprovado não pode excluir dados diretamente",
+      deleteDoc(doc(dono,"casas",casa,"itens","item1")));
     await deveNegar("membro removido não lê",getDoc(doc(removido,"casas",casa,"itens","item1")));
     await deveNegar("usuário sem autenticação não lê",getDoc(doc(semLogin,"casas",casa,"itens","item1")));
     await deveNegar("usuário sem autenticação não escreve",setDoc(doc(semLogin,"casas",casa,"itens","item1"),{nome:"alterado"}));
@@ -87,8 +91,8 @@ async function main(){
     await deveNegar("membro ativo não lê token de convite",getDoc(doc(dono,"casas",casa,"convites","tokenHash")));
     await deveNegar("membro ativo não cria convite no cliente",setDoc(doc(dono,"casas",casa,"convites","tokenHash"),{email:"alvo@example.test"}));
     await deveNegar("membro ativo não lista convites",getDocs(collection(dono,"casas",casa,"convites")));
-    assert.equal(feitos,30);
-    console.log("FIRESTORE EMULATOR: "+feitos+"/30 cenários de autorização aprovados");
+    assert.equal(feitos,32);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/32 cenários de autorização aprovados");
   } finally {await env.cleanup();}
 }
 main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
