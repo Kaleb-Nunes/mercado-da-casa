@@ -56,11 +56,13 @@ service cloud.firestore {
 
       // Dados compartilhados: o usuário deve possuir vínculo ATIVO nesta casa.
       match /{colecao}/{docId} {
-        allow get, list: if membroAtivo(casaId)
+        allow get: if membroAtivo(casaId)
           && colecao in ['itens', 'gastos', 'meses', 'config', 'ofertas']
           // Informações sobre restrições alimentares são privadas por padrão.
           // Apenas config/geral é compartilhável; config/dieta permanece local.
           && (colecao != 'config' || docId == 'geral');
+        // Consultas de coleção em massa também passam a exigir API com quota.
+        allow list: if false;
         // Sem gravações diretamente do browser: bypassariam quotas e limites
         // financeiros. Futuras gravações devem passar por Functions validadas.
         allow create, update, delete: if false;
