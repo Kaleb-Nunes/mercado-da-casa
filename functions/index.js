@@ -40,6 +40,27 @@ function entrada(fn) {
 const ADMIN_REF = db.collection("configuracoesSeguranca").doc("superadmin");
 const USUARIOS_REF = db.collection("acessosUsuarios");
 const AUDITORIA_REF = db.collection("auditoriaAcessos");
+
+/* Controle de chamadas por UID: validação e contagem no servidor em transação
+   para impedir alteração de limites pelo navegador ou múltiplas abas. */
+const QUOTAS_DIARIAS = Object.freeze({
+  consulta:60,solicitacao:4,listaAdmin:80,decisaoAdmin:40,
+  aceitarConvite:10,revogarMembro:30
+});
+async function limitarChamadas(uid,acao){
+  const max=QUOTAS_DIARIAS[acao];
+  if(!max || !validacao.idCasaValido("AbC_defGhijkLMNoPQrsTUVwxyz1"))throw new Error("Quota indisponível");
+  const ref=db.collection("limitesAcessos").doc(uid+"_"+acao);
+  const dia=validacao.diaUTC(Date.now());
+  await db.runTransaction(async(tx)=>{
+    const registro=await tx.get(ref);
+    let prox;
+    try{prox=validacao.novoConsumo(registro.exists?registro.data():null,dia,max);}
+    catch(err){throw new HttpsError("resource-exhausted","Limite diário desta operação atingido");}
+    tx.set(ref,prox);
+  });
+}
+
 function resumoRegistro(s){return s && s.exists ? acesso.estadoSolicitacao(s.data()) : "nao_solicitado";}
 async function superadmin(u){
   const snap = await ADMIN_REF.get();
@@ -59,6 +80,7 @@ async function usuarioAprovado(req){
 /* A consulta da própria situação não concede acesso a documentos familiares. */
 exports.consultarMeuAcesso = onCall(OPCOES,async(req)=>{
   const u=usuario(req);
+  await limitarChamadas(u.uid,"consulta");
   if(await superadmin(u))return {status:"aprovado",administrador:true};
   const registro=await USUARIOS_REF.doc(u.uid).get();
   const d=registro.exists?registro.data():null;
@@ -67,6 +89,7 @@ exports.consultarMeuAcesso = onCall(OPCOES,async(req)=>{
 /* Primeira solicitação atômica; usuário recusado não pode auto-reativar. */
 exports.solicitarAcesso = onCall(OPCOES,async(req)=>{
   const u=usuario(req);
+  await limitarChamadas(u.uid,"solicitacao");
   if(await superadmin(u))return {status:"aprovado",administrador:true};
   const ref=USUARIOS_REF.doc(u.uid);
   const status=await db.runTransaction(async(tx)=>{
@@ -84,6 +107,7 @@ exports.solicitarAcesso = onCall(OPCOES,async(req)=>{
 /* Nunca é permitido atribuir o papel de superadmin pelo cliente. */
 exports.listarSolicitacoes = onCall(OPCOES,async(req)=>{
   const u=usuario(req);await exigirSuperadmin(u);
+  await limitarChamadas(u.uid,"listaAdmin");
   const docs=await USUARIOS_REF.orderBy("solicitadoEm","desc").limit(100).get();
   return {usuarios:docs.docs.map(s=>({
     uid:s.id,
@@ -93,6 +117,7 @@ exports.listarSolicitacoes = onCall(OPCOES,async(req)=>{
 });
 exports.decidirAcesso = onCall(OPCOES,async(req)=>{
   const u=usuario(req);await exigirSuperadmin(u);
+  await limitarChamadas(u.uid,"decisaoAdmin");
   const alvo=req.data && req.data.uid;
   const acao=req.data && req.data.acao;
   try{acesso.validarAcao(acao,alvo,u.uid);}
@@ -212,6 +237,7 @@ exports.criarConvite = onCall(OPCOES, async (req) => {
 /** O uso do token é transacional e está associado ao e-mail verificado. */
 exports.aceitarConvite = onCall(OPCOES, async (req) => {
   const u = await usuarioAprovado(req);
+  await limitarChamadas(u.uid,"aceitarConvite");
   const casaId = req.data && req.data.casaId;
   const token = req.data && req.data.token;
   const pessoa = entrada(() => validacao.textoCurto(req.data && req.data.pessoa, "Seu nome", 60));
@@ -250,6 +276,7 @@ exports.aceitarConvite = onCall(OPCOES, async (req) => {
 /** Apenas o titular pode desativar outra pessoa; não revoga o próprio titular. */
 exports.revogarMembro = onCall(OPCOES, async (req) => {
   const u = await usuarioAprovado(req);
+  await limitarChamadas(u.uid,"revogarMembro");
   const casaId = req.data && req.data.casaId;
   const uid = req.data && req.data.uid;
   if (!validacao.idCasaValido(casaId) ||
