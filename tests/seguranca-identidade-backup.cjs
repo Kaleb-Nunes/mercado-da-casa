@@ -6,6 +6,7 @@ const {webcrypto}=require("node:crypto");
 assert.ok(globalThis.crypto && globalThis.crypto.subtle, "Node WebCrypto indisponível");
 const Backup=require("../elida-backup-seguro.js");
 const authSource=fs.readFileSync("elida-conta.js","utf8");
+const approvalSource=fs.readFileSync("elida-aprovacao.js","utf8");
 const appSource=fs.readFileSync("elida-app.js","utf8");
 const htmlSource=fs.readFileSync("index.html","utf8");
 const cfg=fs.readFileSync("elida-firebase-config.js","utf8");
@@ -19,11 +20,15 @@ async function executar(){
  await test("Javascript principal e código de login possuem sintaxe válida",async()=>{
    new vm.Script(appSource,{filename:"elida-app.js"});
    new vm.Script(authSource,{filename:"elida-conta.js"});
+   new vm.Script(approvalSource,{filename:"elida-aprovacao.js"});
+   assert.match(htmlSource,/<script src="elida-aprovacao\.js"><\/script>/);
    assert.match(htmlSource,/<script src="elida-app\.js"><\/script>/);
    assert.doesNotMatch(htmlSource,/<script>\s*[(]/);
  });
  await test("CSP impede JavaScript inline e somente permite scripts confiáveis",()=>{
-   assert.match(headers,/script-src 'self' https:\/\/apis\.google\.com\/js\/ https:\/\/www\.gstatic\.com 'wasm-unsafe-eval';/);
+   assert.match(headers,/script-src 'self'[^;]*https:\/\/www\.gstatic\.com/);
+   assert.match(headers,/https:\/\/www\.google\.com\/recaptcha\//);
+   assert.match(headers,/https:\/\/firebaseappcheck\.googleapis\.com/);
    assert.doesNotMatch(headers,/script-src[^;]*'unsafe-inline'/);
    assert.match(headers,/Cross-Origin-Opener-Policy: same-origin-allow-popups/);
    assert.match(headers,/frame-ancestors 'none'/);
@@ -41,6 +46,12 @@ async function executar(){
    assert.doesNotMatch(cfg,/private_key\s*:/);
    assert.doesNotMatch(cfg,/serviceAccount\s*:/);
    assert.match(authSource,/projectId==="projeto-elida-aplv"/);
+   assert.match(cfg,/__ELIDA_APP_CHECK_SITE_KEY__ = null/);
+   assert.match(authSource,/ElidaAprovacao\.verificar\(firebaseApp,auth\)/);
+   assert.match(authSource,/acesso\.status==="aprovado"/);
+   assert.match(approvalSource,/ReCaptchaEnterpriseProvider/);
+   assert.match(approvalSource,/listarSolicitacoes/);
+   assert.match(approvalSource,/decidirAcesso/);
  });
  await test("backup cifrado permite restaurar campos de compras e perfis",async()=>{
    const original={formato:"elida-backup",versao:2,estado:{items:[{nome:"AVEIA",preco:9.5}],meses:{"2026-11":{orc:500,gastos:[]}}},perfis:{perfis:[{apelido:"Criança de teste",restricoes:[{tipo:"LEITE"}]}]}};
