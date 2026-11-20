@@ -13,7 +13,8 @@ OUT=ROOT/"qa-evidencias"
 OUT.mkdir(exist_ok=True)
 HTTP=ThreadingHTTPServer(("127.0.0.1",0), lambda *a,**kw: SimpleHTTPRequestHandler(*a,directory=str(ROOT),**kw))
 threading.Thread(target=HTTP.serve_forever,daemon=True).start()
-BASE=f"http://127.0.0.1:{HTTP.server_port}/"
+BASE=os.environ.get("ELIDA_QA_BASE",f"http://127.0.0.1:{HTTP.server_port}/")
+REQUIRE_ADMIN=os.environ.get("ELIDA_QA_REQUIRE_ADMIN","1")=="1"
 results=[]
 
 def check(pg,name,fn):
@@ -112,11 +113,12 @@ def account(pg):
     pg.locator("#elida-conta-painel").wait_for(state="visible")
     assert pg.locator('[data-elida-action="google"]').count()==1
     assert pg.locator('[data-elida-action="cadastro"]').count()==1
-    assert pg.locator('[data-elida-action="solicitar"]').count()==1
-    assert pg.locator('[data-elida-action="lista"]').count()==1
-    assert pg.locator('[data-elida-permissao]').count()==1
-    # App Check is not configured: no privileged approval button should be clickable.
-    assert pg.locator('[data-elida-action="lista"]').is_hidden()
+    if REQUIRE_ADMIN:
+        assert pg.locator('[data-elida-action="solicitar"]').count()==1
+        assert pg.locator('[data-elida-action="lista"]').count()==1
+        assert pg.locator('[data-elida-permissao]').count()==1
+        # Without App Check, no privileged approval button is clickable.
+        assert pg.locator('[data-elida-action="lista"]').is_hidden()
     visible_click(pg,'#elida-conta-painel [data-elida-action="fechar"]')
     pg.locator("#elida-conta-painel").wait_for(state="hidden")
 
@@ -151,7 +153,7 @@ try:
 finally:
     HTTP.shutdown()
 passe=sum(1 for _,ok,_ in results if ok)
-print("RESULTADO UI: "+str(passe)+"/"+str(len(results)),flush=True)
+print("RESULTADO UI em "+BASE+": "+str(passe)+"/"+str(len(results)),flush=True)
 if passe!=len(results):
     for name,ok,detail in results:
         if not ok:print("FALHA:",name,detail,flush=True)
