@@ -50,3 +50,27 @@ test("somente auth com email verificado e não anônimo é aceito", () => {
   assert.throws(() => usuarioVerificado(autenticar("custom", true, "a@b.com")), { code: "permission-denied" });
   assert.throws(() => usuarioVerificado(autenticar("google.com", false, "a@b.com")), { code: "permission-denied" });
 });
+
+
+test("limites de famílias são transacionais, por dia e por usuário", () => {
+  const {LIMITES, novoConsumo, diaUTC}=require("../lib/validacao.cjs");
+  assert.equal(LIMITES.casasPorDia,1);
+  assert.equal(LIMITES.casasPorUsuario,3);
+  assert.equal(diaUTC("2026-11-20T12:30:00Z"),"2026-11-20");
+  const primeiro=novoConsumo(null,"2026-11-20",1,3);
+  assert.deepEqual(primeiro,{dia:"2026-11-20",contagemDia:1,total:1});
+  assert.throws(()=>novoConsumo(primeiro,"2026-11-20",1,3),{code:"resource-exhausted"});
+  const segundo=novoConsumo(primeiro,"2026-11-21",1,3);
+  const terceiro=novoConsumo(segundo,"2026-11-22",1,3);
+  assert.throws(()=>novoConsumo(terceiro,"2026-11-23",1,3),{code:"resource-exhausted"});
+});
+test("convites limitados por casa/dia sem consumir cotas em rejeições", () => {
+  const {novoConsumo, LIMITES}=require("../lib/validacao.cjs");
+  let c=null;
+  for(let i=0;i<LIMITES.convitesPorCasaDia;i++) c=novoConsumo(c,"2026-11-20",LIMITES.convitesPorCasaDia);
+  assert.equal(c.contagemDia,10);
+  assert.throws(()=>novoConsumo(c,"2026-11-20",LIMITES.convitesPorCasaDia),{code:"resource-exhausted"});
+  const novo=novoConsumo(c,"2026-11-21",LIMITES.convitesPorCasaDia);
+  assert.equal(novo.contagemDia,1);
+  assert.equal(novo.total,11);
+});
