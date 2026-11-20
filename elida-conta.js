@@ -77,9 +77,16 @@
     rotulo.textContent=u && modo==="conta" ? "Conta: "+(u.email || "autenticada")+" — dados locais separados do visitante. A sincronização familiar permanece desativada." : "Use uma conta Google ou e-mail verificado. Sem login, dados ficam no modo visitante local.";
     e.querySelector('[data-elida-action="sair"]').hidden=!(u && modo==="conta");
     if(!configValida())mensagem("Login aguardando configuração do aplicativo Web no Firebase. O modo visitante permanece disponível.");
-    else mensagem("");
+    else mensagem("Preparando o login seguro...");
     e.hidden=false;
     e.querySelector('[data-elida-action="visitante"]').focus();
+    /* Inicia o SDK somente após o visitante abrir Conta, não na inicialização da PWA.
+       Pré-carregar antes do segundo toque reduz risco de popup Google bloqueado no celular. */
+    if(configValida())carregarSDK().then(function(){
+      if(!e.hidden)mensagem("");
+    },function(){
+      if(!e.hidden)mensagem("Não foi possível preparar o login. Confira a conexão e os domínios autorizados do Firebase.");
+    });
   }
   async function carregarSDK(){
     if(!configValida())throw new Error("Firebase Web não configurado");
