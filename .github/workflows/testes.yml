@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -21,6 +23,8 @@ jobs:
         run: node tests/rodar-testes.js
       - name: Segurança de acesso e cache
         run: node tests/rodar-seguranca.js
+      - name: Bloquear segredos e arquivos privados no Git e histórico
+        run: node tests/segredos-git.cjs
       - name: Entradas não confiáveis, imagens e links
         run: node tests/rodar-entradas-nao-confiaveis.cjs
 
