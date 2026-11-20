@@ -37,7 +37,10 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(caches.open(CACHE_OCR).then((c) =>
       c.match(req).then((r) => r || fetch(req).then((res) => {
         if (res.ok && res.type === "basic" && !res.headers.has("set-cookie")
-            && res.headers.get("cache-control") !== "no-store") c.put(req, res.clone());
+            && !/private|no-store/i.test(res.headers.get("cache-control") || "")) {
+          const copia = res.clone();
+          c.put(req, copia);
+        }
         return res;
       }))));
     return;
