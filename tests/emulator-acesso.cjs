@@ -40,10 +40,12 @@ async function main(){
       }
       await setDoc(doc(db,"casas",casa,"membros",uRemovido),{ativo:false,nome:"Antigo membro"});
     });
-    const dono=env.authenticatedContext(uDono).firestore();
-    const estranho=env.authenticatedContext(uEstranho).firestore();
-    const removido=env.authenticatedContext(uRemovido).firestore();
+    const dono=env.authenticatedContext(uDono,{email_verified:true}).firestore();
+    const estranho=env.authenticatedContext(uEstranho,{email_verified:true}).firestore();
+    const removido=env.authenticatedContext(uRemovido,{email_verified:true}).firestore();
     const semLogin=env.unauthenticatedContext().firestore();
+    const naoVerificado=env.authenticatedContext(uDono,{email_verified:false}).firestore();
+    await deveNegar("e-mail não verificado não lê casa mesmo sendo dono",getDoc(doc(naoVerificado,"casas",casa)));
     await devePermitir("membro ativo lê sua casa",getDoc(doc(dono,"casas",casa)));
     await devePermitir("membro ativo lê item da própria casa",getDoc(doc(dono,"casas",casa,"itens","item1")));
     await devePermitir("membro ativo escreve item próprio",setDoc(doc(dono,"casas",casa,"itens","item2"),{nome:"Arroz fictício"}));
@@ -65,8 +67,8 @@ async function main(){
     await deveNegar("membro ativo não lê token de convite",getDoc(doc(dono,"casas",casa,"convites","tokenHash")));
     await deveNegar("membro ativo não cria convite no cliente",setDoc(doc(dono,"casas",casa,"convites","tokenHash"),{email:"alvo@example.test"}));
     await deveNegar("membro ativo não lista convites",getDocs(collection(dono,"casas",casa,"convites")));
-    assert.equal(feitos,21);
-    console.log("FIRESTORE EMULATOR: "+feitos+"/21 cenários de autorização aprovados");
+    assert.equal(feitos,22);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/22 cenários de autorização aprovados");
   } finally {await env.cleanup();}
 }
 main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
