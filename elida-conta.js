@@ -235,6 +235,10 @@
       renderSolicitacoes(novos.usuarios);
       mensagem("Decisão registrada no servidor.");return;
     }
+    if(!root.ElidaAprovacao || !root.ElidaAprovacao.disponivel()){
+      mensagem("Login e aprovação aguardam configuração segura do Firebase App Check. Você pode testar todas as telas no modo visitante.");
+      return;
+    }
     await carregarSDK();
     var email=campo("email").trim(),senha=campo("password");
     if(a==="recuperar"){
