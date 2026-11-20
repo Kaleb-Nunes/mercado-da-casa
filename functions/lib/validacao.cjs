@@ -36,7 +36,7 @@ function usuarioVerificado(auth) {
     throw error;
   }
   const provedor = auth.token && auth.token.firebase && auth.token.firebase.sign_in_provider;
-  if (!provedor || provedor === "anonymous" || auth.token.email_verified !== true) {
+  if (!["google.com", "password"].includes(provedor) || auth.token.email_verified !== true) {
     const error = new Error("Entre com Google ou e-mail verificado");
     error.code = "permission-denied";
     throw error;
