@@ -22,11 +22,18 @@ await teste("Sintaxe JS de autenticação, criptografia e app integrado",()=>{
  assert.doesNotMatch(markup, /<script>\s*\(async function/);
  new vm.Script(app,{filename:"elida-app.js"});
 });
-await teste("Nenhuma configuração de Firebase de produção inventada",()=>{
- assert.match(config,/window\.__ELIDA_FIREBASE_CONFIG__ = null;/);
- assert.doesNotMatch(config.replace(/\/\*[\s\S]*?\*\//g,""),/private_key|serviceAccountKey|client_secret\s*:/);
- assert.match(conta,/projectId==="projeto-elida-aplv"/);
- assert.match(conta,/authDomain==="projeto-elida-aplv\.firebaseapp\.com"/);
+await teste("Firebase Web público usa projeto certo e só permite homologação",()=>{
+ function carregar(host){const win={location:{hostname:host}};vm.runInNewContext(config,{window:win});return win.__ELIDA_FIREBASE_CONFIG__;}
+ const h=carregar("elida-homologacao.pages.dev");
+ assert.equal(h.projectId,"projeto-elida-aplv");
+ assert.equal(h.authDomain,"projeto-elida-aplv.firebaseapp.com");
+ assert.equal(h.appId,"1:90562321638:web:5959134668dcb4f0a42f27");
+ assert.equal(h.apiKey,"AIzaSyBIPtpWQ1fmsNTL9GZ2OiXO8D5x2DX8xu8");
+ assert.ok(carregar("feature-perfis-inteligentes.elida-homologacao.pages.dev"));
+ assert.equal(carregar("kaleb-nunes.github.io"),null);
+ assert.equal(carregar("elida-homologacao.pages.dev.atacante.example"),null);
+ assert.doesNotMatch(config,/getAnalytics\s*\(/);
+ assert.doesNotMatch(config,/private_key|serviceAccountKey|client_secret\s*:/);
 });
 await teste("Login não inicia rede para visitantes e não habilita sync familiar",()=>{
  assert.match(conta,/if\(modo==="conta"\)/);
