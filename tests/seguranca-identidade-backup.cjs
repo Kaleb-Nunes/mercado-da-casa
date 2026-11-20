@@ -9,7 +9,7 @@ const authSource=fs.readFileSync("elida-conta.js","utf8");
 const approvalSource=fs.readFileSync("elida-aprovacao.js","utf8");
 const appSource=fs.readFileSync("elida-app.js","utf8");
 const htmlSource=fs.readFileSync("index.html","utf8");
-const cfg=fs.readFileSync("elida-firebase-config.js","utf8");
+const cfg=fs.readFileSync("elida-supabase-config.js","utf8");
 const headers=fs.readFileSync("_headers","utf8");
 let pass=0;
 async function test(title,fn){
@@ -26,32 +26,26 @@ async function executar(){
    assert.doesNotMatch(htmlSource,/<script>\s*[(]/);
  });
  await test("CSP impede JavaScript inline e somente permite scripts confiáveis",()=>{
-   assert.match(headers,/script-src 'self'[^;]*https:\/\/www\.gstatic\.com/);
-   assert.match(headers,/https:\/\/www\.google\.com\/recaptcha\//);
-   assert.match(headers,/https:\/\/firebaseappcheck\.googleapis\.com/);
+   assert.match(headers,/script-src 'self' 'wasm-unsafe-eval';/);
+   assert.doesNotMatch(headers,/connect-src[^;]*\*/);
    assert.doesNotMatch(headers,/script-src[^;]*'unsafe-inline'/);
    assert.match(headers,/Cross-Origin-Opener-Policy: same-origin-allow-popups/);
    assert.match(headers,/frame-ancestors 'none'/);
    assert.match(headers,/X-Content-Type-Options: nosniff/);
  });
  await test("configuração Web pública só existe na homologação",()=>{
-   const execute=host=>{const w={location:{hostname:host}};vm.runInNewContext(cfg,{window:w});return w.__ELIDA_FIREBASE_CONFIG__;};
-   const c=execute("elida-homologacao.pages.dev");
-   assert.equal(c.projectId,"projeto-elida-aplv");
-   assert.equal(c.authDomain,"projeto-elida-aplv.firebaseapp.com");
-   assert.equal(c.appId,"1:90562321638:web:5959134668dcb4f0a42f27");
-   assert.ok(execute("localhost"));
-   assert.equal(execute("kaleb-nunes.github.io"),null);
-   assert.equal(execute("fake-elida-homologacao.pages.dev.example"),null);
-   assert.doesNotMatch(cfg,/private_key\s*:/);
-   assert.doesNotMatch(cfg,/serviceAccount\s*:/);
-   assert.match(authSource,/projectId==="projeto-elida-aplv"/);
-   assert.match(cfg,/__ELIDA_APP_CHECK_SITE_KEY__ = null/);
-   assert.match(authSource,/ElidaAprovacao\.verificar\(firebaseApp,auth\)/);
-   assert.match(authSource,/acesso\.status==="aprovado"/);
-   assert.match(approvalSource,/ReCaptchaEnterpriseProvider/);
-   assert.match(approvalSource,/listarSolicitacoes/);
-   assert.match(approvalSource,/decidirAcesso/);
+   const origem="https://teste.elida-homologacao.pages.dev";
+   function configurada(host,config){
+     const w={ELIDA_SUPABASE:config};
+     vm.runInNewContext(authSource,{window:w,location:{origin:host}});
+     return w.ElidaConta.configurada();
+   }
+   const publica={origem,url:"https://teste.supabase.co",chavePublicavel:"sb_publishable_teste"};
+   assert.equal(configurada(origem,publica),true);
+   assert.equal(configurada(origem+".example",publica),false);
+   assert.equal(configurada(origem,{...publica,chavePublicavel:"sb_secret_teste"}),false);
+   assert.equal(configurada(origem,{...publica,url:"https://teste.supabase.co.example"}),false);
+   assert.doesNotMatch(cfg,/sb_secret_[A-Za-z0-9]/);
  });
  await test("backup cifrado permite restaurar campos de compras e perfis",async()=>{
    const original={formato:"elida-backup",versao:2,estado:{items:[{nome:"AVEIA",preco:9.5}],meses:{"2026-11":{orc:500,gastos:[]}}},perfis:{perfis:[{apelido:"Criança de teste",restricoes:[{tipo:"LEITE"}]}]}};
@@ -95,20 +89,21 @@ async function executar(){
      createElement(){return {id:"",type:"",textContent:"",setAttribute(){},addEventListener(){}};},
      body:{appendChild(){}}
    };
-   const ctx={window:{__ELIDA_FIREBASE_CONFIG__:null},document,localStorage,setTimeout(){},console};
+   const ctx={URL,location:{href:"https://teste.example/"},window:{ELIDA_SUPABASE:null},document,localStorage,setTimeout(){},console};
    vm.createContext(ctx);
    vm.runInContext(authSource,ctx);
    await ctx.window.ElidaConta.bootstrap();
    assert.equal(ctx.window.ElidaConta.sufixo(),"");
    assert.equal(ctx.window.ElidaConta.configurada(),false);
-   dados.set("elida-modo-identidade-v1","conta");
-   const ctx2={window:{__ELIDA_FIREBASE_CONFIG__:null},document,localStorage,setTimeout(){},console};
+   dados.set("elida-modo-supabase-v1","conta");
+   const ctx2={URL,location:{href:"https://teste.example/"},window:{ELIDA_SUPABASE:null},document,localStorage,setTimeout(){},console};
    vm.createContext(ctx2);
    vm.runInContext(authSource,ctx2);
    await ctx2.window.ElidaConta.bootstrap();
-   assert.equal(ctx2.window.ElidaConta.sufixo(),"conta:bloqueado:");
+   assert.equal(ctx2.window.ElidaConta.sufixo(),"supabase:bloqueado:");
  });
  console.log("Integração autenticação/backup: "+pass+"/9 testes");
  if(process.exitCode)process.exit(process.exitCode);
 }
 executar().catch(e=>{console.error(e);process.exitCode=1;});
+
