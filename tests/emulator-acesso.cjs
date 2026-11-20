@@ -64,11 +64,13 @@ async function main(){
     await deveNegar("cliente não lista todas as casas",getDocs(collection(dono,"casas")));
     await deveNegar("membro de uma casa não lê outra",getDoc(doc(dono,"casas",outraCasa,"itens","item1")));
     await deveNegar("coleção desconhecida permanece negada",getDoc(doc(dono,"casas",casa,"dadosSaude","segredo")));
+    await deveNegar("configuração de dieta não é exposta à família",getDoc(doc(dono,"casas",casa,"config","dieta")));
+    await deveNegar("cliente não envia dados de saúde à configuração compartilhada",setDoc(doc(dono,"casas",casa,"config","dieta"),{restricoes:["leite"]}));
     await deveNegar("membro ativo não lê token de convite",getDoc(doc(dono,"casas",casa,"convites","tokenHash")));
     await deveNegar("membro ativo não cria convite no cliente",setDoc(doc(dono,"casas",casa,"convites","tokenHash"),{email:"alvo@example.test"}));
     await deveNegar("membro ativo não lista convites",getDocs(collection(dono,"casas",casa,"convites")));
-    assert.equal(feitos,22);
-    console.log("FIRESTORE EMULATOR: "+feitos+"/22 cenários de autorização aprovados");
+    assert.equal(feitos,24);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/24 cenários de autorização aprovados");
   } finally {await env.cleanup();}
 }
 main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
