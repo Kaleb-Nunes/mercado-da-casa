@@ -1,6 +1,19 @@
-# Usado só pela hospedagem de homologação (Cloudflare Pages). O GitHub Pages ignora este arquivo.
+# Cloudflare Pages: RC de homologação Elida IA.
+# GitHub Pages IGNORA este arquivo. Não usar como evidência de cabeçalhos na produção GitHub.
+# Login Google via popup requer COOP same-origin-allow-popups e permissões de frame.
+# JavaScript externo: bloqueio de scripts inline. WASM restrito para OCR local; revisar antes de liberar.
 /*
   X-Robots-Tag: noindex, nofollow
   X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://www.gstatic.com 'wasm-unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.gstatic.com; font-src 'self' data:; worker-src 'self' blob:; frame-src 'self' https://projeto-elida-aplv.firebaseapp.com https://accounts.google.com; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://projeto-elida-aplv.firebaseapp.com https://world.openfoodfacts.org https://search.openfoodfacts.org; manifest-src 'self'; upgrade-insecure-requests
+/index.html
+  Cache-Control: no-cache
+/elida-firebase-config.js
+  Cache-Control: no-store
