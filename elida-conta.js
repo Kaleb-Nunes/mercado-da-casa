@@ -66,7 +66,7 @@
       var b=ev.target.closest("[data-elida-action]");
       if(!b)return;
       var a=b.getAttribute("data-elida-action");
-      if(a==="fechar" && modo!=="conta") {fundo.hidden=true;return;}
+      if(a==="fechar" && (modo!=="conta" || uid)) {fundo.hidden=true;return;}
       b.disabled=true;
       Promise.resolve(acao(a,b.dataset.uid || "")).catch(function(e){
         if(a!=="recuperar")mensagem("Não foi possível concluir. Verifique os dados, a conexão e as configurações de acesso.");
@@ -207,7 +207,7 @@
       if(auth)await sdk.signOut(auth);
       location.reload();return;
     }
-    if(a==="fechar"){if(modo!=="conta")panel().hidden=true;return;}
+    if(a==="fechar"){if(modo!=="conta" || uid)panel().hidden=true;return;}
     if(a==="sair"){
       if(auth)await sdk.signOut(auth);
       limpar();guardarModo("visitante");location.reload();return;
