@@ -11,7 +11,7 @@ const {
 } = require("firebase/firestore");
 const casa = "AbC_defGhijkLMNoPQrsTUVwxyz1";
 const outraCasa = "Bbc_defGhijkLMNoPQrsTUVwxyz2";
-const uDono="dono",uEstranho="estranho",uRemovido="removido";
+const uDono="dono",uEstranho="estranho",uRemovido="removido",uPendente="pendente";
 let feitos=0;
 async function devePermitir(nome, promessa) {
   await assertSucceeds(promessa);
@@ -39,12 +39,29 @@ async function main(){
         await setDoc(doc(db,"casas",id,"itens","item1"),{nome:"Produto inventado"});
       }
       await setDoc(doc(db,"casas",casa,"membros",uRemovido),{ativo:false,nome:"Antigo membro"});
+      for(const uid of [uDono,uEstranho,uRemovido]){
+        await setDoc(doc(db,"acessos",uid),{uid,status:"aprovado",papel:"usuario"});
+      }
+      await setDoc(doc(db,"casas",casa,"membros",uPendente),{ativo:true,nome:"Pendente simulado"});
+      await setDoc(doc(db,"solicitacoesAcesso",uPendente),{uid:uPendente,status:"pendente",email:"p@exemplo.test"});
+      await setDoc(doc(db,"acessos",uPendente),{uid:uPendente,status:"pendente",papel:"usuario"});
     });
     const dono=env.authenticatedContext(uDono,{email_verified:true}).firestore();
     const estranho=env.authenticatedContext(uEstranho,{email_verified:true}).firestore();
     const removido=env.authenticatedContext(uRemovido,{email_verified:true}).firestore();
     const semLogin=env.unauthenticatedContext().firestore();
     const naoVerificado=env.authenticatedContext(uDono,{email_verified:false}).firestore();
+    const pendente=env.authenticatedContext(uPendente,{email_verified:true}).firestore();
+
+    await devePermitir("usuário só consulta o próprio status",getDoc(doc(pendente,"acessos",uPendente)));
+    await deveNegar("usuário pendente não lê casa mesmo tendo membro ativo",getDoc(doc(pendente,"casas",casa)));
+    await deveNegar("usuário pendente não altera dados familiares",setDoc(doc(pendente,"casas",casa,"itens","item1"),{nome:"Injeção"}));
+    await deveNegar("usuário pendente não lê cadastro do proprietário",getDoc(doc(pendente,"acessos",uDono)));
+    await deveNegar("usuário pendente não se aprova",updateDoc(doc(pendente,"acessos",uPendente),{status:"aprovado"}));
+    await deveNegar("usuário pendente não cria permissão para si",setDoc(doc(pendente,"acessos","outra"),{status:"aprovado"}));
+    await deveNegar("usuário pendente não lê solicitações administrativas",getDoc(doc(pendente,"solicitacoesAcesso",uPendente)));
+    await deveNegar("usuário pendente não lista solicitações",getDocs(collection(pendente,"solicitacoesAcesso")));
+    await deveNegar("outro usuário não pode alterar status aprovado",updateDoc(doc(dono,"acessos",uDono),{status:"bloqueado"}));
     await deveNegar("e-mail não verificado não lê casa mesmo sendo dono",getDoc(doc(naoVerificado,"casas",casa)));
     await devePermitir("membro ativo lê sua casa",getDoc(doc(dono,"casas",casa)));
     await devePermitir("membro ativo lê item da própria casa",getDoc(doc(dono,"casas",casa,"itens","item1")));
@@ -69,8 +86,8 @@ async function main(){
     await deveNegar("membro ativo não lê token de convite",getDoc(doc(dono,"casas",casa,"convites","tokenHash")));
     await deveNegar("membro ativo não cria convite no cliente",setDoc(doc(dono,"casas",casa,"convites","tokenHash"),{email:"alvo@example.test"}));
     await deveNegar("membro ativo não lista convites",getDocs(collection(dono,"casas",casa,"convites")));
-    assert.equal(feitos,24);
-    console.log("FIRESTORE EMULATOR: "+feitos+"/24 cenários de autorização aprovados");
+    assert.equal(feitos,33);
+    console.log("FIRESTORE EMULATOR: "+feitos+"/33 cenários de autorização aprovados");
   } finally {await env.cleanup();}
 }
 main().catch(e=>{console.error(e.stack||String(e));process.exitCode=1;});
