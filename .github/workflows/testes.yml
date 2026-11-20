@@ -19,6 +19,8 @@ jobs:
         env:
           PRIVACIDADE_TERMOS: ${{ secrets.PRIVACIDADE_TERMOS }}
         run: node tests/rodar-testes.js
+      - name: Segurança de acesso e cache
+        run: node tests/rodar-seguranca.js
       - name: Rótulos reais (diagnóstico, não bloqueia)
         run: node tests/rodar-rotulos.js || true
       - name: Pacote de homologação
