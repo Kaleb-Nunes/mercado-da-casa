@@ -9,7 +9,6 @@ const functions=fs.readFileSync("functions/index.js","utf8");
 const rules=fs.readFileSync("firestore.rules","utf8");
 const html=fs.readFileSync("index.html","utf8");
 const sw=fs.readFileSync("sw.js","utf8");
-const cfg=fs.readFileSync("elida-firebase-config.js","utf8");
 
 test("Módulos de aprovação possuem sintaxe válida e estão instalados no PWA",()=>{
  new vm.Script(approval,{filename:"elida-aprovacao.js"});
@@ -18,16 +17,18 @@ test("Módulos de aprovação possuem sintaxe válida e estão instalados no PWA
  assert.ok(html.indexOf('src="elida-conta.js"') < html.indexOf('src="elida-app.js"'));
  assert.match(sw,/"\.\/elida-aprovacao\.js"/);
 });
-test("Sem chave App Check o módulo deve falhar fechado sem enviar dados para a rede",async()=>{
- const win={__ELIDA_APP_CHECK_SITE_KEY__:null};
- const ctx=vm.createContext({window:win,console});
+test("RPC de aprovação falha sem configuração e propaga negação do servidor",async()=>{
+ const win={};
+ const ctx=vm.createContext({window:win});
+ vm.runInContext(auth,ctx);
  vm.runInContext(approval,ctx);
- await assert.rejects(()=>win.ElidaAprovacao.configurar({},{currentUser:{uid:"qualquer"}}),/App Check/);
- assert.equal(typeof win.ElidaAprovacao.decidir,"function");
- assert.match(cfg,/__ELIDA_APP_CHECK_SITE_KEY__ = null/);
+ await assert.rejects(()=>win.ElidaAprovacao.verificar(),/Configuração Supabase pendente/);
+ const erro=new Error("Acesso restrito");
+ win.ElidaConta={cliente:()=>({rpc:async()=>({data:null,error:erro})})};
+ await assert.rejects(()=>win.ElidaAprovacao.decidir("teste","aprovar"),erro);
 });
 test("Login só expõe namespace de conta quando servidor aprova",()=>{
- assert.match(auth,/acesso=await root\.ElidaAprovacao\.verificar\(firebaseApp,auth\)/);
+ assert.match(auth,/acesso=await root\.ElidaAprovacao\.verificar\(\)/);
  assert.match(auth,/uid=acesso\.status==="aprovado"/);
  assert.match(auth,/data-elida-bloqueada/);
  assert.match(auth,/data-elida-action="solicitar"/);
