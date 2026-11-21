@@ -199,6 +199,13 @@
     iniciarApp=true;
     modo=modoGuardado();
     const retorno=new URL(location.href);
+    // O link do aviso só abre a fila. A decisão exige a sessão master e a RPC.
+    const chaveRevisao="elida-revisar-acessos";
+    let revisar=retorno.searchParams.get("revisar")==="acessos";
+    try{
+      if(revisar)sessionStorage.setItem(chaveRevisao,"1");
+      else revisar=sessionStorage.getItem(chaveRevisao)==="1";
+    }catch(e){}
     const codigo=retorno.searchParams.get("code");
     const fragmento=new URL(retorno.origin+"/?"+retorno.hash.slice(1)).searchParams;
     const erroRetorno=retorno.searchParams.has("error") || fragmento.has("error");
@@ -243,10 +250,23 @@
     if(root.ElidaEntrada && !usuarioPermitido(usuario)){
       let primeiraVisita=true;
       try{primeiraVisita=!localStorage.getItem(CHAVE_MODO);}catch(e){}
-      if(primeiraVisita || modo==="conta" || aviso){
+      if(primeiraVisita || modo==="conta" || aviso || revisar){
         if(modo==="conta")document.documentElement.setAttribute("data-elida-bloqueada","true");
-        abrirEntrada(aviso);return;
+        abrirEntrada(aviso || (revisar?"Entre com a conta administradora para revisar os pedidos.":""));return;
       }
+    }
+    if(revisar && !recuperando && usuarioPermitido(usuario)){
+      try{sessionStorage.removeItem(chaveRevisao);}catch(e){}
+      retorno.searchParams.delete("revisar");
+      history.replaceState(null,"",retorno.pathname+retorno.search+retorno.hash);
+      if(!uid)document.documentElement.setAttribute("data-elida-bloqueada","true");
+      mostrar();
+      if(acesso.status==="aprovado" && acesso.papel==="superadmin"){
+        listarAdmin("pedidos").catch(()=>mensagem("A lista não carregou. Toque em Ver solicitações pendentes para tentar novamente."));
+      }else if(acesso.status!=="indisponivel"){
+        mensagem("Esta conta não tem acesso à fila. Para revisar pedidos, entre com a conta administradora.");
+      }
+      return;
     }
     if(recuperando && uid)setTimeout(mostrar,0);
     if(modo==="conta" && !uid){
@@ -272,9 +292,13 @@
     const auth=obterCliente().auth;
     if(a==="atualizar-status"){
       if(!usuarioPermitido(usuario))throw Error("É necessário entrar e verificar e-mail");
-      acesso=await root.ElidaAprovacao.verificar();
+      mensagem("Consultando sua solicitação…");
+      try{acesso=await root.ElidaAprovacao.verificar();}
+      catch(e){mensagem("A consulta falhou. Confira a conexão e tente novamente.");return;}
       if(acesso.status==="aprovado"){location.reload();return;}
-      mostrar();return;
+      mostrar();
+      if(acesso.status==="pendente")mensagem("Consulta concluída. Seu pedido continua aguardando aprovação.");
+      return;
     }
     if(a==="solicitar"){
       if(!usuarioPermitido(usuario))throw Error("É necessário entrar e verificar e-mail");
