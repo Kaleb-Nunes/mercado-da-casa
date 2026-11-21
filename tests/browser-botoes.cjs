@@ -127,7 +127,7 @@ async function testar(){
 
   const login=await browser.newContext({serviceWorkers:"block"});
   const social=await login.newPage();
-  const mockAuth="https://elida-teste.supabase.co";
+  const mockAuth="https://elidateste.supabase.co";
   await login.route("**/elida-supabase-config.js",r=>r.fulfill({contentType:"application/javascript",
     body:"window.ELIDA_SUPABASE="+JSON.stringify({origem,url:mockAuth,chavePublicavel:"sb_publishable_teste"})}));
   let ativos={google:true,apple:false,facebook:false};
