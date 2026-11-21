@@ -13,18 +13,21 @@ window.ElidaEntrada = (function () {
 
   function atualizarBotoes() {
     botoes.forEach(botao => {
-      botao.disabled = ocupado || disponibilidade?.[botao.dataset.provedor] !== true;
+      botao.hidden = disponibilidade?.[botao.dataset.provedor] !== true;
+      botao.disabled = ocupado || botao.hidden;
     });
+    buscar(".entrada-separador").hidden = botoes.every(botao => botao.hidden);
   }
   async function verificarProvedores() {
-    if (disponibilidade || consulta) return;
+    if (consulta) return;
+    disponibilidade = null;
+    atualizarBotoes();
     const nota = buscar(".entrada-provedores");
     nota.textContent = "Consultando opções de entrada…";
     consulta = servicos.provedores();
     try {
       disponibilidade = await consulta;
-      const indisponiveis = botoes.filter(b => !disponibilidade[b.dataset.provedor]).map(b => b.textContent);
-      nota.textContent = indisponiveis.length ? "Indisponível no momento: " + indisponiveis.join(" e ") + "." : "";
+      nota.textContent = "";
     } catch {
       nota.textContent = "Sem conexão com o login social. Volte e tente novamente.";
     } finally {

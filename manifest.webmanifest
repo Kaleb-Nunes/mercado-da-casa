@@ -1,7 +1,7 @@
 {
   "name": "Elida · Mercado da Casa",
   "short_name": "Elida",
-  "description": "Preços, lista, balanço do mês e lembretes da dieta.",
+  "description": "Planeje o jantar, leve só o que falta ao mercado e confira os rótulos.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
@@ -28,5 +28,15 @@
       "purpose": "maskable"
     }
   ],
-  "id": "./"
+  "id": "./",
+  "shortcuts": [
+    {
+      "name": "Planejar meu jantar",
+      "url": "./#jantar"
+    },
+    {
+      "name": "Lista de compras",
+      "url": "./#lista"
+    }
+  ]
 }

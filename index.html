@@ -484,11 +484,11 @@ html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important
         <button class="entrada-principal" type="submit">Entrar por e-mail</button>
       </form>
       <div class="entrada-social" hidden>
-        <p>Ou continue com</p>
+        <p class="entrada-separador" hidden>Ou</p>
         <div>
-          <button type="button" data-provedor="google" disabled>Google</button>
-          <button type="button" data-provedor="facebook" disabled>Facebook</button>
-          <button type="button" data-provedor="apple" disabled>Apple</button>
+          <button type="button" data-provedor="google" hidden disabled><img src="marca/google-login.png" alt="" width="24" height="24">Continuar com Google</button>
+          <button type="button" data-provedor="facebook" hidden disabled><img src="marca/facebook-login.png" alt="" width="24" height="24">Continuar com Facebook</button>
+          <button type="button" data-provedor="apple" hidden disabled><img src="marca/apple-login.png" alt="" width="24" height="24">Continuar com Apple</button>
         </div>
         <small class="entrada-provedores" aria-live="polite"></small>
         <button class="entrada-link" type="button" data-tela="cadastro">Ainda não tem conta? Cadastre-se</button>

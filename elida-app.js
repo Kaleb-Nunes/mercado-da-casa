@@ -2211,7 +2211,7 @@
   /* ---------- Início ---------- */
   function start(data){
     loadFotos();
-    try{ if("serviceWorker" in navigator && location.protocol === "https:" && location.hostname.indexOf("claude") < 0){ navigator.serviceWorker.register("sw.js").catch(function(){}); } }catch(e){}
+    try{ if("serviceWorker" in navigator && window.isSecureContext && location.hostname.indexOf("claude") < 0){ navigator.serviceWorker.register("sw.js").catch(function(){}); } }catch(e){}
     state = valid(data) ? data : (load() || seedState());
     if(!state.mes) state.mes = monthKey(todayStr());
     state.dieta = DietaMotor.migrar(state.dieta);

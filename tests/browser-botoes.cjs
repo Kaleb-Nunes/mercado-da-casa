@@ -113,8 +113,42 @@ async function testar(){
   await folha.getByLabel("Cenoura").check(); await folha.getByLabel("Tomate").check();
   await folha.getByRole("button",{name:"Concluir · já tenho tudo"}).click();
   assert.equal(await jantar.locator("#view-inicio.on").count(),1);
+  await jantar.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  await familia.setOffline(true);
+  await jantar.reload({waitUntil:"domcontentloaded"});
+  await jantar.getByRole("button",{name:"Planejar meu jantar",exact:true}).click();
+  await folha.getByRole("heading",{name:"Jantar de domingo"}).waitFor();
+  await folha.getByLabel("Tomate").check();
+  await folha.getByRole("button",{name:"Levar à lista · 1 ingrediente",exact:true}).click();
+  await lista.getByText("Cenoura",{exact:true}).waitFor();
   await familia.close();
+  resultado.push("reabrir o app e atualizar a lista de visitante offline após a primeira carga");
   resultado.push("jantar sem cadastro, prato próprio persistido e compras apenas do que falta, sem duplicatas");
+
+  const login=await browser.newContext({serviceWorkers:"block"});
+  const social=await login.newPage();
+  const mockAuth="https://elida-teste.supabase.co";
+  await login.route("**/elida-supabase-config.js",r=>r.fulfill({contentType:"application/javascript",
+    body:"window.ELIDA_SUPABASE="+JSON.stringify({origem,url:mockAuth,chavePublicavel:"sb_publishable_teste"})}));
+  let ativos={google:true,apple:false,facebook:false};
+  await login.route(mockAuth+"/auth/v1/settings",r=>r.fulfill({json:{external:ativos}}));
+  await login.route(mockAuth+"/auth/v1/authorize?**",r=>r.fulfill({contentType:"text/html",body:"Autorização simulada"}));
+  for(const provedor of ["google","apple","facebook"]){
+    await social.goto(origem);
+    await social.locator('#entrada [data-tela="login"]').click();
+    const botao=social.locator('[data-provedor="'+provedor+'"]');
+    await botao.waitFor({state:"visible"});
+    await botao.locator("img").evaluate(img=>img.decode());
+    if(provedor==="google")assert.equal(await social.locator("#entrada [data-provedor]:visible").count(),1);
+    await Promise.all([social.waitForURL(mockAuth+"/auth/v1/authorize?**"),botao.click()]);
+    const url=new URL(social.url());
+    assert.equal(url.searchParams.get("provider"),provedor);
+    assert.equal(url.searchParams.get("redirect_to"),origem+"/");
+    assert.ok(url.searchParams.get("code_challenge"));
+    ativos={google:true,apple:true,facebook:true};
+  }
+  await login.close();
+  resultado.push("marcas, disponibilidade e rota de autorização PKCE dos três provedores com serviço simulado");
 
   // Botão de conta: abrir e fechar o modal deve funcionar no visitante.
   await page.locator("#elida-conta-botao").click();

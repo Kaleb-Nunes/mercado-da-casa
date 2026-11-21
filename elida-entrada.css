@@ -39,8 +39,11 @@
 .entrada-social { margin-top: 20px; text-align: center; }
 .entrada-social p { display: flex; align-items: center; gap: 12px; font-size: 13px; margin: 0 0 12px; }
 .entrada-social p::before, .entrada-social p::after { content: ""; flex: 1; height: 1px; background: #cad1c8; }
-.entrada-social > div { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
-#entrada [data-provedor] { font-size: 14px; padding-inline: 3px; }
+.entrada-social > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+#entrada [data-provedor] { display: flex; align-items: center; justify-content: center; gap: 12px; background: white; font-size: 15px; }
+#entrada [data-provedor="apple"] { background: black; color: white; border-color: black; }
+#entrada [data-provedor] img { object-fit: contain; }
+#entrada [data-provedor="apple"] img { width: 32px; height: 32px; }
 .entrada-provedores { display: block; margin: 8px 0; color: #526259; font-size: 12px; }
 .entrada-status:empty { display: none; }
 .entrada-status { font-size: 14px; padding: 10px 12px; border-radius: 8px; background: #e9eee5; }
