@@ -46,6 +46,25 @@ async function testar(){
   page=await ctx.newPage();
   page.on("pageerror",e=>errors.push(String(e.message||e)));
   await page.goto(origem,{waitUntil:"domcontentloaded",timeout:20000});
+  const entrada=page.locator("#entrada");
+  await entrada.waitFor({state:"visible"});
+  await entrada.getByRole("button",{name:"Pausar animação do fundo"}).click();
+  assert.equal(await entrada.getAttribute("data-pausado"),"");
+  await entrada.getByRole("button",{name:"Criar conta",exact:true}).click();
+  await entrada.getByLabel("Confirmar senha").waitFor({state:"visible"});
+  await entrada.getByLabel("E-mail").fill("familia@example.com");
+  await entrada.getByLabel("Senha",{exact:true}).fill("Senha-ficticia-2026");
+  await entrada.getByLabel("Confirmar senha").fill("Senha-diferente-2026");
+  await entrada.getByRole("button",{name:"Criar conta",exact:true}).click();
+  assert.equal(await entrada.getByLabel("Confirmar senha").evaluate(el=>el.validity.customError),true);
+  await entrada.getByRole("button",{name:"Já tenho uma conta"}).click();
+  assert.equal(await entrada.getByLabel("Senha",{exact:true}).inputValue(),"");
+  await entrada.getByRole("button",{name:"Esqueci minha senha"}).click();
+  assert.equal(await entrada.getByLabel("Senha",{exact:true}).isVisible(),false);
+  await entrada.getByRole("button",{name:"Continuar como visitante"}).click();
+  await page.reload();
+  assert.equal(await entrada.isHidden(),true);
+  resultado.push("abertura, pausa da imagem, cadastro, recuperação e persistência do visitante");
   await page.locator("#view-inicio.on").waitFor({state:"visible",timeout:15000});
   resultado.push("inicialização e renderização no Android 390px");
 
@@ -55,9 +74,9 @@ async function testar(){
   }
   // Botão de conta: abrir e fechar o modal deve funcionar no visitante.
   await page.locator("#elida-conta-botao").click();
-  assert.equal(await page.locator("#elida-conta-painel").isVisible(),true);
-  await page.locator('#elida-conta-painel [data-elida-action="fechar"]').click();
-  assert.equal(await page.locator("#elida-conta-painel").isHidden(),true);
+  await entrada.waitFor({state:"visible"});
+  await entrada.getByRole("button",{name:"Continuar como visitante"}).click();
+  assert.equal(await entrada.isHidden(),true);
   resultado.push("botões abrir/fechar conta");
 
   for(const tela of ["precos","lista","rotulo","inicio"]){

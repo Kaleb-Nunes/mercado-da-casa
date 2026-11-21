@@ -48,6 +48,10 @@
   }
   function erroLegivel(e){
     if(!configValida())return "A homologação aguarda a configuração pública do Supabase.";
+    if(e && e.code==="weak_password")return "Escolha uma senha com pelo menos 12 caracteres.";
+    if(e && e.code==="missing_email")return "Informe seu e-mail.";
+    if(e && e.code==="email_not_confirmed")return "Confirme seu e-mail antes de entrar.";
+    if(e && e.code==="over_email_send_rate_limit")return "Aguarde alguns minutos antes de pedir outro e-mail.";
     if(e && e.code==="invalid_credentials")return "Confira o e-mail e a senha.";
     return "Não foi possível concluir. Confira a conexão e tente novamente.";
   }
@@ -104,7 +108,30 @@
     painel=fundo;fundo.hidden=true;
     return fundo;
   }
+  async function provedores(){
+    if(!configValida())throw Error("Configuração Supabase pendente");
+    const controle=new AbortController();
+    const limite=setTimeout(()=>controle.abort(),7000);
+    try{
+      const resposta=await fetch(CONFIG.url+"/auth/v1/settings",{
+        headers:{apikey:CONFIG.chavePublicavel}, credentials:"omit", cache:"no-store", signal:controle.signal
+      });
+      if(!resposta.ok)throw Error("Configurações indisponíveis");
+      const dados=await resposta.json();
+      if(!dados.external)throw Error("Provedores indisponíveis");
+      return dados.external;
+    }finally{clearTimeout(limite);}
+  }
+  function abrirEntrada(aviso){
+    root.ElidaEntrada.abrir({provedores,autenticar,erroLegivel,visitar:async function(){
+      if(modo==="conta"){await acao("visitante");return;}
+      guardarModo("visitante");
+    }},aviso);
+  }
   function mostrar(){
+    if(root.ElidaEntrada && !usuarioPermitido(usuario) && !recuperando){
+      abrirEntrada();return;
+    }
     var e=panel(), rotulo=e.querySelector("[data-elida-estado]");
     var u=usuario, valido=usuarioPermitido(u) && modo==="conta";
     var aprovado=valido && acesso.status==="aprovado";
@@ -173,6 +200,15 @@
     modo=modoGuardado();
     const retorno=new URL(location.href);
     const codigo=retorno.searchParams.get("code");
+    const fragmento=new URL(retorno.origin+"/?"+retorno.hash.slice(1)).searchParams;
+    const erroRetorno=retorno.searchParams.has("error") || fragmento.has("error");
+    let aviso="";
+    if(erroRetorno){
+      ["error","error_code","error_description"].forEach(k=>retorno.searchParams.delete(k));
+      if(fragmento.has("error"))retorno.hash="";
+      history.replaceState(null,"",retorno.pathname+retorno.search+retorno.hash);
+      aviso="A entrada foi cancelada ou não pôde ser concluída. Tente novamente.";
+    }
     if(codigo || modo==="conta"){
       try{
         const clienteAuth=obterCliente().auth;
@@ -193,7 +229,9 @@
           acesso=await root.ElidaAprovacao.verificar();
           uid=acesso.status==="aprovado" ? usuario.id : "";
         }
-      }catch(e){uid=""; acesso={status:"indisponivel",papel:"usuario"};}
+      }catch(e){uid=""; acesso={status:"indisponivel",papel:"usuario"};
+        if(codigo || !usuario)aviso="Sua sessão não pôde ser confirmada. Entre novamente.";
+      }
     }
     /* Botão criado antes da aplicação, sem iniciar rede no modo visitante. */
     var botao=document.createElement("button");
@@ -202,6 +240,14 @@
     botao.setAttribute("aria-label","Abrir conta Elida");
     botao.addEventListener("click",mostrar);
     document.body.appendChild(botao);
+    if(root.ElidaEntrada && !usuarioPermitido(usuario)){
+      let primeiraVisita=true;
+      try{primeiraVisita=!localStorage.getItem(CHAVE_MODO);}catch(e){}
+      if(primeiraVisita || modo==="conta" || aviso){
+        if(modo==="conta")document.documentElement.setAttribute("data-elida-bloqueada","true");
+        abrirEntrada(aviso);return;
+      }
+    }
     if(recuperando && uid)setTimeout(mostrar,0);
     if(modo==="conta" && !uid){
       document.documentElement.setAttribute("data-elida-bloqueada","true");
@@ -210,9 +256,9 @@
   }
   async function acao(a, alvoUid){
     if(a==="visitante"){
-      limpar();guardarModo("visitante");
+      limpar();
       if(cliente){const res=await cliente.auth.signOut({scope:"local"});if(res.error)throw res.error;}
-      location.reload();return;
+      guardarModo("visitante");location.reload();return;
     }
     if(a==="fechar"){
       if(modo!=="conta" || (uid && acesso.status==="aprovado")) panel().hidden=true;
@@ -221,7 +267,7 @@
     }
     if(a==="sair"){
       if(cliente){const res=await cliente.auth.signOut({scope:"local"});if(res.error)throw res.error;}
-      limpar();guardarModo("visitante");location.reload();return;
+      limpar();try{localStorage.removeItem(CHAVE_MODO);}catch(e){} location.reload();return;
     }
     const auth=obterCliente().auth;
     if(a==="atualizar-status"){
@@ -246,35 +292,43 @@
       await listarAdmin(a==="bloquear"?"contas":"pedidos");
       mensagem("Permissão atualizada no servidor.");return;
     }
-    var email=campo("email").trim(),senha=campo("password");
-    const retorno=location.origin+location.pathname;
-    if(a==="recuperar"){
-      if(!email){mensagem("Informe seu e-mail.");return;}
-      await auth.resetPasswordForEmail(email,{redirectTo:retorno+"?recuperar=1"});
-      mensagem("Se a conta existir, confira as instruções no seu e-mail.");return;
-    }
     if(a==="nova-senha"){
+      const senha=campo("password");
       if(!recuperando || senha.length<12){mensagem("Use pelo menos 12 caracteres.");return;}
       const res=await auth.updateUser({password:senha});
       if(res.error)throw res.error;
       limpar();location.reload();return;
     }
-    if(a==="google"){
-      const res=await auth.signInWithOAuth({provider:"google",options:{redirectTo:retorno,queryParams:{prompt:"select_account"}}});
+    const texto=await autenticar(a,campo("email").trim(),campo("password"));
+    if(texto){limpar();mensagem(texto);}
+  }
+  async function autenticar(a,email,senha){
+    const auth=obterCliente().auth;
+    const retorno=location.origin+location.pathname;
+    if(a==="google" || a==="facebook" || a==="apple"){
+      const options={redirectTo:retorno};
+      if(a==="google")options.queryParams={prompt:"select_account"};
+      if(a==="facebook")options.scopes="email";
+      const res=await auth.signInWithOAuth({provider:a,options});
       if(res.error)throw res.error;
       return;
     }
+    if(!email)throw Object.assign(Error("E-mail obrigatório"),{code:"missing_email"});
+    if(a==="recuperar"){
+      const res=await auth.resetPasswordForEmail(email,{redirectTo:retorno+"?recuperar=1"});
+      if(res.error)throw res.error;
+      return "Se a conta existir, confira as instruções no seu e-mail.";
+    }
     if(a==="cadastro"){
-      if(senha.length<12){mensagem("Escolha uma senha com pelo menos 12 caracteres.");return;}
+      if(senha.length<12)throw Object.assign(Error("Senha curta"),{code:"weak_password"});
       const res=await auth.signUp({email,password:senha,options:{emailRedirectTo:retorno}});
       if(res.error)throw res.error;
-      limpar();mensagem("Verifique seu e-mail para concluir o cadastro.");return;
-    }
-    if(a==="login"){
+      if(!res.data.session)return "Verifique seu e-mail para concluir o cadastro.";
+    }else if(a==="login"){
       const res=await auth.signInWithPassword({email,password:senha});
       if(res.error)throw res.error;
-      limpar();guardarModo("conta");location.reload();
-    }
+    }else throw Error("Método de entrada desconhecido");
+    guardarModo("conta");location.reload();
   }
   root.ElidaConta=Object.freeze({cliente:obterCliente,bootstrap:bootstrap,sufixo:sufixo,abrir:mostrar,configurada:configValida});
 })(typeof window!=="undefined"?window:this);

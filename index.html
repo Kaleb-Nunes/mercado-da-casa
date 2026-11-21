@@ -12,6 +12,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Elida</title>
+<link rel="stylesheet" href="elida-entrada.css">
 <link rel="preload" href="fonts/onest.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -419,7 +420,7 @@ textarea.inp{height:140px;padding:12px;font-size:13px;font-family:ui-monospace,M
 #elida-conta-painel [data-elida-admin] button{margin:4px 5px 4px 0}
 #elida-conta-painel [data-elida-lista]{max-height:35vh;overflow:auto}
 
-html[data-elida-bloqueada=true] body > :not(#elida-conta-painel):not(script){visibility:hidden!important}
+html[data-elida-bloqueada=true] body > :not(#elida-conta-painel):not(#entrada):not(script){visibility:hidden!important}
 html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important}
 </style>
 </head>
@@ -460,6 +461,42 @@ html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="w-name"></div>
 
+<dialog id="entrada" aria-labelledby="entrada-titulo">
+  <div class="entrada-splash" aria-hidden="true"><img src="marca/logo-horizontal.svg" width="184" height="62" alt=""></div>
+  <div class="entrada-layout">
+    <div class="entrada-foto" aria-hidden="true"></div>
+    <button class="entrada-pausa" type="button" aria-label="Pausar animação do fundo" aria-pressed="false">Ⅱ</button>
+    <section class="entrada-corpo">
+      <img class="entrada-marca" src="marca/logo-horizontal.svg" width="148" height="50" alt="Elida">
+      <button class="entrada-voltar" type="button" hidden>← Voltar</button>
+      <h1 id="entrada-titulo" tabindex="-1">Boas-vindas ao Elida</h1>
+      <div class="entrada-inicio">
+        <button type="button" class="entrada-principal" data-tela="login">Entrar</button>
+        <button type="button" data-tela="cadastro">Criar conta</button>
+      </div>
+      <form class="entrada-form" hidden>
+        <label>E-mail<input name="email" type="email" autocomplete="username" maxlength="254" required></label>
+        <label>Senha<input name="senha" type="password" autocomplete="current-password" maxlength="256" required></label>
+        <label hidden>Confirmar senha<input name="confirmacao" type="password" autocomplete="new-password" maxlength="256" disabled></label>
+        <button type="button" class="entrada-link" data-tela="recuperar">Esqueci minha senha</button>
+        <button class="entrada-principal" type="submit">Entrar por e-mail</button>
+      </form>
+      <div class="entrada-social" hidden>
+        <p>Ou continue com</p>
+        <div>
+          <button type="button" data-provedor="google" disabled>Google</button>
+          <button type="button" data-provedor="facebook" disabled>Facebook</button>
+          <button type="button" data-provedor="apple" disabled>Apple</button>
+        </div>
+        <small class="entrada-provedores" aria-live="polite"></small>
+        <button class="entrada-link" type="button" data-tela="cadastro">Ainda não tem conta? Cadastre-se</button>
+      </div>
+      <p class="entrada-status" role="status" aria-live="polite"></p>
+      <button class="entrada-link entrada-visitante" type="button">Continuar como visitante</button>
+    </section>
+  </div>
+</dialog>
+
 <script src="ambiente.js"></script>
 <script src="dieta.js"></script>
 <script src="elida-regras.js"></script>
@@ -469,6 +506,7 @@ html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important
 <script src="vendor/supabase/sdk.js"></script>
 <script src="elida-supabase-config.js"></script>
 <script src="elida-aprovacao.js"></script>
+<script src="elida-entrada.js"></script>
 <script src="elida-conta.js"></script>
 <script src="elida-app.js"></script>
 </body>
