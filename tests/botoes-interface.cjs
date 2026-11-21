@@ -37,7 +37,7 @@ test("todos os botões do painel de conta têm ação de clique",()=>{
 
 function criarAmbiente(modoGuardado){
   const dados=new Map();
-  if(modoGuardado)dados.set("elida-modo-identidade-v1",modoGuardado);
+  if(modoGuardado)dados.set("elida-modo-supabase-v1",modoGuardado);
   const elems=[];
   const mk=()=>({
     events:Object.create(null),attrs:Object.create(null),dataset:{},hidden:false,disabled:false,
@@ -70,9 +70,9 @@ function criarAmbiente(modoGuardado){
     setItem(k,v){dados.set(k,String(v));}
   };
   let reloads=0;
-  const window={__ELIDA_FIREBASE_CONFIG__:null};
-  const ctx=vm.createContext({window,document,localStorage:store,console,
-    location:{reload(){reloads++;}},setTimeout(fn){fn();}});
+  const window={ELIDA_SUPABASE:null};
+  const ctx=vm.createContext({window,document,localStorage:store,console,URL,
+    location:{href:'https://teste.example/',reload(){reloads++;}},setTimeout(fn){fn();}});
   new vm.Script(account).runInContext(ctx);
   return {document,window,elems,store,dados,get reloads(){return reloads;}};
 }
@@ -109,7 +109,7 @@ test("conta sem aprovação não prende usuário no app; visitante sempre dispon
   assert.equal(botao(dialogo,"fechar").hidden,true,"Não mostrar Fechar que deixaria a conta bloqueada");
   const guest=await clicar(dialogo,"visitante");
   assert.equal(guest.disabled,false,"O botão visitante precisa voltar ao estado ativo");
-  assert.equal(env.dados.get("elida-modo-identidade-v1"),"visitante");
+  assert.equal(env.dados.get("elida-modo-supabase-v1"),"visitante");
   assert.equal(env.reloads,1,"Alternar para visitante precisa recarregar o app");
 });
 test("erro no login mostra causa e devolve capacidade de clicar",async()=>{
@@ -119,13 +119,13 @@ test("erro no login mostra causa e devolve capacidade de clicar",async()=>{
   const dialogo=env.elems[1];
   const login=await clicar(dialogo,"google");
   const status=dialogo.querySelector("[data-elida-msg]").textContent;
-  assert.match(status,/login ainda não está configurado/i);
+  assert.match(status,/aguarda a configuração pública do Supabase/i);
   assert.equal(login.disabled,false);
   assert.equal(login.textContent,"", "Botão recupera texto original após falha (mock sem conteúdo inicial)");
 });
-test("mecanismo de aprovação depende de App Check; nunca libera localmente",async()=>{
-  assert.match(approval,/ReCaptchaEnterpriseProvider/);
+test("aprovação depende da resposta da RPC autenticada",async()=>{
+  assert.match(approval,/if\(error\)throw error/);
   assert.match(account,/acesso=await root\.ElidaAprovacao\.verificar/);
   assert.match(account,/uid=acesso\.status==="aprovado"/);
-  assert.match(approval,/httpsCallable\(/);
+  assert.match(approval,/rpc\("elida_meu_acesso"\)/);
 });
