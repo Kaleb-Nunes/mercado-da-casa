@@ -1,0 +1,30 @@
+name: Piloto Supabase
+on:
+  push:
+    branches: [migration/supabase-piloto]
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'elida-conta.js'
+      - 'elida-aprovacao.js'
+      - '.github/workflows/supabase-piloto.yml'
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validar JavaScript do piloto
+        run: |
+          node --check elida-conta.js
+          node --check elida-aprovacao.js
+          node --check supabase/operacao/configurar-previa.mjs
+      - name: Testar permissões em PostgreSQL isolado
+        run: |
+          npm install --prefix supabase/tests --no-save --ignore-scripts --package-lock=false @electric-sql/pglite@0.5.17
+          node supabase/tests/acessos.mjs

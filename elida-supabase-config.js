@@ -1,0 +1,1 @@
+window.ELIDA_SUPABASE=Object.freeze({"origem":"https://migration-supabase-piloto.elida-homologacao.pages.dev","url":"https://ogxhpzeklhtezgqphbjg.supabase.co","chavePublicavel":"sb_publishable_1jW-T_gI8KYuQR2SPfRTtg__snEWC1Z"});
