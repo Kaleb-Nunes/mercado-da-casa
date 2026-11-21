@@ -50,6 +50,11 @@ async function testar(){
   await entrada.waitFor({state:"visible"});
   await entrada.getByRole("button",{name:"Pausar animação do fundo"}).click();
   assert.equal(await entrada.getAttribute("data-pausado"),"");
+  const foto=entrada.locator(".entrada-foto");
+  assert.equal(await foto.evaluate(el=>getComputedStyle(el,"::after").animationPlayState),"paused");
+  await page.emulateMedia({reducedMotion:"reduce"});
+  assert.equal(await foto.evaluate(el=>getComputedStyle(el,"::after").animationName),"none");
+  await page.emulateMedia({reducedMotion:"no-preference"});
   await entrada.getByRole("button",{name:"Criar conta",exact:true}).click();
   await entrada.getByLabel("Confirmar senha").waitFor({state:"visible"});
   await entrada.getByLabel("E-mail").fill("familia@example.com");
@@ -72,6 +77,13 @@ async function testar(){
     const close=page.locator('[data-act="fechar-carta"]:visible').first();
     if(await close.count())await close.click();
   }
+  const atalho=page.locator("#view-inicio .inicio-rotulo");
+  await atalho.locator("img").evaluate(img=>img.decode());
+  await atalho.click();
+  await page.getByRole("heading",{name:"Ler rótulo por foto"}).waitFor();
+  await page.locator('#sheet [data-act="fechar"]').first().click();
+  resultado.push("foto no início, movimento reduzido e atalho para o leitor");
+
   // Botão de conta: abrir e fechar o modal deve funcionar no visitante.
   await page.locator("#elida-conta-botao").click();
   await entrada.waitFor({state:"visible"});

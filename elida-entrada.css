@@ -8,13 +8,21 @@
 #entrada [hidden] { display: none !important; }
 .entrada-layout { position: relative; display: grid; grid-template-columns: 1fr 1fr; min-height: 530px; }
 .entrada-foto { position: relative; overflow: hidden; background: #c9c9a4; }
-.entrada-foto::before {
-  content: ""; position: absolute; inset: -4%;
-  background: url("marca/ervas-boas-vindas.webp") 49% center / cover;
+.entrada-foto::before, .entrada-foto::after {
+  content: ""; position: absolute; inset: -2%;
+  background: center 42% / cover no-repeat;
 }
-#entrada[open] .entrada-foto::before { animation: entrada-pan 14s ease-in-out infinite alternate; }
-@keyframes entrada-pan { from { transform: scale(1.02) translateX(-1%); } to { transform: scale(1.11) translateX(2%); } }
-#entrada[data-pausado] .entrada-foto::before { animation-play-state: paused; }
+.entrada-foto::before { background-image: url("marca/familia-confere-rotulo.webp"); }
+.entrada-foto::after { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  #entrada[open]:not([data-formulario]) .entrada-foto::after {
+    background-image: url("marca/orientacao-rotulo.webp");
+    animation: entrada-cenas 18s ease-in-out infinite;
+  }
+  @keyframes entrada-cenas { 0%, 38%, 100% { opacity: 0; } 50%, 87% { opacity: 1; } }
+  #entrada[open]:not([data-formulario])[data-pausado] .entrada-foto::after { animation-play-state: paused; }
+}
+#entrada[data-formulario] .entrada-pausa { display: none; }
 .entrada-corpo { align-self: center; padding: clamp(24px, 5vw, 54px); }
 .entrada-marca { display: block; object-fit: contain; margin: 0 0 18px -5px; }
 #entrada h1 { font: 550 clamp(30px, 4vw, 42px)/1.06 Fraunces, Georgia, serif; letter-spacing: -.04em; margin: 0 0 22px; }
@@ -41,7 +49,7 @@
   #entrada { width: 100%; height: 100%; max-height: none; border-radius: 0; }
   .entrada-layout { grid-template-columns: 1fr; grid-template-rows: minmax(210px, 46svh) 1fr; min-height: 100%; }
   #entrada[data-formulario] .entrada-layout { grid-template-rows: minmax(100px, 17svh) 1fr; }
-  .entrada-foto::before { background-position: center 55%; }
+  .entrada-foto::before, .entrada-foto::after { background-position: center 36%; }
   .entrada-corpo { width: min(100%, 460px); margin: 0 auto; box-sizing: border-box; padding: 24px max(24px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); }
   #entrada[data-formulario] .entrada-marca { float: right; width: 100px; height: 36px; margin: 0; }
 }
@@ -50,7 +58,6 @@
   @keyframes entrada-marca { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 }
 @media (prefers-reduced-motion: reduce) {
-  #entrada[open] .entrada-foto::before { animation: none; }
   #entrada .entrada-pausa { display: none; }
 }
 
@@ -67,3 +74,13 @@
     100% { visibility: hidden; opacity: 0; }
   }
 }
+
+.entrada-inicio p { margin: 0 0 8px; color: #41594e; line-height: 1.5; }
+.inicio-rotulo {
+  width: 100%; display: flex; align-items: center; gap: 14px; padding: 0 16px 0 0;
+  margin-bottom: 14px; overflow: hidden; border: 1px solid #ccd9ce; border-radius: 16px;
+  color: #12372c; background: #fffdf8; text-align: left; font: 650 16px Onest, sans-serif;
+}
+.inicio-rotulo img { flex: 0 0 auto; width: 88px; height: 78px; object-fit: cover; object-position: center 40%; }
+.inicio-rotulo small { display: block; margin-top: 3px; font-size: 13px; font-weight: 450; color: #495f53; }
+.inicio-rotulo svg { width: 18px; height: 18px; flex: 0 0 auto; margin-left: auto; }

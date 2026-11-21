@@ -424,7 +424,10 @@
       else { tip = "Mês ainda não começou"; }
     } else { tip = "Defina quanto pode gastar no mês"; }
 
-    var h = '';
+    var h = '<button class="inicio-rotulo" type="button" data-act="rotulo-foto">' +
+      '<img src="marca/familia-confere-rotulo.webp" width="88" height="78" alt="">' +
+      '<span>Ler rótulo por foto<small>Confira os ingredientes da embalagem.</small></span>' +
+      IC.right + '</button>';
     var standalone = window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
     var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone;
     var android = /Android/i.test(navigator.userAgent) && !standalone;
