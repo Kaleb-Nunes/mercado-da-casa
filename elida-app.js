@@ -424,7 +424,11 @@
       else { tip = "Mês ainda não começou"; }
     } else { tip = "Defina quanto pode gastar no mês"; }
 
-    var h = '<button class="inicio-rotulo" type="button" data-act="rotulo-foto">' +
+    var jantar = jantarSalvo();
+    var h = '<section class="inicio-jantar"><h2>O que falta para o jantar?</h2><p>' +
+      (jantar ? esc(jantar.nome) : 'Comece com um prato brasileiro ou use uma refeição do seu plano.') +
+      '</p><button class="bigbtn" type="button" data-act="jantar">Planejar meu jantar</button></section>' +
+      '<button class="inicio-rotulo" type="button" data-act="rotulo-foto">' +
       '<img src="marca/familia-confere-rotulo.webp" width="88" height="78" alt="">' +
       '<span>Ler rótulo por foto<small>Confira os ingredientes da embalagem.</small></span>' +
       IC.right + '</button>';
@@ -783,6 +787,73 @@
     state.items.forEach(function(i){ if(i.lista && i.ok){ i.lista = false; i.ok = false; i.qtd = 1; } });
     state.mes = monthKey(data);
     save(); closeSheet(); show("inicio"); toast("Compra anotada no mês");
+  }
+
+  var jantarExemplo = {nome:"Arroz com feijão e abóbora assada", ingredientes:["Arroz", "Feijão", "Abóbora", "Azeite", "Alho"]};
+
+  function jantarSalvo(){
+    var j = state.jantar;
+    if(!j || typeof j.nome !== "string" || !j.nome.trim() || j.nome.length > 80 ||
+       !Array.isArray(j.ingredientes) || !j.ingredientes.length || j.ingredientes.length > 30) return null;
+    return j.ingredientes.every(function(n){ return typeof n === "string" && n.trim() && n.length <= 80; }) ? j : null;
+  }
+  function abrirJantar(){
+    var salvo = jantarSalvo(), prato = salvo || jantarExemplo, perfil = perfilAtivo();
+    ui.sheet = {type:"jantar", prato:prato};
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(prato.nome) + '</h3><p class="sh-sub">' +
+      (salvo ? 'Sua refeição salva.' : 'Exemplo de jantar. Você pode trocar pelos ingredientes do seu plano.') + '</p>' +
+      '<button class="link" type="button" data-act="editar-jantar">' + (salvo ? 'Editar minha refeição' : 'Usar minha própria refeição') + '</button>' +
+      '<fieldset class="jantar-despensa"><legend>O que você já tem em casa?</legend>' +
+      prato.ingredientes.map(function(n, i){
+        return '<label><input type="checkbox" name="tenho-ingrediente" value="' + i + '"> ' + esc(n) + '</label>';
+      }).join("") + '</fieldset><p class="sub">' +
+      (perfil ? 'Perfil ativo: ' + esc(perfil.apelido) + ' · ' + esc(nomesRestricoes(perfil)) + '. ' : '') +
+      'Confira os ingredientes com seu plano e o rótulo das embalagens. Esta lista organiza compras e não avalia a adequação do prato.</p>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="comprar-jantar"></button></div>');
+    atualizarJantar();
+  }
+  function atualizarJantar(){
+    var faltam = sheet.querySelectorAll('[name="tenho-ingrediente"]:not(:checked)').length;
+    sheet.querySelector('[data-act="comprar-jantar"]').textContent = faltam ?
+      'Levar à lista · ' + faltam + (faltam === 1 ? ' ingrediente' : ' ingredientes') : 'Concluir · já tenho tudo';
+  }
+  function editarJantar(){
+    var prato = jantarSalvo();
+    ui.sheet = {type:"editar-jantar"};
+    openSheet('<h3 class="sh-title" id="sh-title">Minha refeição</h3><form id="form-jantar" class="form">' +
+      '<label class="fl">Nome do prato<input class="inp" name="prato" required maxlength="80" placeholder="Ex.: Frango com legumes" value="' + esc(prato ? prato.nome : "") + '"></label>' +
+      '<label class="fl">Ingredientes, um por linha<textarea class="inp" name="ingredientes" rows="6" required maxlength="2430" placeholder="Frango&#10;Cenoura&#10;Batata">' +
+      esc(prato ? prato.ingredientes.join("\n") : "") + '</textarea></label><p class="sub">Salva este prato para a próxima compra neste aparelho.</p>' +
+      '<button class="bigbtn" type="submit">Salvar e conferir a despensa</button></form>');
+  }
+  function salvarJantar(form){
+    var nome = form.elements.prato.value.trim();
+    var ingredientes = form.elements.ingredientes.value.split(/\r?\n/).map(function(n){ return n.trim(); }).filter(Boolean);
+    var vistos = new Set();
+    ingredientes = ingredientes.filter(function(n){ var k = norm(n); if(vistos.has(k)) return false; vistos.add(k); return true; });
+    if(!nome || !ingredientes.length || ingredientes.length > 30 || ingredientes.some(function(n){ return n.length > 80; })){
+      toast("Informe o prato e até 30 ingredientes de até 80 caracteres cada."); return;
+    }
+    state.jantar = {nome:nome, ingredientes:ingredientes};
+    save(); renderInicio(); abrirJantar();
+  }
+  function comprarJantar(){
+    if(!ui.sheet || ui.sheet.type !== "jantar") return;
+    var prato = ui.sheet.prato, faltantes = sheet.querySelectorAll('[name="tenho-ingrediente"]:not(:checked)');
+    var novos = 0;
+    faltantes.forEach(function(campo){
+      var nome = prato.ingredientes[Number(campo.value)], it = findByName(nome);
+      if(it && it.lista) return;
+      if(!it){
+        it = {id:uid(), cat:"Outros", nome:nome, por:"unidade", hist:[], nota:"", basico:false};
+        state.items.push(it);
+      }
+      it.lista = true; it.ok = false; it.qtd = 1; novos++;
+    });
+    if(novos) save();
+    closeSheet();
+    if(faltantes.length) show("lista");
+    toast(!faltantes.length ? "Você já tem todos os ingredientes." : novos ? "Lista atualizada com o que falta." : "Os ingredientes já estão na lista.");
   }
 
   function sheetOrcamento(){
@@ -1876,6 +1947,9 @@
     var act = b.dataset.act, id = b.dataset.id, it;
     try {
       switch(act){
+      case "jantar": abrirJantar(); break;
+      case "editar-jantar": editarJantar(); break;
+      case "comprar-jantar": comprarJantar(); break;
       case "nav": show(b.dataset.view); break;
       case "novo-perfil": sheetPerfil(null); break;
       case "editar-perfil": sheetPerfil(perfisEstado.perfis.filter(function(p){ return p.id === id; })[0] || null); break;
@@ -2052,7 +2126,7 @@
   });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && ui.sheet){ closeSheet(); }
-    if(e.key === "Enter" && ui.sheet && e.target.tagName === "INPUT" && e.target.type !== "search"){
+    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && e.target.tagName === "INPUT" && e.target.type !== "search"){
       e.preventDefault();
       var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta", "criar-casa":"confirmar-casa", entrar:"confirmar-entrar"};
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
@@ -2060,7 +2134,8 @@
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
-    if(f.id === "form-busca"){
+    if(f.id === "form-jantar"){ e.preventDefault(); salvarJantar(f); }
+    else if(f.id === "form-busca"){
       e.preventDefault(); var q = document.getElementById("f-busca").value;
       var g = gatilhosIA.disparar(/^[\d\s.-]{8,}$/.test(q.trim()) ? "CODIGO_LIDO" : "PESQUISA_SOLICITADA", { origem: "usuario", texto: q });
       /* Sem fonte aprovada a busca não sai do aparelho, mas a pessoa recebe a resposta "indisponível". */
@@ -2070,6 +2145,7 @@
     else if(f.id === "form-rd"){ e.preventDefault(); analisarDigitado(); }
   });
   document.addEventListener("change", function(e){
+    if(e.target.name === "tenho-ingrediente"){ atualizarJantar(); return; }
     if(e.target.name === "fonte-teste" && AMB.homologacao){
       try{ localStorage.setItem(FONTE_TESTE_KEY, e.target.value === "off" ? "off" : "ficticio"); }catch(err){}
       Busca = BUS.criarBusca({ provedor: criarProvedorIA(), producao: AMB.producao }); buscaIA.resposta = null; render();
@@ -2128,6 +2204,7 @@
       show("inicio", true);
       return;
     }
+    if(hs === "#jantar"){ show("inicio"); abrirJantar(); return; }
     show(hs.replace("#",""), true);
   });
 
@@ -2168,6 +2245,7 @@
     show(VIEWS.indexOf(h) >= 0 ? h : "inicio", true);
     save();
     if(state.carta && !state.cartaVista) showWelcome();
+    else if(h === "jantar"){ show("inicio"); abrirJantar(); }
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
     else if(pendingOfertas) setTimeout(function(){ sheetOfertasImport(pendingOfertas); }, 350);
     else if(pendingCasa && syncDisponivel()) setTimeout(function(){ sheetEntrar(pendingCasa); }, 350);

@@ -35,7 +35,7 @@ window.ElidaEntrada = (function () {
   function exibir(destino) {
     tela = destino;
     const inicio = tela === "inicio", cadastro = tela === "cadastro", recuperar = tela === "recuperar";
-    titulo.textContent = nomes[tela] || "Boas-vindas ao Elida";
+    titulo.textContent = nomes[tela] || "O que falta para o jantar?";
     dialogo.toggleAttribute("data-formulario", !inicio);
     buscar(".entrada-inicio").hidden = !inicio;
     buscar(".entrada-voltar").hidden = inicio;
@@ -91,10 +91,11 @@ window.ElidaEntrada = (function () {
     } else if (botao.dataset.tela) exibir(botao.dataset.tela);
     else if (botao.matches(".entrada-voltar")) exibir(tela === "recuperar" ? "login" : "inicio");
     else if (botao.dataset.provedor) executar(() => servicos.autenticar(botao.dataset.provedor));
-    else if (botao.matches(".entrada-visitante")) executar(async () => {
+    else if (botao.matches(".entrada-visitante, [data-jantar]")) executar(async () => {
       await servicos.visitar();
       form.reset();
       dialogo.close();
+      if (botao.hasAttribute("data-jantar")) location.hash = "jantar";
     });
   });
   form.addEventListener("input", () => form.confirmacao.setCustomValidity(""));

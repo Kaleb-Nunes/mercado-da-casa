@@ -1,14 +1,14 @@
 # Elida · apresentação do piloto
 
-**Proposta.** O Elida ajuda famílias a conferir os ingredientes de uma embalagem e a organizar a lista e o orçamento das compras. A demonstração usa um perfil fictício e uma embalagem de teste. As fotos de abertura são ilustrativas.
+**Proposta.** O Elida ajuda quem cozinha para outra pessoa a transformar uma refeição já escolhida em uma lista de compras e a conferir as embalagens no mercado. A demonstração usa um perfil fictício e uma embalagem de teste. As fotos de abertura são ilustrativas.
 
 ## Demonstração de três minutos
 
 | Tempo | O que mostrar | O que o investidor deve ver |
 | --- | --- | --- |
-| 0:00–0:30 | Abrir o Elida e entrar como visitante. | A família consegue começar pelo celular. |
-| 0:30–1:45 | Usar um perfil fictício de restrição ao leite, abrir **Ler rótulo por foto**, escolher a foto e conferir o texto com a embalagem. | O usuário vê o que foi lido e revisa o texto. Repetir com uma foto ilegível para mostrar o estado de informação insuficiente. |
-| 1:45–2:30 | Abrir a lista, escolher um produto e mostrar o orçamento do mês. | A família pode usar a conferência e a organização de compras na mesma rotina. |
+| 0:00–0:30 | Abrir **Planejar meu jantar sem conta** e experimentar o prato brasileiro de exemplo. | A família consegue começar pelo celular. |
+| 0:30–1:45 | Escolher **Usar minha própria refeição**, salvar um prato fictício e marcar o que já há em casa. Levar os ingredientes restantes à lista. | Só entram as compras que faltam. Voltar ao início mostra o prato salvo. |
+| 1:45–2:30 | No início, abrir **Ler rótulo por foto**. Com um perfil fictício, revisar o texto de uma embalagem e repetir com uma foto ilegível. | A família revisa o texto e pode ver quando a informação é insuficiente. |
 | 2:30–3:00 | Apresentar a proposta do piloto para a clínica. | Convidar famílias voluntárias, combinar duração e combinar como medir os resultados. |
 
 ## Arquitetura desta versão

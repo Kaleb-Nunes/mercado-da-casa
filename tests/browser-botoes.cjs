@@ -84,6 +84,38 @@ async function testar(){
   await page.locator('#sheet [data-act="fechar"]').first().click();
   resultado.push("foto no início, movimento reduzido e atalho para o leitor");
 
+  const familia=await browser.newContext({viewport:{width:390,height:844},locale:"pt-BR",hasTouch:true});
+  const jantar=await familia.newPage();
+  jantar.on("pageerror",e=>errors.push(String(e.message||e)));
+  await jantar.goto(origem);
+  await jantar.getByRole("button",{name:"Planejar meu jantar sem conta"}).click();
+  const folha=jantar.locator("#sheet.on");
+  await folha.getByRole("heading",{name:"Arroz com feijão e abóbora assada"}).waitFor();
+  await folha.getByRole("button",{name:"Usar minha própria refeição"}).click();
+  await folha.getByLabel("Nome do prato").fill("Jantar de domingo");
+  await folha.getByLabel("Ingredientes, um por linha").fill("Cenoura\nTomate\ntomate");
+  await folha.getByRole("button",{name:"Salvar e conferir a despensa"}).click();
+  assert.equal(await folha.getByRole("checkbox").count(),2);
+  await folha.getByLabel("Cenoura").check();
+  await folha.getByRole("button",{name:"Levar à lista · 1 ingrediente",exact:true}).click();
+  const lista=jantar.locator("#view-lista.on");
+  await lista.getByText("Tomate",{exact:true}).first().waitFor();
+  assert.equal(await lista.getByText("Cenoura",{exact:true}).count(),0);
+  await jantar.reload();
+  await jantar.locator("#tab-inicio").click();
+  await jantar.getByRole("button",{name:"Planejar meu jantar",exact:true}).click();
+  await folha.getByRole("heading",{name:"Jantar de domingo"}).waitFor();
+  await folha.getByLabel("Cenoura").check();
+  await folha.getByRole("button",{name:"Levar à lista · 1 ingrediente",exact:true}).click();
+  assert.equal(await lista.getByText("Tomate",{exact:true}).count(),1);
+  await jantar.locator("#tab-inicio").click();
+  await jantar.getByRole("button",{name:"Planejar meu jantar",exact:true}).click();
+  await folha.getByLabel("Cenoura").check(); await folha.getByLabel("Tomate").check();
+  await folha.getByRole("button",{name:"Concluir · já tenho tudo"}).click();
+  assert.equal(await jantar.locator("#view-inicio.on").count(),1);
+  await familia.close();
+  resultado.push("jantar sem cadastro, prato próprio persistido e compras apenas do que falta, sem duplicatas");
+
   // Botão de conta: abrir e fechar o modal deve funcionar no visitante.
   await page.locator("#elida-conta-botao").click();
   await entrada.waitFor({state:"visible"});
