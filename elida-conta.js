@@ -72,6 +72,7 @@
     fundo.innerHTML='<div class="elida-account-card"><h2>Conta Elida</h2>'+
       '<p data-elida-estado>Entre com Google ou e-mail. Sem login, o modo visitante funciona no próprio aparelho.</p>'+
       '<p data-elida-msg role="status" aria-live="polite"></p>'+
+      '<p><a href="https://migration-supabase-piloto.elida-homologacao.pages.dev/">Abrir a nova homologação para solicitar acesso</a></p>'+
       '<label>E-mail<input type="email" autocomplete="email" data-elida-email maxlength="254"></label>'+
       '<label>Senha<input type="password" autocomplete="current-password" data-elida-password maxlength="256"></label>'+
       '<div class="elida-account-actions">'+
@@ -146,7 +147,7 @@
     }
     if(!configValida())mensagem("Login aguardando configuração do aplicativo Web no Firebase. O modo visitante permanece disponível.");
     else if(pendente && acesso.status==="indisponivel")
-      mensagem("Aprovação indisponível: verifique a conexão, o App Check e as Functions. Conta não liberada.");
+      mensagem("As aprovações passaram para a nova homologação. Abra o link abaixo e entre com a sua conta Google.");
     else mensagem("");
     e.hidden=false;
     var alvo=e.querySelector('[data-elida-action="visitante"]');
