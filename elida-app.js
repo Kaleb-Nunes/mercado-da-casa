@@ -900,7 +900,7 @@
     ui.sheet={type:"duvida-form"};
     openSheet('<h3 class="sh-title" id="sh-title">O que aconteceu na compra?</h3><form id="form-duvida" class="form">' +
       '<label class="fl">Produto ou refeição<input required maxlength="80" class="inp" name="item" placeholder="Ex.: pão para o café da manhã"></label>' +
-      '<label class="fl">Dificuldade<select class="inp" name="motivo">'+Object.keys(motivosConsulta).map(function(k){
+      '<label class="fl"><span id="titulo-dificuldade">Dificuldade</span><select class="inp" name="motivo" aria-labelledby="titulo-dificuldade">'+Object.keys(motivosConsulta).map(function(k){
         return '<option value="'+k+'"'+(k===motivo?' selected':'')+'>'+motivosConsulta[k][0]+'</option>';
       }).join("")+'</select></label><label class="fl">Pergunta para a consulta<textarea required maxlength="350" class="inp" name="pergunta">'+motivosConsulta[motivo][1]+'</textarea></label>' +
       '<button class="bigbtn" type="submit">Guardar neste aparelho</button></form>');

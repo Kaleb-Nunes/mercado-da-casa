@@ -4,7 +4,7 @@ importScripts("./ambiente.js");
 /* Mesma decisão do app: só a lista de homologação de ambiente.js é homologação. */
 const AMB = self.ElidaAmbiente.resolver(self.location);
 const PRODUCAO = AMB.producao;
-const CACHE = AMB.prefixoCache + "-v23";
+const CACHE = AMB.prefixoCache + "-v24";
 /* Leitor de rótulos (cerca de 5 MB): cache próprio, fora da versão do app, para não baixar de novo a cada atualização. */
 const CACHE_OCR = AMB.prefixoCache + "-ocr-1";
 const CORE = ["./", "./index.html", "./ambiente.js", "./dieta.js", "./elida-regras.js", "./elida-busca.js", "./elida-ocr.js", "./elida-backup-seguro.js", "./elida-supabase-config.js", "./vendor/supabase/sdk.js", "./elida-conta.js", "./elida-entrada.js", "./elida-entrada.css", "./marca/familia-confere-rotulo.webp", "./marca/orientacao-rotulo.webp", "./marca/ervas-boas-vindas.webp", "./marca/logo-horizontal.svg", "./marca/apple-login.png", "./marca/facebook-login.png", "./marca/google-login.png", "./elida-aprovacao.js", "./elida-app.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./favicon.svg", "./ofertas.json", "./vendor/firebase.js", "./fonts/fraunces.woff2", "./fonts/onest.woff2"];
