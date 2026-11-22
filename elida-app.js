@@ -2291,7 +2291,7 @@
     var f = e.target;
     if(f.id === "form-duvida"){
       e.preventDefault();
-      var item=f.elements.item.value.trim(), pergunta=f.elements.pergunta.value.trim(), motivo=f.elements.motivo.value;
+      var item=f.elements.namedItem("item").value.trim(), pergunta=f.elements.pergunta.value.trim(), motivo=f.elements.motivo.value;
       if(!item || !pergunta || !Object.hasOwn(motivosConsulta,motivo)){toast("Informe o produto e a pergunta.");return;}
       var registro={id:uid(),quando:Date.now(),item:item,pergunta:pergunta,motivo:motivo,resposta:""};
       if(gravarConsulta(registro)) abrirDuvida(registro.id);
