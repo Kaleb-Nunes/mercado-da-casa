@@ -435,6 +435,7 @@
       '<img src="marca/familia-confere-rotulo.webp" width="88" height="78" alt="">' +
       '<span>Ler rótulo por foto<small>Conferir a embalagem</small></span>' + IC.right + '</button>' +
       '<button type="button" class="inicio-delegar" data-act="delegar"><span>Comprar para alguém<small>Preparar uma lista para enviar</small></span>' + IC.right + '</button></div>';
+    h += '<button type="button" class="inicio-consulta" data-act="consulta"><img src="marca/orientacao-rotulo.webp" width="68" height="64" alt=""><span><b>Levar à consulta</b><small>Guarde uma dúvida da compra para conversar com sua nutricionista.</small></span>'+IC.right+'</button>';
     if(compras.length){
       h += '<button type="button" class="compra-progresso" data-act="nav" data-view="lista"><b>Retomar minha compra</b>' +
         '<span>' + carrinho + ' de ' + compras.length + ' no carrinho</span><progress aria-label="Itens no carrinho" value="' + carrinho + '" max="' + compras.length + '"></progress></button>';
@@ -609,6 +610,7 @@
     var cart = items.filter(function(i){ return i.ok; }).reduce(function(s,i){ return s + lineTotal(i); }, 0);
     var done = items.filter(function(i){ return i.ok; }).length;
     var h = '<div><h2 class="title">Lista</h2><p class="sub">Monte antes de sair. No mercado, toque no círculo quando pôr no carrinho.</p></div>';
+    h += '<button type="button" class="btn-sm" data-act="nova-duvida" data-motivo="falta">Registrar dificuldade para a consulta</button>';
     if(!items.length){
       h += '<div class="card"><div class="empty">' + IC.basket + '<b>Sua lista está vazia</b>Comece com o básico da casa ou escolha os itens em Preços.' +
         '<div class="sh-actions" style="margin-top:14px"><button class="bigbtn" type="button" data-act="basico">Começar com o básico</button>' +
@@ -857,6 +859,67 @@
     closeSheet();
     if(faltantes.length) show("lista");
     toast(!faltantes.length ? "Você já tem todos os ingredientes." : novos ? "Lista atualizada com o que falta." : "Os ingredientes já estão na lista.");
+  }
+
+  var motivosConsulta = {
+    rotulo:["Fiquei em dúvida com o rótulo","Qual trecho da embalagem devo conferir neste produto?"],
+    preco:["Ficou caro","Que alternativa posso discutir para esta refeição dentro do meu orçamento?"],
+    falta:["Não encontrei o produto","O que posso procurar quando este produto faltar?"]
+  };
+  var CONSULTA_KEY = PFX + "elida-consulta-";
+  function lerConsulta(){
+    var registros=[];
+    try{
+      for(var i=0;i<localStorage.length;i++){
+        var chave=localStorage.key(i);
+        if(!chave || !chave.startsWith(CONSULTA_KEY)) continue;
+        var id=chave.slice(CONSULTA_KEY.length), r;
+        try{r=JSON.parse(localStorage.getItem(CONSULTA_KEY+id));}catch(erro){continue;}
+        if(r && chave === CONSULTA_KEY+r.id && Object.hasOwn(motivosConsulta,r.motivo) &&
+           typeof r.item==="string" && typeof r.pergunta==="string" && typeof r.resposta==="string") registros.push(r);
+      }
+    }catch(e){toast("O aparelho não conseguiu abrir todas as suas anotações.");}
+    return registros.sort(function(a,b){return b.quando-a.quando;});
+  }
+  function gravarConsulta(r){
+    try{localStorage.setItem(CONSULTA_KEY+r.id,JSON.stringify(r));return true;}
+    catch(e){toast("O aparelho não conseguiu salvar. Sua anotação continua na tela.",4000);return false;}
+  }
+  function abrirConsulta(){
+    var registros=lerConsulta();
+    ui.sheet={type:"consulta"};
+    openSheet('<h3 class="sh-title" id="sh-title">Levar à consulta</h3><p class="sh-sub">Guarde a pergunta que surgiu no mercado. Na consulta, mostre o que aconteceu e anote o que combinaram para a próxima compra.</p>' +
+      '<button class="bigbtn" type="button" data-act="nova-duvida">Registrar dificuldade</button>' +
+      (registros.length ? '<ul class="consulta-casos">'+registros.map(function(r){
+        return '<li><button type="button" class="row" data-act="ver-duvida" data-id="'+esc(r.id)+'"><span class="r-main"><b class="r-name">'+esc(r.item)+'</b><small class="r-meta">'+esc(motivosConsulta[r.motivo][0])+' · '+(r.resposta?'Combinado anotado':'Para conversar')+'</small></span>'+IC.right+'</button></li>';
+      }).join("")+'</ul>' : '<details class="consulta-exemplo"><summary>Ver exemplo de uma família</summary><p><b>No mercado</b><br>O pão da lista acabou. Quem foi às compras voltou sem ele.</p><p><b>Pergunta para a consulta</b><br>Que outra opção podemos procurar para o café da manhã quando isso acontecer?</p></details>') +
+      '<p class="sub">Anotações guardadas neste aparelho. Mostre ou compartilhe uma pergunta por vez quando desejar.</p>');
+  }
+  function novaDuvida(motivoInicial){
+    var motivo=Object.hasOwn(motivosConsulta,motivoInicial)?motivoInicial:"rotulo";
+    ui.sheet={type:"duvida-form"};
+    openSheet('<h3 class="sh-title" id="sh-title">O que aconteceu na compra?</h3><form id="form-duvida" class="form">' +
+      '<label class="fl">Produto ou refeição<input required maxlength="80" class="inp" name="item" placeholder="Ex.: pão para o café da manhã"></label>' +
+      '<label class="fl">Dificuldade<select class="inp" name="motivo">'+Object.keys(motivosConsulta).map(function(k){
+        return '<option value="'+k+'"'+(k===motivo?' selected':'')+'>'+motivosConsulta[k][0]+'</option>';
+      }).join("")+'</select></label><label class="fl">Pergunta para a consulta<textarea required maxlength="350" class="inp" name="pergunta">'+motivosConsulta[motivo][1]+'</textarea></label>' +
+      '<button class="bigbtn" type="submit">Guardar neste aparelho</button></form>');
+  }
+  function abrirDuvida(id){
+    var r=lerConsulta().find(function(a){return a.id===id;});
+    if(!r){abrirConsulta();return;}
+    ui.sheet={type:"consulta",id:id};
+    openSheet('<h3 class="sh-title" id="sh-title">'+esc(r.item)+'</h3><p class="sh-sub">'+esc(motivosConsulta[r.motivo][0])+' · '+esc(new Date(r.quando).toLocaleDateString("pt-BR"))+'</p>' +
+      '<p class="consulta-pergunta">'+esc(r.pergunta)+'</p><button type="button" class="btn-sm" data-act="mensagem-consulta">Revisar mensagem para a consulta</button>' +
+      '<form id="form-combinado" class="form"><label class="fl">O que combinamos para a próxima compra?<textarea maxlength="350" required class="inp" name="resposta" placeholder="Anote com suas palavras depois da conversa.">'+esc(r.resposta)+'</textarea></label><button class="bigbtn" type="submit">Guardar combinado</button></form>' +
+      '<div class="links"><button class="link" type="button" data-act="consulta">Todas as anotações</button><button class="quiet" type="button" data-act="excluir-duvida">Excluir anotação</button></div>');
+  }
+  function mensagemConsulta(){
+    var r=lerConsulta().find(function(a){return a.id===ui.sheet.id;});
+    if(!r){abrirConsulta();return;}
+    var texto=[r.item,motivosConsulta[r.motivo][0],r.pergunta].join("\n");
+    openSheet('<h3 class="sh-title" id="sh-title">Mensagem para a consulta</h3><label class="fl">Revise antes de compartilhar<textarea class="inp" id="pedido-compra">'+esc(texto)+'</textarea></label>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="enviar-pedido">'+(navigator.share?'Escolher destinatário':'Copiar mensagem')+'</button><button class="quiet" type="button" data-act="ver-duvida" data-id="'+esc(r.id)+'">Voltar à anotação</button></div>');
   }
 
   function abrirCompraDelegada(){
@@ -1979,7 +2042,7 @@
       if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", foto:r.foto, linhas:r.linhas || [], texto:r.transcricao || r.textoLido, rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
       var e = document.getElementById("ocr-status"); if(!e) return;
       e.innerHTML = '<div>' + chipEstado("INFORMACAO_INSUFICIENTE") + '</div>' + r.motivos.map(function(m){ return '<p class="ia-erro">' + esc(m) + '</p>'; }).join("") +
-        '<p class="sub">O app não analisa uma foto que não conseguiu ler direito. Tire outra ou digite o rótulo.</p><div class="links"><button class="link" type="button" data-act="rotulo-digitado">Digitar o rótulo</button></div>';
+        '<p class="sub">O app não analisa uma foto que não conseguiu ler direito. Tire outra ou digite o rótulo.</p><div class="links"><button class="link" type="button" data-act="rotulo-digitado">Digitar o rótulo</button><button type="button" class="link" data-act="nova-duvida" data-motivo="rotulo">Levar dúvida à consulta</button></div>';
       var repetir = sheet.querySelector('[data-act="ocr-escolher"]');
       if(repetir) repetir.textContent = "Tirar outra foto";
       e.setAttribute("tabindex", "-1"); e.focus();
@@ -2023,6 +2086,15 @@
     var act = b.dataset.act, id = b.dataset.id, it;
     try {
       switch(act){
+      case "consulta": abrirConsulta(); break;
+      case "nova-duvida": novaDuvida(b.dataset.motivo); break;
+      case "ver-duvida": abrirDuvida(id); break;
+      case "mensagem-consulta": mensagemConsulta(); break;
+      case "excluir-duvida":
+        if(ui.sheet && arm("excluir-duvida-"+ui.sheet.id,b,"Toque novamente para excluir")){
+          try{localStorage.removeItem(CONSULTA_KEY+ui.sheet.id); abrirConsulta();}
+          catch(erro){toast("Não foi possível excluir a anotação.");}
+        } break;
       case "delegar": abrirCompraDelegada(); break;
       case "incluir-prato":
         var pedido=document.getElementById("pedido-compra"), pratoSalvo=jantarSalvo();
@@ -2209,7 +2281,7 @@
   });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && ui.sheet){ closeSheet(); }
-    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && ui.sheet.type !== "custo" && e.target.tagName === "INPUT" && e.target.type !== "search"){
+    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && ui.sheet.type !== "custo" && ui.sheet.type !== "duvida-form" && e.target.tagName === "INPUT" && e.target.type !== "search"){
       e.preventDefault();
       var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta", "criar-casa":"confirmar-casa", entrar:"confirmar-entrar"};
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
@@ -2217,7 +2289,22 @@
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
-    if(f.id === "form-custo"){ e.preventDefault(); calcularCustos(f); }
+    if(f.id === "form-duvida"){
+      e.preventDefault();
+      var item=f.elements.item.value.trim(), pergunta=f.elements.pergunta.value.trim(), motivo=f.elements.motivo.value;
+      if(!item || !pergunta || !Object.hasOwn(motivosConsulta,motivo)){toast("Informe o produto e a pergunta.");return;}
+      var registro={id:uid(),quando:Date.now(),item:item,pergunta:pergunta,motivo:motivo,resposta:""};
+      if(gravarConsulta(registro)) abrirDuvida(registro.id);
+    }
+    else if(f.id === "form-combinado"){
+      e.preventDefault();
+      var anotacao=lerConsulta().find(function(r){return r.id===ui.sheet.id;});
+      if(!anotacao){abrirConsulta();return;}
+      anotacao.resposta=f.elements.resposta.value.trim();
+      if(!anotacao.resposta){toast("Escreva o combinado.");return;}
+      if(gravarConsulta(anotacao)) abrirConsulta();
+    }
+    else if(f.id === "form-custo"){ e.preventDefault(); calcularCustos(f); }
     else if(f.id === "form-jantar"){ e.preventDefault(); salvarJantar(f); }
     else if(f.id === "form-busca"){
       e.preventDefault(); var q = document.getElementById("f-busca").value;
@@ -2229,6 +2316,12 @@
     else if(f.id === "form-rd"){ e.preventDefault(); analisarDigitado(); }
   });
   document.addEventListener("change", function(e){
+    if(e.target.name === "motivo" && e.target.form && e.target.form.id==="form-duvida"){
+      var pergunta=e.target.form.elements.pergunta;
+      if(!pergunta.value.trim() || Object.values(motivosConsulta).some(function(m){return pergunta.value===m[1];}))
+        pergunta.value=motivosConsulta[e.target.value][1];
+      return;
+    }
     if(e.target.name === "tenho-ingrediente"){ atualizarJantar(); return; }
     if(e.target.name === "fonte-teste" && AMB.homologacao){
       try{ localStorage.setItem(FONTE_TESTE_KEY, e.target.value === "off" ? "off" : "ficticio"); }catch(err){}

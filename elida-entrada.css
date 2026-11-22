@@ -129,3 +129,12 @@
 .rotulo-prova figcaption,.ocr-texto {padding:8px;font-size:14px}
 @media(max-width:380px){.jantar-corpo{max-width:94%}.compra-progresso{grid-template-columns:1fr}.custo-opcao{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.view.on{animation:none}}
+
+.inicio-consulta {display:flex;gap:14px;align-items:center;text-align:left;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink)}
+.inicio-consulta img {object-fit:cover;border-radius:11px;flex:none}
+.inicio-consulta small,.consulta-casos small {display:block;line-height:1.4;color:var(--muted)}
+.inicio-consulta svg,.consulta-casos svg {width:18px;flex:none;margin-left:auto}
+.consulta-casos {list-style:none;padding:0;margin:14px 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.consulta-casos .row {width:100%;overflow-wrap:anywhere}
+.consulta-exemplo,.consulta-pergunta {margin:16px 0;padding:14px;border-left:3px solid var(--brass);background:var(--bg);border-radius:4px 12px 12px 4px;overflow-wrap:anywhere}
+.consulta-exemplo summary {cursor:pointer}

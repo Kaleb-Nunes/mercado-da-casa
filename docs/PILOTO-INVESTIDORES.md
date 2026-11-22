@@ -9,7 +9,7 @@
 | 0:00–0:30 | Abrir **Planejar meu jantar sem conta** e experimentar o prato brasileiro de exemplo. | A família consegue começar pelo celular. |
 | 0:30–1:45 | Escolher **Usar minha própria refeição**, salvar um prato fictício e marcar o que já há em casa. Levar os ingredientes restantes à lista. | Só entram as compras que faltam. Voltar ao início mostra o prato salvo. |
 | 1:45–2:30 | No início, abrir **Ler rótulo por foto**. Com um perfil fictício, revisar o texto de uma embalagem e repetir com uma foto ilegível. | A família revisa o texto e pode ver quando a informação é insuficiente. |
-| 2:30–3:00 | Apresentar a proposta do piloto para a clínica. | Convidar famílias voluntárias, combinar duração e combinar como medir os resultados. |
+| 2:30–3:00 | Abrir **Levar à consulta**. Registrar “Não encontrei o pão”, revisar a pergunta e mostrar onde a família pode guardar o combinado após conversar com a nutricionista. | Convidar uma clínica para testar se as famílias levam perguntas reais ao retorno e consultam as anotações ao fazer a próxima compra. |
 
 ## Arquitetura desta versão
 
