@@ -85,6 +85,7 @@ async function executar(){
    const dados=new Map();
    const localStorage={getItem:k=>dados.has(k)?dados.get(k):null,setItem:(k,v)=>dados.set(k,String(v)),removeItem:k=>dados.delete(k)};
    const document={
+     querySelector(sel){return sel === ".top" ? this.body : null;},
      documentElement:{setAttribute(){}},
      createElement(){return {id:"",type:"",textContent:"",setAttribute(){},addEventListener(){}};},
      body:{appendChild(){}}

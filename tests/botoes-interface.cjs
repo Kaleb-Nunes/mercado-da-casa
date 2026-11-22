@@ -61,6 +61,7 @@ function criarAmbiente(modoGuardado){
     }
   });
   const document={
+    querySelector(sel){return sel === ".top" ? this.body : null;},
     body:{appendChild(el){elems.push(el);}},
     documentElement:{attrs:{},setAttribute(k,v){this.attrs[k]=v;}},
     createElement:mk,

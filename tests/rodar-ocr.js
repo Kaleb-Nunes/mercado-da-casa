@@ -88,6 +88,21 @@ t("módulo não tem rede nem envia imagem", function () {
   assert.ok(/workerBlobURL: false/.test(c) && /\.\/vendor\/ocr\//.test(c), "leitor vem do próprio site");
 });
 
+t("foto com fragmentos como na captura do celular é recusada mesmo com média alta", function(){
+  var r = ler("ea ·? Thabrula: INGREDIENTES: Farinha de trigo enriquecida com ter e ácido fólico e diglicerídeos de ácidos A. de = í ácido ascórbico. ALÉRGICOS: CONTÉM DE VADOS DE nÃ SOJA. PODE CONTER CASTANHA-DO-PA CENTEIO, CEVADA, À OVOS E LEITE CONTÉM GLÚTEN.", 86);
+  assert.equal(r.status, INS);
+});
+t("separa os avisos que ficaram sem pontuação no OCR", function(){
+  var r = ler("Ingredientes: farinha, sal. ALÉRGICOS: CONTÉM SOJA PODE CONTER LEITE E OVOS CONTÉM GLÚTEN.");
+  assert.equal(r.rotulo.advertencias.contem,"CONTÉM SOJA");
+  assert.equal(r.rotulo.advertencias.podeConter,"PODE CONTER LEITE E OVOS");
+  assert.equal(r.rotulo.declaracaoGluten,"contem");
+});
+t("muitas palavras pouco confiáveis pedem nova foto",function(){
+  var palavras=Array.from({length:12},function(_,i){return {texto:"palavra",confianca:i<4?45:95};});
+  assert.equal(O.interpretar(TORRADA,{confianca:83,palavras:palavras}).status,INS);
+});
+
 console.log("Elida IA · OCR: " + ok + " testes passaram, " + falhas.length + " falharam.");
 falhas.forEach(function (f) { console.log("FALHA " + f); });
 process.exit(falhas.length ? 1 : 0);

@@ -8,7 +8,7 @@
   if (typeof module === "object" && module.exports) module.exports = m; else raiz.ElidaOCR = m;
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
-  var VERSAO = "ocr-2026.11.19";
+  var VERSAO = "ocr-2026.11.21b";
   var LIMITES = Object.freeze({ confiancaMinima: 60, confiancaPalavra: 70, textoMinimo: 12, tempoMaximoMs: 60000, ladoMaximo: 2000, ladoMinimo: 900 });
   var STATUS = Object.freeze({ OK: "ok", INSUFICIENTE: "INFORMACAO_INSUFICIENTE" });
 
@@ -27,8 +27,6 @@
   var RX_INGR = /(?:^|[^A-Z])((?:[A-Z]?N?GRED[I1L]?[A-Z]{3,5}S?)|(?:I?NGR\.\s*:?)|(?:INGR\b))\s*[:.;,]?\s*/;
   var RX_INGR_FRACO = /REDIENTES?\s*[:.;,]?\s*/;
   var RX_FIM_ING = /\bALERG[A-Z]*\b|\b(?:NAO\s+)?CONT[EF]M\b|\bPODE\s*\W{0,3}\s*CONT|\bINFORMACAO\s+NUTRI|\bCONSERVAR\b|\bINDUSTRIA\s+BRASILEIRA\b|\bVALIDADE\b|\bLOTE\b/;
-  var RX_CONTEM = /(NAO\s+)?CONT[EF]M\s*:?\s+([^.]{2,240})(?:\.|$)/g;
-  var RX_PODE = /PODE\s*\W{0,3}\s*CONT[EI1][RIN]?\s*:?\s*([^.]{2,260})(?:\.|$)/g;
   var RX_GL_NAO = /NAO\s+CONT[EF]M\s+GL[UV]TEN|(?:SEM|ISENTO\s+DE)\s+GL[UV]TEN/;
   var RX_LAC_SEM = /NAO\s+CONT[EF]M\s+LACTOSE|(?:SEM|ZERO|ISENTO\s+DE)\s+LACTOSE/;
   var RX_LAC_SIM = /CONT[EF]M\s+LACTOSE/;
@@ -75,19 +73,17 @@
     var ingredientes = separar(trechoIng);
     var depois = iniIng >= 0 ? k.slice(fimIng) : k, desloc = iniIng >= 0 ? fimIng : 0, original = t.slice(desloc);
 
-    var contem = [], pode = [], m;
-    RX_CONTEM.lastIndex = 0;
-    while ((m = RX_CONTEM.exec(depois))) {
-      if (m[1]) continue;
-      if (/^(GL[UV]TEN|LACTOSE)\b/.test(m[2])) {
-        var extra = m[2].replace(/^(GL[UV]TEN|LACTOSE)\W*/, "");
-        if (!extra) continue;
-      }
-      contem.push(original.substr(m.index, m[0].length).trim());
-    }
-    RX_PODE.lastIndex = 0;
-    while ((m = RX_PODE.exec(depois))) pode.push(original.substr(m.index, m[0].length).trim());
-    contem = contem.filter(function (c) { return !/^\W*pode/i.test(c); });
+    // Um novo aviso encerra o anterior mesmo quando o OCR perde o ponto entre eles.
+    var contem = [], pode = [];
+    var marcaAviso = /\b(?:PODE\s*\W{0,3}\s*CONT[EI1][RIN]?|(?:NAO\s+)?CONT[EF]M)\b/g;
+    var marcas = Array.from(depois.matchAll(marcaAviso));
+    marcas.forEach(function(m, i){
+      var proximo = marcas[i+1], fim = proximo ? proximo.index : original.length;
+      var frase = original.slice(m.index, fim).split(".")[0].trim();
+      if(/^PODE/.test(m[0])) pode.push(frase);
+      else if(!/^NAO/.test(m[0]) && !/^CONT[EF]M\s*:?\s+(?:GL[UV]TEN|LACTOSE)\s*$/i.test(chaveDe(frase)))
+        contem.push(frase);
+    });
 
     var temBloco = /ALERG[A-Z]*\s*:?/.test(depois) || contem.length > 0 || pode.length > 0;
     var dg = declaracaoGluten(k), dl = declaracaoLactose(k);
@@ -101,6 +97,17 @@
     var duvidosas = (meta.palavras || []).filter(function (p) { return typeof p.confianca === "number" && p.confianca < LIMITES.confiancaPalavra && /[A-Za-zÀ-ú]{3,}/.test(p.texto || ""); })
       .map(function (p) { return p.texto; }).slice(0, 40);
 
+    var palavras = (meta.palavras || []).filter(function(p){return /[A-Za-zÀ-ú]{2}/.test(p.texto || "");});
+    var muitasIncertas = palavras.length >= 8 &&
+      palavras.filter(function(p){return p.confianca < LIMITES.confiancaPalavra;}).length / palavras.length >= 0.25;
+    // Fragmentos órfãos, sinais no meio da frase ou perda de codificação pedem nova captura.
+    var trecho = t.slice(iniIng >= 0 ? iniIng : 0);
+    var fragmentos = trecho.match(/(?:^|\s)[bcdfhjkmnpqrtvwxz](?=[\s:.,;]|$)/gi) || [];
+    var simbolos = /[�]|Ã[§£©ª¡º³­]|(?:[.,:]\s*){3,}|\b[A-Za-zÀ-ú]\s+[=]\s+[A-Za-zÀ-ú]\b/.test(trecho);
+    var avisoTruncado = /(?:^|\s)n[ãâ](?=\s|[.,;]|$)/i.test(original);
+    if(muitasIncertas || fragmentos.length >= 3 || simbolos || avisoTruncado)
+      motivos.push("Algumas palavras ficaram cortadas ou misturadas. Fotografe de frente, aproximando a lista de ingredientes e os avisos.");
+
     var rotulo = {
       nome: "", categoria: "alimento", ingredientes: ingredientes,
       advertencias: { contem: contem.join(" "), podeConter: pode.join(" ") },
@@ -110,7 +117,7 @@
     };
     return {
       status: motivos.length ? STATUS.INSUFICIENTE : STATUS.OK, versao: VERSAO, motivos: motivos, avisos: avisos,
-      confianca: conf, palavrasDuvidosas: duvidosas, textoLido: t,
+      confianca: conf, palavrasDuvidosas: duvidosas, textoLido: t, transcricao: String(textoBruto || "").trim(),
       achados: { ingredientes: !!mI && ingredientes.length > 0, blocoAlergicos: temBloco, declaracaoGluten: dg !== "nao_informado" },
       rotulo: rotulo
     };

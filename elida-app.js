@@ -653,6 +653,7 @@
   function openSheet(html, focusId){
     lastFocus = document.activeElement;
     sheet.innerHTML = '<div class="grab" aria-hidden="true"></div><button class="sh-close" type="button" data-act="fechar" aria-label="Fechar">×</button>' + html;
+    sheet.scrollTop = 0;
     sheet.classList.add("on"); scrim.classList.add("on");
     document.body.style.overflow = "hidden";
     setTimeout(function(){ var f = focusId && document.getElementById(focusId); if(f){ try{ f.focus(); if(f.select) f.select(); }catch(e){} } }, 280);
@@ -1885,19 +1886,19 @@
         '<details class="ocr-texto"><summary>Ver transcrição da foto</summary><p>' + esc(pre.texto) + '</p></details>' +
         (window.speechSynthesis ? '<button class="btn-sm" type="button" data-act="ouvir-rotulo">Ouvir texto lido</button>' : '') : '') +
       (pre && pre.avisos && pre.avisos.length ? pre.avisos.map(function(a){ return '<p class="ia-duv">' + esc(a) + '</p>'; }).join("") : '') +
-      (pre && pre.duvidosas && pre.duvidosas.length ? '<p class="ia-duv">Leitura duvidosa, confira com atenção: ' + esc(pre.duvidosas.slice(0, 20).join(", ")) + '</p>' : '') +
+      (pre && pre.duvidosas && pre.duvidosas.length ? '<p class="ia-duv">Há palavras com leitura incerta. Compare os campos abaixo com a embalagem.</p>' : '') +
       '<form class="form" id="form-rd" novalidate>' +
-      '<div class="fl"><label for="rd-nome">Produto</label><input class="inp" id="rd-nome" autocomplete="off" value="' + esc(pre && pre.nome || r.nome || "") + '"></div>' +
-      '<div class="fl"><label for="rd-ing">Ingredientes (separados por vírgula)</label><textarea class="inp" id="rd-ing">' + esc([].concat(r.ingredientes || []).join(", ")) + '</textarea></div>' +
-      '<div class="fl"><label for="rd-contem">Alérgicos: contém</label><textarea class="inp" id="rd-contem">' + esc(r.advertencias && r.advertencias.contem || "") + '</textarea></div>' +
+      '<fieldset class="rd-grupo"><legend>Produto e ingredientes</legend><div class="fl"><label for="rd-nome">Nome do produto</label><input class="inp" id="rd-nome" autocomplete="off" value="' + esc(pre && pre.nome || r.nome || "") + '"></div>' +
+      '<div class="fl"><label for="rd-ing">Ingredientes (separados por vírgula)</label><textarea class="inp" rows="4" id="rd-ing">' + esc([].concat(r.ingredientes || []).join(", ")) + '</textarea></div>' +
+      '</fieldset><fieldset class="rd-grupo"><legend>Avisos da embalagem</legend><div class="fl"><label for="rd-contem">Alérgicos: contém</label><textarea class="inp" id="rd-contem">' + esc(r.advertencias && r.advertencias.contem || "") + '</textarea></div>' +
       '<div class="fl"><label for="rd-pode">Pode conter</label><textarea class="inp" id="rd-pode">' + esc(r.advertencias && r.advertencias.podeConter || "") + '</textarea></div>' +
       '<div class="fl"><label for="rd-gl">Glúten</label><select class="inp" id="rd-gl"><option value="nao_informado"' + sel("nao_informado", gl) + '>Não achei na embalagem</option><option value="contem"' + sel("contem", gl) + '>Contém glúten</option><option value="nao_contem"' + sel("nao_contem", gl) + '>Não contém glúten</option><option value="contraditorio"' + sel("contraditorio", gl) + '>A embalagem se contradiz</option></select></div>' +
       '<div class="fl"><label for="rd-lac">Lactose</label><select class="inp" id="rd-lac"><option value="nao_informado"' + sel("nao_informado", lac) + '>Não achei na embalagem</option><option value="contem_lactose"' + sel("contem_lactose", lac) + '>Contém lactose</option><option value="sem_lactose"' + sel("sem_lactose", lac) + '>Sem lactose</option><option value="contraditorio"' + sel("contraditorio", lac) + '>A embalagem se contradiz</option></select></div>' +
-      '<label class="ia-op"><input type="checkbox" id="rd-form"> É fórmula infantil</label>' +
+      '</fieldset><fieldset class="rd-grupo"><legend>Conferência final</legend><label class="ia-op"><input type="checkbox" id="rd-form"> É fórmula infantil</label>' +
       (pre ? '<label class="ia-op"><input type="checkbox" id="rd-ok0"> Conferi este texto com a embalagem na minha mão</label>' : '') +
       '<label class="ia-op"><input type="checkbox" id="rd-ok1"> ' + (pre ? 'A lista de ingredientes está completa' : 'Copiei a lista inteira de ingredientes') + '</label>' +
       '<label class="ia-op"><input type="checkbox" id="rd-ok2"> ' + (pre ? 'O bloco ALÉRGICOS e a declaração de glúten estão completos' : 'Copiei todos os avisos de alérgicos') + '</label>' +
-      '<div id="rd-res" aria-live="polite" tabindex="-1"></div><div class="sh-actions"><button class="bigbtn" type="submit">Analisar com o perfil escolhido</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></form>', pre && pre.foto ? null : "rd-nome");
+      '</fieldset><div id="rd-res" aria-live="polite" tabindex="-1"></div><div class="sh-actions"><button class="bigbtn" type="submit">Analisar com o perfil escolhido</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></form>', pre && pre.foto ? null : "rd-nome");
     if(pre && pre.foto){
       pre.foto.setAttribute("role","img"); pre.foto.setAttribute("aria-label","Foto da embalagem para conferência visual");
       document.getElementById("imagem-conferida").appendChild(pre.foto);
@@ -1975,10 +1976,12 @@
     OCR.lerImagem(file, { base: "./vendor/ocr/", hoje: todayStr(), destacarLinha:destacarLinha, etapa: function(i, n){ if(ui.sheet !== sessao) return; var e = document.getElementById("ocr-status"); if(e) e.innerHTML = '<p class="sub">Lendo a foto (tentativa ' + i + ' de ' + n + ')…</p>'; } }).then(function(r){
       if(ui.sheet !== sessao) return;
       ui.sheet.lendo = false;
-      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", foto:r.foto, linhas:r.linhas || [], texto:r.textoLido, rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
+      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", foto:r.foto, linhas:r.linhas || [], texto:r.transcricao || r.textoLido, rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
       var e = document.getElementById("ocr-status"); if(!e) return;
       e.innerHTML = '<div>' + chipEstado("INFORMACAO_INSUFICIENTE") + '</div>' + r.motivos.map(function(m){ return '<p class="ia-erro">' + esc(m) + '</p>'; }).join("") +
         '<p class="sub">O app não analisa uma foto que não conseguiu ler direito. Tire outra ou digite o rótulo.</p><div class="links"><button class="link" type="button" data-act="rotulo-digitado">Digitar o rótulo</button></div>';
+      var repetir = sheet.querySelector('[data-act="ocr-escolher"]');
+      if(repetir) repetir.textContent = "Tirar outra foto";
       e.setAttribute("tabindex", "-1"); e.focus();
     });
   }

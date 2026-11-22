@@ -246,7 +246,7 @@
     botao.textContent="Conta";
     botao.setAttribute("aria-label","Abrir conta Elida");
     botao.addEventListener("click",mostrar);
-    document.body.appendChild(botao);
+    document.querySelector(".top").appendChild(botao);
     if(root.ElidaEntrada && !usuarioPermitido(usuario)){
       let primeiraVisita=true;
       try{primeiraVisita=!localStorage.getItem(CHAVE_MODO);}catch(e){}

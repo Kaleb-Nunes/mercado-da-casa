@@ -77,18 +77,30 @@ async function testar(){
     const close=page.locator('[data-act="fechar-carta"]:visible').first();
     if(await close.count())await close.click();
   }
+  const nota=page.locator("#top-note");
+  await nota.evaluate(el=>{el.textContent="Sem leite (proteína do leite de vaca)";});
+  for(const width of [320,360,390,430]){
+    await page.setViewportSize({width,height:844});
+    const [marca,perfil,conta]=await Promise.all([".top .brand","#top-note","#elida-conta-botao"].map(sel=>page.locator(sel).boundingBox()));
+    assert.ok(marca.x+marca.width<=perfil.x+1 && perfil.x+perfil.width<=conta.x+1 && conta.x+conta.width<=width);
+  }
+  await page.setViewportSize({width:390,height:844});
   const atalho=page.locator("#view-inicio .inicio-rotulo");
   await atalho.locator("img").evaluate(img=>img.decode());
   await atalho.click();
   await page.getByRole("heading",{name:"Ler rótulo por foto"}).waitFor();
   await page.locator('#sheet [data-act="fechar"]').first().click();
   await atalho.click();
+  assert.equal(await page.locator("#elida-conta-botao").isVisible(),false);
   await page.locator("#ocr-foto").setInputFiles(path.join(raiz,"tests/ocr/rotulo-sintetico.png"));
   await page.locator("#imagem-conferida canvas").waitFor({timeout:75000});
   assert.ok(await page.locator("#imagem-conferida canvas").evaluate(c=>c.width>0));
   await page.getByText("Ver transcrição da foto").click();
   assert.match(await page.locator(".ocr-texto p").innerText(),/leite/i);
   assert.equal(await page.locator("#rd-ok0").isChecked(),false);
+  assert.deepEqual(await page.locator("#form-rd legend").allTextContents(),["Produto e ingredientes","Avisos da embalagem","Conferência final"]);
+  assert.equal(await page.locator("#rd-ing").evaluate(el=>getComputedStyle(el).fontSize),"16px");
+  assert.equal(await page.locator("#elida-conta-botao").isVisible(),false);
   await page.locator('#sheet [data-act="fechar"]').first().click();
   resultado.push("OCR de imagem sintética real, foto para comparação e revisão obrigatória");
   resultado.push("foto no início, movimento reduzido e atalho para o leitor");
