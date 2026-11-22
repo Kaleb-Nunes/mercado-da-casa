@@ -105,6 +105,28 @@ async function testar(){
   resultado.push("OCR de imagem sintética real, foto para comparação e revisão obrigatória");
   resultado.push("foto no início, movimento reduzido e atalho para o leitor");
 
+  const comparacao=await browser.newContext({viewport:{width:360,height:780},locale:"pt-BR",hasTouch:true});
+  const mercado=await comparacao.newPage();
+  mercado.on("pageerror",e=>errors.push(String(e.message||e)));
+  await mercado.goto(origem);
+  const exemplo=mercado.getByRole("button",{name:/Ver o que mudou/});
+  await exemplo.click();
+  const painel=mercado.locator("#sheet.on");
+  assert.deepEqual(await painel.locator("mark").allTextContents(),["e","leite"]);
+  await painel.getByRole("button",{name:"Comparar minhas embalagens"}).click();
+  await painel.getByLabel("Embalagem anterior").fill("NÃO CONTÉM GLÚTEN.");
+  await painel.getByLabel("Embalagem atual").fill("CONTÉM GLÚTEN.");
+  await painel.getByRole("button",{name:"Mostrar diferenças"}).click();
+  await painel.getByRole("heading",{name:"O texto mudou."}).waitFor();
+  assert.deepEqual(await painel.locator("mark").allTextContents(),["NÃO"]);
+  await painel.getByRole("button",{name:"Editar os textos"}).click();
+  await painel.getByLabel("Embalagem anterior").fill("CONTÉM   GLÚTEN.");
+  await painel.getByRole("button",{name:"Mostrar diferenças"}).click();
+  await painel.getByRole("heading",{name:"Os textos coincidem."}).waitFor();
+  await painel.getByRole("button",{name:"Levar dúvida à consulta"}).click();
+  assert.ok((await painel.getByLabel("Pergunta para a consulta").inputValue()).length);
+  await comparacao.close();
+  resultado.push("comparação de embalagens no primeiro acesso, mudança de aviso, textos equivalentes e consulta");
   const familia=await browser.newContext({viewport:{width:390,height:844},locale:"pt-BR",hasTouch:true});
   const jantar=await familia.newPage();
   jantar.on("pageerror",e=>errors.push(String(e.message||e)));

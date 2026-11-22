@@ -436,6 +436,7 @@
       '<span>Ler rótulo por foto<small>Conferir a embalagem</small></span>' + IC.right + '</button>' +
       '<button type="button" class="inicio-delegar" data-act="delegar"><span>Comprar para alguém<small>Preparar uma lista para enviar</small></span>' + IC.right + '</button></div>';
     h += '<button type="button" class="inicio-consulta" data-act="consulta"><img src="marca/orientacao-rotulo.webp" width="68" height="64" alt=""><span><b>Levar à consulta</b><small>Guarde uma dúvida da compra para conversar com sua nutricionista.</small></span>'+IC.right+'</button>';
+    h += '<button type="button" class="atalho-comparar" data-act="comparar-proprios"><span><b>O que mudou no rótulo?</b><small>Compare o texto de duas embalagens.</small></span>'+IC.right+'</button>';
     if(compras.length){
       h += '<button type="button" class="compra-progresso" data-act="nav" data-view="lista"><b>Retomar minha compra</b>' +
         '<span>' + carrinho + ' de ' + compras.length + ' no carrinho</span><progress aria-label="Itens no carrinho" value="' + carrinho + '" max="' + compras.length + '"></progress></button>';
@@ -859,6 +860,48 @@
     closeSheet();
     if(faltantes.length) show("lista");
     toast(!faltantes.length ? "Você já tem todos os ingredientes." : novos ? "Lista atualizada com o que falta." : "Os ingredientes já estão na lista.");
+  }
+
+  function abrirComparacao(){
+    resultadoComparacao("Ingredientes: arroz, açúcar e óleo. Pode conter soja.",
+      "Ingredientes: arroz, açúcar e óleo. Pode conter soja e leite.",true);
+  }
+
+  function formularioComparacao(anterior,atual){
+    ui.sheet={type:"comparar-form"};
+    openSheet('<h3 class="sh-title" id="sh-title">Comparar minhas embalagens</h3><p class="sh-sub">Copie o mesmo trecho das duas embalagens, incluindo os avisos. Os textos ficam abertos só durante esta comparação.</p>' +
+      '<form class="form" id="form-comparacao"><label class="fl">Embalagem anterior<textarea class="inp" name="anterior" required maxlength="4500" rows="3">'+esc(anterior||"")+'</textarea></label>' +
+      '<label class="fl">Embalagem atual<textarea class="inp" name="atual" required maxlength="4500" rows="3">'+esc(atual||"")+'</textarea></label>' +
+      '<button class="bigbtn" type="submit">Mostrar diferenças</button></form>');
+  }
+
+  function resultadoComparacao(anterior,atual,exemplo){
+    ui.sheet={type:"comparar",anterior:anterior,atual:atual};
+    // Mantém acentos, pontuação, ordem e palavras como "não". Só o espaçamento é ignorado.
+    function partes(texto){return texto.normalize("NFC").match(/[\p{L}\p{M}\p{N}]+|[^\s]/gu)||[];}
+    var a=partes(anterior), b=partes(atual), inicio=0, fim=0, menor=Math.min(a.length,b.length);
+    while(inicio<menor && a[inicio]===b[inicio]) inicio++;
+    while(fim<menor-inicio && a[a.length-1-fim]===b[b.length-1-fim]) fim++;
+    var mudou=inicio<a.length || inicio<b.length;
+    function destacar(texto,tokens){
+      var i=0;
+      return texto.normalize("NFC").replace(/[\p{L}\p{M}\p{N}]+|[^\s]|\s+/gu,function(t){
+        if(/^\s/.test(t)) return t;
+        var diferente=i>=inicio && i<tokens.length-fim;
+        i++;
+        return diferente?'<mark>'+esc(t)+'</mark>':esc(t);
+      });
+    }
+    function cartao(nome,texto,tokens){
+      return '<section class="rotulo-versao"><h4>'+nome+'</h4><p>'+destacar(texto,tokens)+'</p></section>';
+    }
+    openSheet('<div class="comparacao-corpo">'+(exemplo?'<p class="comparacao-origem">Biscoito de arroz · Exemplo fictício</p>':'')+
+      '<h3 class="sh-title" id="sh-title" tabindex="-1">'+(mudou?'O texto mudou.':'Os textos coincidem.')+'</h3>'+
+      '<p class="sh-sub">'+(mudou?'Veja o trecho entre a primeira e a última diferença.':'As palavras e a pontuação coincidem nos trechos informados.')+'</p>'+
+      cartao("Embalagem anterior",anterior,a)+cartao("Embalagem atual",atual,b)+
+      '<p class="sub">Confira a embalagem inteira antes da compra. A comparação mostra diferenças de texto e não determina se o produto atende à sua restrição.</p>'+
+      (exemplo?'<button class="bigbtn" type="button" data-act="comparar-proprios">Comparar minhas embalagens</button>':
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="duvida-comparacao">Levar dúvida à consulta</button><button class="quiet" type="button" data-act="editar-comparacao">Editar os textos</button></div>')+'</div>',"sh-title");
   }
 
   var motivosConsulta = {
@@ -2086,6 +2129,14 @@
     var act = b.dataset.act, id = b.dataset.id, it;
     try {
       switch(act){
+      case "comparar-proprios": formularioComparacao(); break;
+      case "editar-comparacao": formularioComparacao(ui.sheet.anterior,ui.sheet.atual); break;
+      case "duvida-comparacao":
+        var trechoAtual=ui.sheet.atual.trim();
+        if(trechoAtual.length>180) trechoAtual=trechoAtual.slice(0,179)+"…";
+        novaDuvida("rotulo");
+        sheet.querySelector('[name="pergunta"]').value="Na embalagem atual li “"+trechoAtual+"”. O que devo conferir antes da próxima compra?";
+        break;
       case "consulta": abrirConsulta(); break;
       case "nova-duvida": novaDuvida(b.dataset.motivo); break;
       case "ver-duvida": abrirDuvida(id); break;
@@ -2289,7 +2340,14 @@
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
-    if(f.id === "form-duvida"){
+    if(f.id === "form-comparacao"){
+      e.preventDefault();
+      var anterior=f.elements.anterior, atual=f.elements.atual;
+      var vazio=[anterior,atual].find(function(c){return !c.value.trim();});
+      if(vazio){vazio.focus();toast("Cole o texto da embalagem neste campo.");return;}
+      resultadoComparacao(anterior.value,atual.value,false);
+    }
+    else if(f.id === "form-duvida"){
       e.preventDefault();
       var item=f.elements.namedItem("item").value.trim(), pergunta=f.elements.pergunta.value.trim(), motivo=f.elements.motivo.value;
       if(!item || !pergunta || !Object.hasOwn(motivosConsulta,motivo)){toast("Informe o produto e a pergunta.");return;}
@@ -2382,6 +2440,7 @@
       return;
     }
     if(hs === "#ler-foto"){ show("inicio"); sheetFoto(); return; }
+    if(hs === "#comparar-rotulos"){ show("inicio"); abrirComparacao(); return; }
     if(hs === "#jantar"){ show("inicio"); abrirJantar(); return; }
     show(hs.replace("#",""), true);
   });
@@ -2424,6 +2483,7 @@
     save();
     if(state.carta && !state.cartaVista) showWelcome();
     else if(h === "ler-foto"){ show("inicio"); sheetFoto(); }
+    else if(h === "comparar-rotulos"){ show("inicio"); abrirComparacao(); }
     else if(h === "jantar"){ show("inicio"); abrirJantar(); }
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
     else if(pendingOfertas) setTimeout(function(){ sheetOfertasImport(pendingOfertas); }, 350);
