@@ -154,3 +154,7 @@
 .rotulo-versao mark {background:#ffe2a4;color:#3b2911;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
 .comparacao-corpo>.bigbtn {width:100%}
 @media(max-width:640px){#entrada:not([data-formulario]) .entrada-layout {grid-template-rows:clamp(148px,28svh,270px) 1fr}#entrada:not([data-formulario]) .entrada-marca{width:108px;height:auto;margin-bottom:10px}#entrada:not([data-formulario]) h1{margin-bottom:12px}}
+.comparar-foto {position:relative;display:inline-flex;align-items:center;min-height:44px;color:var(--ink);font:600 14px Onest,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.comparar-foto input {position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.comparar-foto:focus-within {outline:2px solid var(--brass);outline-offset:2px}
+#comparar-status:empty,#revisar-fotos[hidden] {display:none}

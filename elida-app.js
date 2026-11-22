@@ -869,10 +869,41 @@
 
   function formularioComparacao(anterior,atual){
     ui.sheet={type:"comparar-form"};
-    openSheet('<h3 class="sh-title" id="sh-title">Comparar minhas embalagens</h3><p class="sh-sub">Copie o mesmo trecho das duas embalagens, incluindo os avisos. Os textos ficam abertos só durante esta comparação.</p>' +
-      '<form class="form" id="form-comparacao"><label class="fl">Embalagem anterior<textarea class="inp" name="anterior" required maxlength="4500" rows="3">'+esc(anterior||"")+'</textarea></label>' +
-      '<label class="fl">Embalagem atual<textarea class="inp" name="atual" required maxlength="4500" rows="3">'+esc(atual||"")+'</textarea></label>' +
+    function campo(nome,titulo,valor){
+      return '<div class="comparar-campo"><label class="fl">'+titulo+'<textarea class="inp" name="'+nome+'" required maxlength="4500" rows="3">'+esc(valor||"")+'</textarea></label>'+
+        '<label class="comparar-foto">Usar foto '+(nome==="anterior"?"anterior":"atual")+'<input type="file" accept="image/*" data-foto-comparar="'+nome+'"></label></div>';
+    }
+    openSheet('<h3 class="sh-title" id="sh-title">Comparar minhas embalagens</h3><p class="sh-sub">Fotografe ou copie o mesmo trecho das duas embalagens, incluindo os avisos. A leitura da foto acontece neste aparelho.</p>'+
+      '<form class="form" id="form-comparacao">'+campo("anterior","Embalagem anterior",anterior)+campo("atual","Embalagem atual",atual)+
+      '<p class="sub" role="status" id="comparar-status"></p><label class="fl" hidden id="revisar-fotos"><span><input type="checkbox"> Conferi a transcrição com as embalagens</span></label>'+
       '<button class="bigbtn" type="submit">Mostrar diferenças</button></form>');
+  }
+
+  async function lerFotoComparacao(input){
+    var arquivo=input.files[0], sessao=ui.sheet, f=input.form, status=f.querySelector('[role="status"]');
+    if(!arquivo || !sessao || sessao.lendo) return;
+    var destino=f.elements.namedItem(input.dataset.fotoComparar);
+    var controles=f.querySelectorAll('input[type="file"], button[type="submit"]');
+    sessao.lendo=true; destino.readOnly=true;
+    controles.forEach(function(c){c.disabled=true;});
+    status.textContent="Lendo a foto neste aparelho…";
+    try{
+      var r=await window.ElidaOCR.lerImagem(arquivo,{base:"./vendor/ocr/",hoje:todayStr()});
+      if(ui.sheet!==sessao) return;
+      var texto=r.transcricao || r.textoLido;
+      if(r.status!==window.ElidaOCR.STATUS.OK || !texto || texto.length>4500){
+        status.textContent="Não foi possível transcrever com confiança. Tire outra foto de perto ou digite o trecho.";return;
+      }
+      destino.value=texto;
+      var revisao=f.querySelector("#revisar-fotos");
+      revisao.hidden=false; revisao.querySelector("input").checked=false; revisao.querySelector("input").required=true;
+      status.textContent="Texto inserido. Compare a transcrição com a embalagem e corrija o que for preciso.";
+    }catch(e){
+      if(ui.sheet===sessao) status.textContent="O leitor não abriu. Tente outra foto ou digite o trecho.";
+    }finally{
+      sessao.lendo=false;destino.readOnly=false;input.value="";
+      controles.forEach(function(c){c.disabled=false;});
+    }
   }
 
   function resultadoComparacao(anterior,atual,exemplo){
@@ -2386,6 +2417,7 @@
       Busca = BUS.criarBusca({ provedor: criarProvedorIA(), producao: AMB.producao }); buscaIA.resposta = null; render();
       toast(e.target.value === "off" ? "Fonte de teste: Open Food Facts (rascunho)" : "Fonte de teste: catálogo fictício"); return;
     }
+    if(e.target.matches("[data-foto-comparar]")){lerFotoComparacao(e.target);return;}
     if(e.target.id === "ocr-foto" && e.target.files && e.target.files[0]){ lerFoto(e.target.files[0]); return; }
     if(e.target.name === "perfil-ativo"){ perfisEstado.ativo = e.target.value; salvarPerfis(); gatilhosIA.disparar("PERFIL_SALVO"); toast("Perfil em uso: " + (perfilAtivo() || {}).apelido); return; }
     if(e.target.matches && e.target.matches("[data-restr], #f-pf")){ atualizarFormPerfil(); return; }

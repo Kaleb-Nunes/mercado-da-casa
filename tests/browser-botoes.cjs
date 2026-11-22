@@ -114,6 +114,12 @@ async function testar(){
   const painel=mercado.locator("#sheet.on");
   assert.deepEqual(await painel.locator("mark").allTextContents(),["e","leite"]);
   await painel.getByRole("button",{name:"Comparar minhas embalagens"}).click();
+  await painel.locator('[data-foto-comparar="anterior"]').setInputFiles(path.join(raiz,"tests/ocr/rotulo-sintetico.png"));
+  const revisao= painel.getByRole("checkbox",{name:"Conferi a transcrição com as embalagens"});
+  await revisao.waitFor({timeout:75000});
+  assert.match(await painel.getByLabel("Embalagem anterior").inputValue(),/leite/i);
+  assert.equal(await revisao.evaluate(el=>el.validity.valueMissing),true);
+  await revisao.check();
   await painel.getByLabel("Embalagem anterior").fill("NÃO CONTÉM GLÚTEN.");
   await painel.getByLabel("Embalagem atual").fill("CONTÉM GLÚTEN.");
   await painel.getByRole("button",{name:"Mostrar diferenças"}).click();
