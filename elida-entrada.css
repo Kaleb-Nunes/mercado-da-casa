@@ -158,3 +158,47 @@
 .comparar-foto input {position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .comparar-foto:focus-within {outline:2px solid var(--brass);outline-offset:2px}
 #comparar-status:empty,#revisar-fotos[hidden] {display:none}
+
+/* A abertura alterna o ponto de vista sem sair da mesma tarefa. */
+#entrada:not([data-formulario]) {width:min(1060px,96vw);background:#fbf8ef}
+#entrada:not([data-formulario]) .entrada-layout {grid-template-columns:minmax(0,1.06fr) minmax(0,1fr);min-height:610px}
+#entrada:not([data-formulario]) .entrada-corpo {background:#fbf8ef;padding:clamp(24px,4vw,48px)}
+#entrada:not([data-formulario]) h1 {font-size:clamp(36px,4.5vw,54px);line-height:1.02;letter-spacing:-.05em;margin:18px 0 12px}
+#entrada:not([data-formulario]) .entrada-marca {width:118px;height:40px;margin-bottom:19px}
+.entrada-publico {display:inline-flex;padding:4px;background:#e7e7d9;border-radius:30px;max-width:100%}
+#entrada .entrada-publico button {min-height:40px;padding:8px 14px;border:0;background:transparent;border-radius:24px;font-size:14px}
+#entrada .entrada-publico button[aria-pressed="true"] {background:#163e32;color:white}
+#entrada .entrada-comparar {border-radius:14px;padding:15px 18px}
+.entrada-rapidos {display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#entrada .entrada-rapidos button {font-size:13px;color:#274b3c;background:transparent}
+#entrada .entrada-contas button {min-height:44px}
+.entrada-foto {isolation:isolate}
+.cena-legenda {position:absolute;z-index:1;inset:auto 0 0;padding:80px 30px 32px;color:#fff;background:linear-gradient(transparent,rgba(5,29,21,.90));pointer-events:none}
+.cena-legenda span,.caso-ilustrado span {display:block;font:550 14px Onest,sans-serif;margin-bottom:7px}
+.cena-legenda strong {display:block;max-width:13em;font:500 clamp(25px,3.4vw,43px)/1.08 Fraunces,Georgia,serif;text-wrap:balance}
+#entrada[data-formulario] .cena-legenda {display:none}
+#entrada[data-publico="clinica"] .entrada-foto::before {background-image:url("marca/orientacao-rotulo.webp")}
+#entrada[data-publico="familia"] .entrada-foto::after {background-image:url("marca/familia-confere-rotulo.webp")}
+@media(prefers-reduced-motion:no-preference){
+  #entrada[open]:not([data-formulario]) .entrada-foto::after {animation:cena-aproxima 16s ease-in-out infinite alternate;opacity:1}
+  @keyframes cena-aproxima {from{transform:scale(1)}to{transform:scale(1.06)}}
+}
+.retorno-mercado {padding:20px;border-radius:18px;background:#e8ecdc;color:#18382b}
+.retorno-mercado h2 {font:550 28px/1.1 Fraunces,Georgia,serif;margin:0}
+.retorno-mercado p {margin:8px 0 16px;line-height:1.45}
+.caso-ilustrado {position:relative;isolation:isolate;overflow:hidden;border-radius:16px;margin:8px 0 18px;background:#153c2d;color:white}
+.caso-ilustrado img {display:block;width:100%;height:clamp(135px,25vh,215px);object-fit:cover;object-position:center 36%}
+.caso-ilustrado div {position:absolute;inset:auto 0 0;padding:40px 15px 13px;background:linear-gradient(transparent,rgba(9,34,26,.95))}
+.caso-ilustrado b {font:500 26px Fraunces,Georgia,serif}
+.caso-texto {line-height:1.55;color:var(--ink)}
+@media(max-width:640px){
+  #entrada:not([data-formulario]) {width:100vw}
+  #entrada:not([data-formulario]) .entrada-layout {grid-template-columns:1fr;grid-template-rows:clamp(145px,25svh,220px) auto;min-height:100%}
+  #entrada:not([data-formulario]) .entrada-corpo {padding:18px 20px max(16px,env(safe-area-inset-bottom))}
+  #entrada:not([data-formulario]) .entrada-marca {width:90px;height:30px;margin:0 0 12px}
+  #entrada:not([data-formulario]) h1 {font-size:clamp(30px,8vw,40px);margin:13px 0 8px}
+  .cena-legenda {padding:36px 20px 14px}
+  .cena-legenda strong {font-size:24px;max-width:16em}
+  .cena-legenda span {font-size:12px;margin:0 0 3px}
+  .entrada-inicio {gap:8px}
+}

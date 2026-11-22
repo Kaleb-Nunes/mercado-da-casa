@@ -437,6 +437,8 @@
       '<button type="button" class="inicio-delegar" data-act="delegar"><span>Comprar para alguém<small>Preparar uma lista para enviar</small></span>' + IC.right + '</button></div>';
     h += '<button type="button" class="inicio-consulta" data-act="consulta"><img src="marca/orientacao-rotulo.webp" width="68" height="64" alt=""><span><b>Levar à consulta</b><small>Guarde uma dúvida da compra para conversar com sua nutricionista.</small></span>'+IC.right+'</button>';
     h += '<button type="button" class="atalho-comparar" data-act="comparar-proprios"><span><b>O que mudou no rótulo?</b><small>Compare o texto de duas embalagens.</small></span>'+IC.right+'</button>';
+    h += '<section class="retorno-mercado"><div><h2>Minha prateleira</h2><p>Guarde o rótulo de hoje. Na próxima compra, basta trazer o novo.</p></div><button class="bigbtn" type="button" data-act="prateleira">Abrir meus rótulos</button></section>'+
+      '<button class="btn-sm" type="button" data-act="caso-clinica">Conhecer o Elida para clínicas</button>';
     if(compras.length){
       h += '<button type="button" class="compra-progresso" data-act="nav" data-view="lista"><b>Retomar minha compra</b>' +
         '<span>' + carrinho + ' de ' + compras.length + ' no carrinho</span><progress aria-label="Itens no carrinho" value="' + carrinho + '" max="' + compras.length + '"></progress></button>';
@@ -862,20 +864,70 @@
     toast(!faltantes.length ? "Você já tem todos os ingredientes." : novos ? "Lista atualizada com o que falta." : "Os ingredientes já estão na lista.");
   }
 
+  var PRATELEIRA_KEY = PFX + "elida-embalagem-";
+  function minhasEmbalagens(){
+    var itens=[];
+    for(var i=0;i<localStorage.length;i++){
+      var chave=localStorage.key(i);
+      if(!chave || !chave.startsWith(PRATELEIRA_KEY)) continue;
+      try{
+        var r=JSON.parse(localStorage.getItem(PRATELEIRA_KEY+chave.slice(PRATELEIRA_KEY.length)));
+        if(r && chave===PRATELEIRA_KEY+r.id && typeof r.nome==="string" && typeof r.texto==="string" && Number.isFinite(r.data)) itens.push(r);
+      }catch(e){continue;}
+    }
+    return itens.sort(function(a,b){return b.data-a.data;});
+  }
+  function abrirPrateleira(){
+    var itens;
+    try{itens=minhasEmbalagens();}catch(e){toast("Seu navegador não conseguiu abrir os rótulos guardados.");return;}
+    ui.sheet={type:"prateleira"};
+    openSheet('<h3 class="sh-title" id="sh-title">Minha prateleira</h3><p class="sh-sub">'+(itens.length?'Escolha a embalagem anterior e compare com a que está na sua mão.':'Comece com um produto que sua família compra sempre. O texto conferido fica neste aparelho para a próxima compra.')+'</p>'+
+      '<button class="bigbtn" type="button" data-act="guardar-referencia">Guardar um rótulo</button>'+
+      '<ul class="consulta-casos">'+itens.map(function(r){return '<li><button type="button" class="row" data-act="abrir-referencia" data-id="'+esc(r.id)+'"><span class="r-main"><b class="r-name">'+esc(r.nome)+'</b><small class="r-meta">Guardado em '+esc(new Date(r.data).toLocaleDateString("pt-BR"))+'</small></span>'+IC.right+'</button></li>';}).join("")+'</ul>');
+  }
+  function campoEmbalagem(nome,titulo,valor){
+    return '<div class="comparar-campo"><label class="fl">'+titulo+'<textarea class="inp" name="'+nome+'" required maxlength="4500" rows="3">'+esc(valor||"")+'</textarea></label>'+
+      '<label class="comparar-foto">Usar foto '+(nome==="anterior"?"anterior":"atual")+'<input type="file" accept="image/*" data-foto-comparar="'+nome+'"></label></div>';
+  }
+  function revisaoFoto(){
+    return '<p class="sub" role="status" id="comparar-status"></p><label class="fl" hidden id="revisar-fotos"><span><input type="checkbox"> Conferi a transcrição com as embalagens</span></label>';
+  }
+  function guardarReferencia(texto,produto){
+    ui.sheet={type:"referencia"};
+    openSheet('<h3 class="sh-title" id="sh-title">Guardar um rótulo</h3><p class="sh-sub">Use marca, sabor e tamanho para reconhecer a mesma versão depois. Fica salvo só o texto neste aparelho.</p>'+
+      '<form class="form" id="form-referencia"><label class="fl">Nome, marca e versão<input class="inp" name="produto" maxlength="100" required value="'+esc(produto||"")+'" placeholder="Ex.: Biscoito de arroz, marca e tamanho"></label>'+
+      campoEmbalagem("atual","Texto da embalagem",texto)+revisaoFoto()+'<button class="bigbtn" type="submit">Guardar na minha prateleira</button></form>');
+  }
+  function abrirReferencia(id){
+    var r=minhasEmbalagens().find(function(item){return item.id===id;});
+    if(!r){abrirPrateleira();return;}
+    ui.sheet={type:"referencia-detalhe",r:r};
+    openSheet('<h3 class="sh-title" id="sh-title">'+esc(r.nome)+'</h3><p class="sh-sub">Texto conferido em '+esc(new Date(r.data).toLocaleDateString("pt-BR"))+'</p><section class="rotulo-versao"><h4>Embalagem guardada</h4><p>'+esc(r.texto)+'</p></section>'+
+      '<button class="bigbtn" type="button" data-act="usar-referencia">Comparar com a embalagem de hoje</button><div class="links"><button class="link" type="button" data-act="prateleira">Todos os meus rótulos</button><button class="quiet" type="button" data-act="excluir-referencia" data-orig="Excluir rótulo">Excluir rótulo</button></div>');
+  }
+  function casoClinica(etapa){
+    var cenas=[
+      ["No mercado","O lanche de quinta-feira","A família de Lia pega o biscoito de arroz de sempre. Na embalagem guardada, o aviso era “Pode conter soja”. Hoje apareceu “e leite”.","Ver a pergunta da família"],
+      ["Na consulta","Uma pergunta com contexto","A família decide mostrar o trecho e pergunta: “Esse aviso mudou. O que precisamos conferir quando formos escolher o próximo lanche?”","Ver o combinado"],
+      ["Na próxima compra","O combinado vai junto","A família anotou: “Levar fotos das opções disponíveis ao retorno para conversar com a nutricionista”. Na próxima visita ao mercado, ela consegue recuperar a anotação.","Abrir minhas anotações"]
+    ], c=cenas[etapa];
+    ui.sheet={type:"caso-clinica",etapa:etapa};
+    openSheet('<div class="caso-ilustrado"><img src="marca/'+(etapa===1?'orientacao-rotulo.webp':'familia-confere-rotulo.webp')+'" alt=""><div><span>Exemplo fictício · '+(etapa+1)+' de 3</span><b>'+c[0]+'</b></div></div>'+
+      '<h3 class="sh-title" id="sh-title" tabindex="-1">'+c[1]+'</h3><p class="caso-texto">'+c[2]+'</p>'+
+      '<button class="bigbtn" type="button" data-act="'+(etapa===2?'consulta':'caso-avancar')+'">'+c[3]+'</button>'+
+      (etapa?'<button type="button" class="link" data-act="caso-voltar">Voltar uma etapa</button>':'')+
+      '<details class="consulta-exemplo"><summary>Quem pode ver essas informações?</summary><p>A família guarda suas anotações no aparelho. Ela escolhe qual pergunta mostrar ou compartilhar. O Elida não envia os registros automaticamente à clínica.</p></details>',"sh-title");
+  }
   function abrirComparacao(){
     resultadoComparacao("Ingredientes: arroz, açúcar e óleo. Pode conter soja.",
       "Ingredientes: arroz, açúcar e óleo. Pode conter soja e leite.",true);
   }
 
-  function formularioComparacao(anterior,atual){
-    ui.sheet={type:"comparar-form"};
-    function campo(nome,titulo,valor){
-      return '<div class="comparar-campo"><label class="fl">'+titulo+'<textarea class="inp" name="'+nome+'" required maxlength="4500" rows="3">'+esc(valor||"")+'</textarea></label>'+
-        '<label class="comparar-foto">Usar foto '+(nome==="anterior"?"anterior":"atual")+'<input type="file" accept="image/*" data-foto-comparar="'+nome+'"></label></div>';
-    }
+  function formularioComparacao(anterior,atual,produto){
+    ui.sheet={type:"comparar-form",produto:produto};
     openSheet('<h3 class="sh-title" id="sh-title">Comparar minhas embalagens</h3><p class="sh-sub">Fotografe ou copie o mesmo trecho das duas embalagens, incluindo os avisos. A leitura da foto acontece neste aparelho.</p>'+
-      '<form class="form" id="form-comparacao">'+campo("anterior","Embalagem anterior",anterior)+campo("atual","Embalagem atual",atual)+
-      '<p class="sub" role="status" id="comparar-status"></p><label class="fl" hidden id="revisar-fotos"><span><input type="checkbox"> Conferi a transcrição com as embalagens</span></label>'+
+      '<form class="form" id="form-comparacao">'+campoEmbalagem("anterior","Embalagem anterior",anterior)+campoEmbalagem("atual","Embalagem atual",atual)+
+      revisaoFoto()+
       '<button class="bigbtn" type="submit">Mostrar diferenças</button></form>');
   }
 
@@ -906,8 +958,8 @@
     }
   }
 
-  function resultadoComparacao(anterior,atual,exemplo){
-    ui.sheet={type:"comparar",anterior:anterior,atual:atual};
+  function resultadoComparacao(anterior,atual,exemplo,produto){
+    ui.sheet={type:"comparar",anterior:anterior,atual:atual,produto:produto};
     // Mantém acentos, pontuação, ordem e palavras como "não". Só o espaçamento é ignorado.
     function partes(texto){return texto.normalize("NFC").match(/[\p{L}\p{M}\p{N}]+|[^\s]/gu)||[];}
     var a=partes(anterior), b=partes(atual), inicio=0, fim=0, menor=Math.min(a.length,b.length);
@@ -932,7 +984,7 @@
       cartao("Embalagem anterior",anterior,a)+cartao("Embalagem atual",atual,b)+
       '<p class="sub">Confira a embalagem inteira antes da compra. A comparação mostra diferenças de texto e não determina se o produto atende à sua restrição.</p>'+
       (exemplo?'<button class="bigbtn" type="button" data-act="comparar-proprios">Comparar minhas embalagens</button>':
-      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="duvida-comparacao">Levar dúvida à consulta</button><button class="quiet" type="button" data-act="editar-comparacao">Editar os textos</button></div>')+'</div>',"sh-title");
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="duvida-comparacao">Levar dúvida à consulta</button><button class="quiet" type="button" data-act="guardar-atual">Guardar a versão de hoje</button><button class="quiet" type="button" data-act="editar-comparacao">Editar os textos</button></div>')+'</div>',"sh-title");
   }
 
   var motivosConsulta = {
@@ -2160,8 +2212,20 @@
     var act = b.dataset.act, id = b.dataset.id, it;
     try {
       switch(act){
+      case "caso-clinica": casoClinica(0); break;
+      case "caso-avancar": casoClinica(ui.sheet.etapa+1); break;
+      case "caso-voltar": casoClinica(ui.sheet.etapa-1); break;
+      case "prateleira": abrirPrateleira(); break;
+      case "guardar-referencia": guardarReferencia(); break;
+      case "abrir-referencia": abrirReferencia(id); break;
+      case "guardar-atual": guardarReferencia(ui.sheet.atual,ui.sheet.produto); break;
+      case "usar-referencia": formularioComparacao(ui.sheet.r.texto,"",ui.sheet.r.nome); break;
+      case "excluir-referencia":
+        if(arm("excluir-referencia-"+ui.sheet.r.id,b,"Confirmar exclusão")){
+          localStorage.removeItem(PRATELEIRA_KEY+ui.sheet.r.id); abrirPrateleira();
+        } break;
       case "comparar-proprios": formularioComparacao(); break;
-      case "editar-comparacao": formularioComparacao(ui.sheet.anterior,ui.sheet.atual); break;
+      case "editar-comparacao": formularioComparacao(ui.sheet.anterior,ui.sheet.atual,ui.sheet.produto); break;
       case "duvida-comparacao":
         var trechoAtual=ui.sheet.atual.trim();
         if(trechoAtual.length>180) trechoAtual=trechoAtual.slice(0,179)+"…";
@@ -2363,7 +2427,7 @@
   });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && ui.sheet){ closeSheet(); }
-    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && ui.sheet.type !== "custo" && ui.sheet.type !== "duvida-form" && e.target.tagName === "INPUT" && e.target.type !== "search"){
+    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && ui.sheet.type !== "custo" && ui.sheet.type !== "referencia" && ui.sheet.type !== "duvida-form" && e.target.tagName === "INPUT" && e.target.type !== "search"){
       e.preventDefault();
       var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta", "criar-casa":"confirmar-casa", entrar:"confirmar-entrar"};
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
@@ -2371,12 +2435,20 @@
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
-    if(f.id === "form-comparacao"){
+    if(f.id==="form-referencia"){
+      e.preventDefault();
+      var nomeRef=f.elements.produto.value.trim(), textoRef=f.elements.atual.value.trim();
+      if(!nomeRef || !textoRef){toast("Preencha o nome e o texto da embalagem.");return;}
+      var ref={id:uid(),nome:nomeRef,texto:textoRef,data:Date.now()};
+      try{localStorage.setItem(PRATELEIRA_KEY+ref.id,JSON.stringify(ref));}catch(e){toast("O aparelho não conseguiu salvar. O texto continua aqui.");return;}
+      abrirReferencia(ref.id);
+    }
+    else if(f.id === "form-comparacao"){
       e.preventDefault();
       var anterior=f.elements.anterior, atual=f.elements.atual;
       var vazio=[anterior,atual].find(function(c){return !c.value.trim();});
       if(vazio){vazio.focus();toast("Cole o texto da embalagem neste campo.");return;}
-      resultadoComparacao(anterior.value,atual.value,false);
+      resultadoComparacao(anterior.value,atual.value,false,ui.sheet.produto);
     }
     else if(f.id === "form-duvida"){
       e.preventDefault();
@@ -2472,6 +2544,8 @@
       return;
     }
     if(hs === "#ler-foto"){ show("inicio"); sheetFoto(); return; }
+    if(hs === "#meus-rotulos"){ show("inicio"); abrirPrateleira(); return; }
+    if(hs === "#caso-clinica"){ show("inicio"); casoClinica(0); return; }
     if(hs === "#comparar-rotulos"){ show("inicio"); abrirComparacao(); return; }
     if(hs === "#jantar"){ show("inicio"); abrirJantar(); return; }
     show(hs.replace("#",""), true);
@@ -2515,6 +2589,8 @@
     save();
     if(state.carta && !state.cartaVista) showWelcome();
     else if(h === "ler-foto"){ show("inicio"); sheetFoto(); }
+    else if(h === "meus-rotulos"){ show("inicio"); abrirPrateleira(); }
+    else if(h === "caso-clinica"){ show("inicio"); casoClinica(0); }
     else if(h === "comparar-rotulos"){ show("inicio"); abrirComparacao(); }
     else if(h === "jantar"){ show("inicio"); abrirJantar(); }
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);

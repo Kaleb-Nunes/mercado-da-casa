@@ -35,10 +35,26 @@ window.ElidaEntrada = (function () {
       atualizarBotoes();
     }
   }
+  let publico="familia";
+  function escolherPublico(valor){
+    publico=valor;
+    const clinica=valor==="clinica";
+    dialogo.dataset.publico=valor;
+    dialogo.querySelectorAll("[data-publico]").forEach(botao=>botao.setAttribute("aria-pressed",String(botao.dataset.publico===valor)));
+    titulo.textContent=clinica?"O que aconteceu entre duas consultas?":"Quando o rótulo muda, o que vai para casa?";
+    buscar(".entrada-proposta").textContent=clinica?"Conheça a compra que virou uma dúvida. Veja como a família escolhe o que mostrar e guarda o combinado para a próxima ida ao mercado.":"O Elida ajuda famílias com restrições alimentares a conferir embalagens, lembrar o que compraram e levar dúvidas à nutricionista.";
+    buscar(".cena-legenda span").textContent=clinica?"No retorno à clínica":"Na prateleira do mercado";
+    buscar(".cena-legenda strong").textContent=clinica?"Que dúvida a família trouxe hoje?":"O biscoito é o mesmo. E os ingredientes?";
+    buscar("[data-comparar]").hidden=clinica;
+    buscar("[data-caso]").hidden=!clinica;
+    buscar("[data-prateleira]").hidden=clinica;
+    buscar(".entrada-rapidos").hidden=clinica;
+  }
   function exibir(destino) {
     tela = destino;
     const inicio = tela === "inicio", cadastro = tela === "cadastro", recuperar = tela === "recuperar";
-    titulo.textContent = nomes[tela] || "O biscoito de sempre mudou?";
+    if(inicio) escolherPublico(publico); else titulo.textContent=nomes[tela];
+    buscar(".entrada-publico").hidden=!inicio;
     dialogo.toggleAttribute("data-formulario", !inicio);
     buscar(".entrada-inicio").hidden = !inicio;
     buscar(".entrada-voltar").hidden = inicio;
@@ -86,6 +102,7 @@ window.ElidaEntrada = (function () {
   dialogo.addEventListener("click", evento => {
     const botao = evento.target.closest("button");
     if (!botao || botao.disabled || ocupado) return;
+    if(botao.dataset.publico){escolherPublico(botao.dataset.publico);return;}
     if (botao.matches(".entrada-pausa")) {
       const pausado = dialogo.toggleAttribute("data-pausado");
       botao.textContent = pausado ? "▶" : "Ⅱ";
@@ -94,11 +111,13 @@ window.ElidaEntrada = (function () {
     } else if (botao.dataset.tela) exibir(botao.dataset.tela);
     else if (botao.matches(".entrada-voltar")) exibir(tela === "recuperar" ? "login" : "inicio");
     else if (botao.dataset.provedor) executar(() => servicos.autenticar(botao.dataset.provedor));
-    else if (botao.matches(".entrada-visitante, [data-jantar], [data-comparar], [data-ler-foto]")) executar(async () => {
+    else if (botao.matches(".entrada-visitante, [data-jantar], [data-comparar], [data-ler-foto], [data-caso], [data-prateleira]")) executar(async () => {
       await servicos.visitar();
       form.reset();
       dialogo.close();
       if (botao.hasAttribute("data-comparar")) location.hash = "comparar-rotulos";
+      if(botao.hasAttribute("data-caso")) location.hash="caso-clinica";
+      if(botao.hasAttribute("data-prateleira")) location.hash="meus-rotulos";
       if (botao.hasAttribute("data-jantar")) location.hash = "jantar";
       if (botao.hasAttribute("data-ler-foto")) location.hash = "ler-foto";
     });

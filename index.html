@@ -472,17 +472,19 @@ html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important
 <dialog id="entrada" aria-labelledby="entrada-titulo">
   <div class="entrada-splash" aria-hidden="true"><img src="marca/logo-horizontal.svg" width="184" height="62" alt=""></div>
   <div class="entrada-layout">
-    <div class="entrada-foto" aria-hidden="true"></div>
+    <div class="entrada-foto" aria-hidden="true"><div class="cena-legenda"><span>Na prateleira do mercado</span><strong>O biscoito é o mesmo.<br>E os ingredientes?</strong></div></div>
     <button class="entrada-pausa" type="button" aria-label="Pausar animação do fundo" aria-pressed="false">Ⅱ</button>
     <section class="entrada-corpo">
       <img class="entrada-marca" src="marca/logo-horizontal.svg" width="148" height="50" alt="Elida">
       <button class="entrada-voltar" type="button" hidden>← Voltar</button>
-      <h1 id="entrada-titulo" tabindex="-1">O biscoito de sempre mudou?</h1>
+      <div class="entrada-publico" role="group" aria-label="Escolha sua experiência"><button type="button" data-publico="familia" aria-pressed="true">Para minha família</button><button type="button" data-publico="clinica" aria-pressed="false">Para minha clínica</button></div>
+      <h1 id="entrada-titulo" tabindex="-1">Quando o rótulo muda, o que vai para casa?</h1>
       <div class="entrada-inicio">
-        <p>No mercado, até uma marca conhecida merece uma segunda olhada. Compare duas embalagens, palavra por palavra.</p>
+        <p class="entrada-proposta">O Elida ajuda famílias com restrições alimentares a conferir embalagens, lembrar o que compraram e levar dúvidas à nutricionista.</p>
         <button type="button" class="entrada-principal entrada-comparar" data-comparar><span>Ver o que mudou</span><small>Experimentar com dois rótulos fictícios</small></button>
-        <button type="button" data-jantar>Planejar meu jantar sem conta</button>
-        <button type="button" data-ler-foto>Conferir uma embalagem</button>
+        <button type="button" class="entrada-principal entrada-comparar" data-caso hidden><span>Acompanhar um caso</span><small>Da dúvida no mercado à próxima compra · Exemplo fictício</small></button>
+        <button type="button" data-prateleira>Guardar meu primeiro rótulo</button>
+        <div class="entrada-rapidos"><button type="button" data-jantar>Planejar meu jantar sem conta</button><button type="button" data-ler-foto>Conferir uma embalagem</button></div>
         <div class="entrada-contas"><button type="button" data-tela="login">Entrar</button>
         <button type="button" data-tela="cadastro">Criar conta</button></div>
       </div>
