@@ -95,3 +95,37 @@
 .jantar-despensa legend { font-weight: 650; margin-bottom: 5px; }
 .jantar-despensa label { display: flex; align-items: center; gap: 10px; min-height: 44px; overflow-wrap: anywhere; border-bottom: 1px solid #d8dfd8; }
 .jantar-despensa input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: #103c2e; }
+
+.entrada-contas {display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#entrada .entrada-contas button {border:0;background:transparent;text-decoration:underline;text-underline-offset:4px}
+#entrada:not([data-formulario]) .entrada-corpo {background:linear-gradient(145deg,#fffdf7,#f5efdf)}
+#entrada .entrada-principal {border-radius:14px}
+#entrada [data-ler-foto] {background:transparent;border-color:#54705e}
+#view-inicio .inicio-jantar {position:relative;isolation:isolate;margin:0;padding:clamp(22px,5vw,36px);border-radius:24px;overflow:hidden;background:#14392c;color:#fffaf0}
+.inicio-jantar::before {content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#102e24 8%,rgba(14,43,31,.94) 44%,rgba(14,43,31,.45) 85%),url("marca/ervas-boas-vindas.webp") right center/cover}
+.jantar-corpo {max-width:78%;overflow-wrap:anywhere}
+.jantar-corpo h2 {color:#fffaf0;font:550 clamp(32px,7vw,48px)/1.06 Fraunces,Georgia,serif;letter-spacing:-.035em}
+.jantar-corpo p {color:#eeeada;line-height:1.45;margin:10px 0 18px}
+.inicio-jantar .bigbtn {display:inline-flex;width:auto;min-height:46px;background:#f4e4bd;color:#183c2d;border:0}
+.mercado-acoes {display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mercado-acoes button {display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;position:relative;isolation:isolate;min-width:0;min-height:138px;margin:0;padding:16px 12px;border-radius:17px;border:1px solid var(--line);text-align:left;overflow:hidden;font:650 16px/1.2 Onest,sans-serif}
+.mercado-acoes .inicio-rotulo {background:#123728;color:white}
+.mercado-acoes .inicio-rotulo img {position:absolute;inset:0;z-index:-2;object-fit:cover;object-position:50% 38%;width:100%;height:100%}
+.mercado-acoes .inicio-rotulo::after {content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#0b241ceb 12%,#0b241caa 50%,transparent)}
+.mercado-acoes .inicio-rotulo small {color:#faf9ee}
+.mercado-acoes small {display:block;margin-top:5px;font:450 13px/1.35 Onest,sans-serif}
+.mercado-acoes svg {position:absolute;top:10px;right:10px;width:22px;height:22px;padding:3px;border-radius:50%;background:#fffdf1;color:#10392b}
+.inicio-delegar {background:#ece2c8;color:#273b2c}
+.compra-progresso {display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);padding:16px;border-radius:15px;color:var(--ink)}
+.compra-progresso span {font-size:13px;color:var(--muted)}
+.compra-progresso progress {width:100%;height:7px;grid-column:1/-1;accent-color:var(--good)}
+.lista-acoes {display:flex;flex-wrap:wrap;gap:8px}
+.lista-acoes button {flex:1 1 130px;min-height:44px}
+.custo-opcao {margin:0;padding:12px;border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.custo-opcao input {width:100%;min-width:0}
+#custos {white-space:pre-line;line-height:1.8}
+.rotulo-prova {margin:12px 0;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:15px}
+.rotulo-prova canvas {width:100%;height:auto;display:block}
+.rotulo-prova figcaption,.ocr-texto {padding:8px;font-size:14px}
+@media(max-width:380px){.jantar-corpo{max-width:94%}.compra-progresso{grid-template-columns:1fr}.custo-opcao{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.view.on{animation:none}}

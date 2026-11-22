@@ -222,16 +222,32 @@
         if (cfg.etapa) cfg.etapa(i, TENTATIVAS.length);
         return w.recognize(c, {}, { text: true, blocks: true }).then(function (res) {
           var d = res.data, out = interpretar(d.text, { confianca: d.confidence, palavras: palavrasDe(d), hoje: cfg.hoje });
+          if(cfg.destacarLinha){
+            out.linhas = []; out.largura = c.width; out.altura = c.height;
+            (d.blocks || []).forEach(function(bloco){ (bloco.paragraphs || []).forEach(function(paragrafo){
+              (paragrafo.lines || []).forEach(function(linha){
+                if(linha.bbox && cfg.destacarLinha(linha.text || "")) out.linhas.push({texto:linha.text.trim(), caixa:linha.bbox});
+              });
+            }); });
+          }
           out.preparo = modo.canal; leituras.push(out);
           if (out.status === STATUS.OK || i >= TENTATIVAS.length) return null;
           return proxima();
         });
       }
       return proxima().then(function () {
-        if (bmp.close) bmp.close();
         var ok = leituras.filter(function (l) { return l.status === STATUS.OK; })[0];
-        return ok || leituras.slice().sort(function (a, b) { return (b.confianca || 0) - (a.confianca || 0); })[0];
-      });
+        var melhor = ok || leituras.slice().sort(function (a, b) { return (b.confianca || 0) - (a.confianca || 0); })[0];
+        if(cfg.destacarLinha && melhor.status === STATUS.OK){
+          var foto = document.createElement("canvas");
+          foto.width = melhor.largura; foto.height = melhor.altura;
+          var ctx = foto.getContext("2d"); ctx.drawImage(bmp,0,0,foto.width,foto.height);
+          ctx.strokeStyle = "#e5a500"; ctx.lineWidth = Math.max(2, foto.width/400);
+          (melhor.linhas || []).forEach(function(l){ var b=l.caixa; ctx.strokeRect(b.x0,b.y0,b.x1-b.x0,b.y1-b.y0); });
+          melhor.foto = foto;
+        }
+        return melhor;
+      }).finally(function(){if(bmp.close) bmp.close();});
     }).then(function (out) {
       out.tentativas = leituras.length;
       out.tempos = { carregarMs: tPronto - t0, lerMs: Date.now() - tPronto, totalMs: Date.now() - t0 };

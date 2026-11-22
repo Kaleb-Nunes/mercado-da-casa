@@ -425,13 +425,20 @@
     } else { tip = "Defina quanto pode gastar no mês"; }
 
     var jantar = jantarSalvo();
-    var h = '<section class="inicio-jantar"><h2>O que falta para o jantar?</h2><p>' +
-      (jantar ? esc(jantar.nome) : 'Comece com um prato brasileiro ou use uma refeição do seu plano.') +
-      '</p><button class="bigbtn" type="button" data-act="jantar">Planejar meu jantar</button></section>' +
-      '<button class="inicio-rotulo" type="button" data-act="rotulo-foto">' +
+    var compras = state.items.filter(function(it){return it.lista;});
+    var carrinho = compras.filter(function(it){return it.ok;}).length;
+    var h = '<section class="inicio-jantar"><div class="jantar-corpo"><h2>' +
+      (jantar ? esc(jantar.nome) : 'O que falta para o jantar?') + '</h2><p>' +
+      (jantar ? 'Sua refeição está salva. Confira a despensa para a próxima compra.' : 'Escolha o prato, confira a despensa e leve só o que falta.') +
+      '</p><button class="bigbtn" type="button" data-act="jantar">Planejar meu jantar</button></div></section>' +
+      '<div class="mercado-acoes"><button class="inicio-rotulo" type="button" data-act="rotulo-foto">' +
       '<img src="marca/familia-confere-rotulo.webp" width="88" height="78" alt="">' +
-      '<span>Ler rótulo por foto<small>Confira os ingredientes da embalagem.</small></span>' +
-      IC.right + '</button>';
+      '<span>Ler rótulo por foto<small>Conferir a embalagem</small></span>' + IC.right + '</button>' +
+      '<button type="button" class="inicio-delegar" data-act="delegar"><span>Comprar para alguém<small>Preparar uma lista para enviar</small></span>' + IC.right + '</button></div>';
+    if(compras.length){
+      h += '<button type="button" class="compra-progresso" data-act="nav" data-view="lista"><b>Retomar minha compra</b>' +
+        '<span>' + carrinho + ' de ' + compras.length + ' no carrinho</span><progress aria-label="Itens no carrinho" value="' + carrinho + '" max="' + compras.length + '"></progress></button>';
+    }
     var standalone = window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
     var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone;
     var android = /Android/i.test(navigator.userAgent) && !standalone;
@@ -452,13 +459,6 @@
           '<span>Se o médico mudar a orientação, atualize os gatilhos pra o app continuar avisando certo.</span>' +
           '<button class="act" type="button" data-act="nav" data-view="rotulo">Ver dieta</button></div>';
       }
-    }
-    if(state.dica){
-      h += '<div class="tip"><b>Como usar, em 3 passos</b><ol>' +
-        '<li>Toque no <b>+</b> sempre que comprar alguma coisa.</li>' +
-        '<li>Em <b>Preços</b>, toque num item e corrija o valor quando estiver diferente no mercado.</li>' +
-        '<li>Monte a <b>Lista</b> antes de sair de casa e vá marcando no carrinho.</li></ol>' +
-        '<button class="x" type="button" data-act="fechar-dica">Entendi</button></div>';
     }
     h += '<div class="mnav"><button class="round" type="button" data-act="mes-ant" aria-label="Mês anterior">' + IC.left + '</button>' +
       '<b>' + esc(monthName(k)) + '</b>' +
@@ -617,6 +617,7 @@
       return;
     }
     h += '<div class="sum"><div><span>Estimado</span><b>' + brl(est) + '</b></div><div class="cart"><span>No carrinho · ' + done + ' de ' + items.length + '</span><b>' + brl(cart) + '</b></div></div>';
+    h += '<div class="lista-acoes"><button type="button" class="btn-sm" data-act="delegar">Comprar para alguém</button><button type="button" class="btn-sm" data-act="comparar-custo">Comparar custo da receita</button></div>';
     h += '<div class="card"><ul class="rows">' + items.map(function(it){
       var c = cur(it), of = ofertaAtiva(it);
       return '<li><div class="litem' + (it.ok ? ' done' : '') + '">' +
@@ -657,6 +658,7 @@
     setTimeout(function(){ var f = focusId && document.getElementById(focusId); if(f){ try{ f.focus(); if(f.select) f.select(); }catch(e){} } }, 280);
   }
   function closeSheet(){
+    if(ui.sheet && ui.sheet.falando && window.speechSynthesis) speechSynthesis.cancel();
     sheet.classList.remove("on"); scrim.classList.remove("on"); ui.sheet = null; ui.armed = null;
     if(window.ElidaOCR) window.ElidaOCR.encerrar();
     setTimeout(function(){ if(!sheet.classList.contains("on")) sheet.innerHTML = ""; }, 350);
@@ -854,6 +856,49 @@
     closeSheet();
     if(faltantes.length) show("lista");
     toast(!faltantes.length ? "Você já tem todos os ingredientes." : novos ? "Lista atualizada com o que falta." : "Os ingredientes já estão na lista.");
+  }
+
+  function abrirCompraDelegada(){
+    var pendentes = state.items.filter(function(it){return it.lista && !it.ok;});
+    if(!pendentes.length){
+      ui.sheet = {type:"delegar"};
+      openSheet('<h3 class="sh-title" id="sh-title">Comprar para alguém</h3><p class="sh-sub">Sua lista está sem itens pendentes. Escolha o jantar e marque o que já tem em casa antes de preparar a mensagem.</p><button class="bigbtn" type="button" data-act="jantar">Planejar meu jantar</button>');
+      return;
+    }
+    var lista = pendentes.map(function(it){return "• " + it.nome + " (" + qtdLabel(it) + (isKg(it) ? "" : " " + it.por) + ")";}).join("\n");
+    ui.sheet = {type:"delegar"};
+    openSheet('<h3 class="sh-title" id="sh-title">Comprar para alguém</h3><p class="sh-sub">Revise a mensagem. Inclua apenas as instruções que deseja enviar.</p>' +
+      '<label class="fl">Mensagem para quem vai ao mercado<textarea class="inp" id="pedido-compra" rows="7">' +
+      esc("Lista de compras\n" + lista) + '</textarea></label>' +
+      (jantarSalvo() ? '<button class="link" type="button" data-act="incluir-prato">Incluir nome da refeição salva</button>' : '') + '<p class="sub">Você pode acrescentar uma orientação, como “me mande uma foto do rótulo antes de trocar a marca”.</p>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="enviar-pedido">' +
+      (navigator.share ? 'Escolher com quem compartilhar' : 'Copiar mensagem') + '</button></div>');
+  }
+  async function enviarPedido(){
+    var campo = document.getElementById("pedido-compra");
+    if(!campo || !campo.value.trim()){ toast("Escreva a mensagem antes de enviar."); return; }
+    if(navigator.share){
+      try{await navigator.share({text:campo.value}); return;}
+      catch(e){if(e.name === "AbortError") return;}
+    }
+    copy(campo.value,campo);
+  }
+  function compararCusto(){
+    ui.sheet = {type:"custo"};
+    function opcao(letra){
+      return '<fieldset class="custo-opcao"><legend>Opção ' + letra + '</legend>' +
+        [['preco','Preço do pacote (R$)'],['peso','Peso do pacote (g)'],['uso','Quantidade na receita (g)']].map(function(c){
+          return '<label class="fl">' + c[1] + '<input required class="inp" type="number" step="any" min="0.000001" name="' + c[0] + letra + '"></label>';
+        }).join("") + '</fieldset>';
+    }
+    openSheet('<h3 class="sh-title" id="sh-title">Comparar custo da receita</h3><p class="sh-sub">Compare dois ingredientes que você já escolheu para a receita. Use os preços da loja.</p><form class="form" id="form-custo">' +
+      opcao("A") + opcao("B") + '<button class="bigbtn" type="submit">Calcular custos</button><div id="custos" aria-live="polite"></div></form>');
+  }
+  function calcularCustos(f){
+    document.getElementById("custos").textContent = ["A","B"].map(function(k){
+      var preco=f.elements["preco"+k].valueAsNumber, peso=f.elements["peso"+k].valueAsNumber, uso=f.elements["uso"+k].valueAsNumber;
+      return "Opção "+k+" · "+brl(preco*uso/peso)+" na receita · "+brl(preco*Math.ceil(uso/peso))+" em pacotes inteiros.";
+    }).join("\n");
   }
 
   function sheetOrcamento(){
@@ -1835,6 +1880,10 @@
         : 'Compare cada campo com a embalagem na sua mão e corrija o que estiver errado. Sem essa conferência não há análise.';
     var gl = r.declaracaoGluten || "nao_informado", lac = r.declaracaoLactose || "nao_informado";
     openSheet('<h3 class="sh-title" id="sh-title">' + titulo + '</h3><p class="sh-sub">' + sub + '</p>' +
+      (pre && pre.foto ? '<figure class="rotulo-prova"><div id="imagem-conferida"></div><figcaption>' +
+        (pre.linhas.length ? 'Linhas para conferir na embalagem' : 'Foto original para comparar com o texto lido') + '</figcaption></figure>' +
+        '<details class="ocr-texto"><summary>Ver transcrição da foto</summary><p>' + esc(pre.texto) + '</p></details>' +
+        (window.speechSynthesis ? '<button class="btn-sm" type="button" data-act="ouvir-rotulo">Ouvir texto lido</button>' : '') : '') +
       (pre && pre.avisos && pre.avisos.length ? pre.avisos.map(function(a){ return '<p class="ia-duv">' + esc(a) + '</p>'; }).join("") : '') +
       (pre && pre.duvidosas && pre.duvidosas.length ? '<p class="ia-duv">Leitura duvidosa, confira com atenção: ' + esc(pre.duvidosas.slice(0, 20).join(", ")) + '</p>' : '') +
       '<form class="form" id="form-rd" novalidate>' +
@@ -1848,7 +1897,22 @@
       (pre ? '<label class="ia-op"><input type="checkbox" id="rd-ok0"> Conferi este texto com a embalagem na minha mão</label>' : '') +
       '<label class="ia-op"><input type="checkbox" id="rd-ok1"> ' + (pre ? 'A lista de ingredientes está completa' : 'Copiei a lista inteira de ingredientes') + '</label>' +
       '<label class="ia-op"><input type="checkbox" id="rd-ok2"> ' + (pre ? 'O bloco ALÉRGICOS e a declaração de glúten estão completos' : 'Copiei todos os avisos de alérgicos') + '</label>' +
-      '<div id="rd-res" aria-live="polite" tabindex="-1"></div><div class="sh-actions"><button class="bigbtn" type="submit">Analisar com o perfil escolhido</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></form>', "rd-nome");
+      '<div id="rd-res" aria-live="polite" tabindex="-1"></div><div class="sh-actions"><button class="bigbtn" type="submit">Analisar com o perfil escolhido</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div></form>', pre && pre.foto ? null : "rd-nome");
+    if(pre && pre.foto){
+      pre.foto.setAttribute("role","img"); pre.foto.setAttribute("aria-label","Foto da embalagem para conferência visual");
+      document.getElementById("imagem-conferida").appendChild(pre.foto);
+    }
+  }
+  function ouvirRotulo(){
+    var sessao=ui.sheet, campo=sessao && sessao.pre;
+    if(!campo || !campo.texto || !window.speechSynthesis) return;
+    if(sessao.falando){speechSynthesis.cancel(); sessao.falando=false; return;}
+    var voz=speechSynthesis.getVoices().find(function(v){return v.localService && /^pt(?:-|_)/i.test(v.lang);});
+    if(!voz){ toast("Sem voz em português instalada. Abra a transcrição da foto.",3500); return; }
+    var fala=new SpeechSynthesisUtterance(campo.texto); fala.voice=voz; fala.lang=voz.lang;
+    var botao=sheet.querySelector('[data-act="ouvir-rotulo"]');
+    fala.onend=fala.onerror=function(){sessao.falando=false; botao.textContent="Ouvir texto lido";};
+    sessao.falando=true; botao.textContent="Parar leitura"; speechSynthesis.speak(fala);
   }
   function analisarDigitado(){
     var pa = perfilAtivo(), out = document.getElementById("rd-res"), g = function(id){ return document.getElementById(id); }, pre = ui.sheet && ui.sheet.pre;
@@ -1897,12 +1961,21 @@
   }
   function lerFoto(file){
     var st = document.getElementById("ocr-status"); if(!st || !ui.sheet || ui.sheet.type !== "foto") return;
+    if(ui.sheet.lendo) return;
+    var sessao=ui.sheet, perfil=perfilAtivo();
+    function destacarLinha(texto){
+      if(/ingredientes|al[eé]rgicos|cont[eéê]m|pode conter/i.test(texto)) return true;
+      return !!perfil && perfil.restricoes.some(function(r){
+        var grupo=IA.RESTRICOES[r.tipo].grupo;
+        return grupo ? IA.encontrar(texto,grupo).length > 0 : r.tipo === "lactose" && /lactose/i.test(texto);
+      });
+    }
     ui.sheet.lendo = true;
     st.innerHTML = '<p class="sub">Preparando o leitor de rótulos… Na primeira vez ele baixa cerca de 5 MB; depois funciona sem internet.</p>';
-    OCR.lerImagem(file, { base: "./vendor/ocr/", hoje: todayStr(), etapa: function(i, n){ var e = document.getElementById("ocr-status"); if(e) e.innerHTML = '<p class="sub">Lendo a foto (tentativa ' + i + ' de ' + n + ')…</p>'; } }).then(function(r){
-      if(!ui.sheet || ui.sheet.type !== "foto") return;
+    OCR.lerImagem(file, { base: "./vendor/ocr/", hoje: todayStr(), destacarLinha:destacarLinha, etapa: function(i, n){ if(ui.sheet !== sessao) return; var e = document.getElementById("ocr-status"); if(e) e.innerHTML = '<p class="sub">Lendo a foto (tentativa ' + i + ' de ' + n + ')…</p>'; } }).then(function(r){
+      if(ui.sheet !== sessao) return;
       ui.sheet.lendo = false;
-      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
+      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", foto:r.foto, linhas:r.linhas || [], texto:r.textoLido, rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
       var e = document.getElementById("ocr-status"); if(!e) return;
       e.innerHTML = '<div>' + chipEstado("INFORMACAO_INSUFICIENTE") + '</div>' + r.motivos.map(function(m){ return '<p class="ia-erro">' + esc(m) + '</p>'; }).join("") +
         '<p class="sub">O app não analisa uma foto que não conseguiu ler direito. Tire outra ou digite o rótulo.</p><div class="links"><button class="link" type="button" data-act="rotulo-digitado">Digitar o rótulo</button></div>';
@@ -1947,6 +2020,12 @@
     var act = b.dataset.act, id = b.dataset.id, it;
     try {
       switch(act){
+      case "delegar": abrirCompraDelegada(); break;
+      case "incluir-prato":
+        var pedido=document.getElementById("pedido-compra"), pratoSalvo=jantarSalvo();
+        if(pedido && pratoSalvo){ pedido.value=pratoSalvo.nome+"\n"+pedido.value; b.hidden=true; } break;
+      case "enviar-pedido": enviarPedido(); break;
+      case "comparar-custo": compararCusto(); break;
       case "jantar": abrirJantar(); break;
       case "editar-jantar": editarJantar(); break;
       case "comprar-jantar": comprarJantar(); break;
@@ -1964,6 +2043,7 @@
       case "produto-lista": var pl = produtoDaBusca(id); if(pl) produtoNaLista(pl); break;
       case "rotulo-digitado": sheetRotuloDigitado(); break;
       case "rotulo-foto": sheetFoto(); break;
+      case "ouvir-rotulo": ouvirRotulo(); break;
       case "ocr-escolher": var fi = document.getElementById("ocr-foto"); if(fi){ fi.value = ""; fi.click(); } break;
       case "confirmar-sugestao": var ps = produtoDaBusca(id); if(ps && ps.ean){ buscaIA.rodando = true; render(); Busca.porCodigo(ps.ean).then(function(r){ buscaIA.rodando = false; buscaIA.resposta = r; render(); var al = document.getElementById("ia-resultados"); if(al) al.focus(); }); } break;
       case "conferir-produto": var pc = produtoDaBusca(id); if(pc) sheetRotuloDigitado({ origem: "off", rotulo: pc.rotulo, nome: pc.nome, ean: pc.ean, avisos: ["Dados colaborativos do Open Food Facts: podem estar errados, incompletos ou ser de uma embalagem antiga."] }); break;
@@ -2126,7 +2206,7 @@
   });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && ui.sheet){ closeSheet(); }
-    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && e.target.tagName === "INPUT" && e.target.type !== "search"){
+    if(e.key === "Enter" && ui.sheet && ui.sheet.type !== "editar-jantar" && ui.sheet.type !== "custo" && e.target.tagName === "INPUT" && e.target.type !== "search"){
       e.preventDefault();
       var map = {gasto:"salvar-gasto", item:"salvar-preco", novo:"salvar-item", finalizar:"confirmar-compra", orc:"salvar-orc", dieta:"salvar-dieta", "criar-casa":"confirmar-casa", entrar:"confirmar-entrar"};
       var act = map[ui.sheet.type]; if(act){ var btn = sheet.querySelector('[data-act="' + act + '"]'); if(btn) btn.click(); }
@@ -2134,7 +2214,8 @@
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
-    if(f.id === "form-jantar"){ e.preventDefault(); salvarJantar(f); }
+    if(f.id === "form-custo"){ e.preventDefault(); calcularCustos(f); }
+    else if(f.id === "form-jantar"){ e.preventDefault(); salvarJantar(f); }
     else if(f.id === "form-busca"){
       e.preventDefault(); var q = document.getElementById("f-busca").value;
       var g = gatilhosIA.disparar(/^[\d\s.-]{8,}$/.test(q.trim()) ? "CODIGO_LIDO" : "PESQUISA_SOLICITADA", { origem: "usuario", texto: q });
@@ -2204,6 +2285,7 @@
       show("inicio", true);
       return;
     }
+    if(hs === "#ler-foto"){ show("inicio"); sheetFoto(); return; }
     if(hs === "#jantar"){ show("inicio"); abrirJantar(); return; }
     show(hs.replace("#",""), true);
   });
@@ -2245,6 +2327,7 @@
     show(VIEWS.indexOf(h) >= 0 ? h : "inicio", true);
     save();
     if(state.carta && !state.cartaVista) showWelcome();
+    else if(h === "ler-foto"){ show("inicio"); sheetFoto(); }
     else if(h === "jantar"){ show("inicio"); abrirJantar(); }
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
     else if(pendingOfertas) setTimeout(function(){ sheetOfertasImport(pendingOfertas); }, 350);

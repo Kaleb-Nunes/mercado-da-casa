@@ -82,6 +82,15 @@ async function testar(){
   await atalho.click();
   await page.getByRole("heading",{name:"Ler rótulo por foto"}).waitFor();
   await page.locator('#sheet [data-act="fechar"]').first().click();
+  await atalho.click();
+  await page.locator("#ocr-foto").setInputFiles(path.join(raiz,"tests/ocr/rotulo-sintetico.png"));
+  await page.locator("#imagem-conferida canvas").waitFor({timeout:75000});
+  assert.ok(await page.locator("#imagem-conferida canvas").evaluate(c=>c.width>0));
+  await page.getByText("Ver transcrição da foto").click();
+  assert.match(await page.locator(".ocr-texto p").innerText(),/leite/i);
+  assert.equal(await page.locator("#rd-ok0").isChecked(),false);
+  await page.locator('#sheet [data-act="fechar"]').first().click();
+  resultado.push("OCR de imagem sintética real, foto para comparação e revisão obrigatória");
   resultado.push("foto no início, movimento reduzido e atalho para o leitor");
 
   const familia=await browser.newContext({viewport:{width:390,height:844},locale:"pt-BR",hasTouch:true});
@@ -101,6 +110,21 @@ async function testar(){
   const lista=jantar.locator("#view-lista.on");
   await lista.getByText("Tomate",{exact:true}).first().waitFor();
   assert.equal(await lista.getByText("Cenoura",{exact:true}).count(),0);
+  await lista.getByRole("button",{name:"Comprar para alguém"}).click();
+  const pedido=folha.getByLabel("Mensagem para quem vai ao mercado");
+  assert.match(await pedido.inputValue(),/Tomate/);
+  assert.doesNotMatch(await pedido.inputValue(),/domingo|Cenoura/);
+  await folha.getByRole("button",{name:"Incluir nome da refeição salva"}).click();
+  assert.match(await pedido.inputValue(),/Jantar de domingo/);
+  await folha.locator('[data-act="fechar"]').first().click();
+  await lista.getByRole("button",{name:"Comparar custo da receita"}).click();
+  for(const [campo,valor] of Object.entries({precoA:"10",pesoA:"500",usoA:"100",precoB:"6",pesoB:"200",usoB:"100"}))
+    await folha.locator('[name="'+campo+'"]').fill(valor);
+  await folha.getByRole("button",{name:"Calcular custos"}).click();
+  assert.match(await folha.locator("#custos").innerText(),/2,00 na receita.*10,00 em pacotes/);
+  assert.match(await folha.locator("#custos").innerText(),/3,00 na receita.*6,00 em pacotes/);
+  await folha.locator('[data-act="fechar"]').first().click();
+  resultado.push("revisão da compra delegada e comparação do preço usado e do desembolso");
   await jantar.reload();
   await jantar.locator("#tab-inicio").click();
   await jantar.getByRole("button",{name:"Planejar meu jantar",exact:true}).click();
