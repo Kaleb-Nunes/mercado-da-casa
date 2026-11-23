@@ -120,7 +120,7 @@ test("erro no login mostra causa e devolve capacidade de clicar",async()=>{
   const dialogo=env.elems[1];
   const login=await clicar(dialogo,"google");
   const status=dialogo.querySelector("[data-elida-msg]").textContent;
-  assert.match(status,/aguarda a configuração pública do Supabase/i);
+  assert.match(status,/entrada com conta ainda não está disponível neste endereço/i);
   assert.equal(login.disabled,false);
   assert.equal(login.textContent,"", "Botão recupera texto original após falha (mock sem conteúdo inicial)");
 });

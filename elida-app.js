@@ -1913,6 +1913,8 @@
   var OCR = window.ElidaOCR;
   var FONTE_TESTE_KEY = PFX + "elida-fonte-teste";
   var CONF_KEY = PFX + "elida-conferencias-v1";
+  /* Cada rótulo conferido vira a memória da casa para aquele código de barras. 120 cabem folgados no localStorage. */
+  var MAX_CONF = 120;
   var OFF_CACHE_KEY = PFX + "elida-off-cache";
   function fonteTeste(){ if(!AMB.homologacao) return null; try{ return localStorage.getItem(FONTE_TESTE_KEY) === "off" ? "off" : "ficticio"; }catch(e){ return "ficticio"; } }
   function cacheOFF(){
@@ -2093,7 +2095,7 @@
     if(!perfisEstado.ativo) perfisEstado.ativo = dm.perfis[0].id;
     salvarPerfis();
     var antes = lerConferencias().filter(function(c){ return !R.ehDemo(c); });
-    try{ localStorage.setItem(CONF_KEY, JSON.stringify(dm.conferencias.concat(antes).sort(function(a, b){ return String(b.quando) < String(a.quando) ? -1 : 1; }).slice(0, 30))); }catch(e){}
+    try{ localStorage.setItem(CONF_KEY, JSON.stringify(dm.conferencias.concat(antes).sort(function(a, b){ return String(b.quando) < String(a.quando) ? -1 : 1; }).slice(0, MAX_CONF))); }catch(e){}
     render(); toast("Família de demonstração carregada. Dados fictícios.");
   }
   function demoFamiliaRemover(){
@@ -2171,13 +2173,21 @@
       '<div class="links"><button class="link" type="button" data-act="rotulo-digitado">Conferir rótulo digitado</button><button class="link" type="button" data-act="rotulo-foto">Ler rótulo por foto</button></div>';
     h += '<div id="ia-resultados" tabindex="-1">';
     if(r){
-      h += '<h3 class="ia-h">' + (r.status === "ok" ? r.produtos.length + (r.produtos.length === 1 ? ' produto' : ' produtos') + ' para "' + esc(r.consulta.valor) + '"' : 'Resultado da busca') + '</h3>';
+      /* Código de barras: primeiro o rótulo que a família já conferiu na embalagem (vale sem internet e para qualquer produto). */
+      var codBusca = codigoDaBusca(), daCasa = codBusca ? BUS.conferidoPorCodigo(lerConferencias(), codBusca) : null;
+      if(daCasa) h += '<h3 class="ia-h">Rótulo que vocês já conferiram</h3>' + cartaoDaCasa(daCasa);
+      h += '<h3 class="ia-h">' + (r.status === "ok" ? r.produtos.length + (r.produtos.length === 1 ? ' produto' : ' produtos') + ' para "' + esc(r.consulta.valor) + '"' + (daCasa ? ' na base colaborativa' : '') : 'Resultado da busca') + '</h3>';
       r.avisos.forEach(function(a){ h += '<p class="sub">' + esc(a) + '</p>'; });
-      if(r.status === "nao_encontrado") h += '<p class="card ia-vazio">Nada encontrado. Confira a embalagem ou use "Conferir rótulo digitado".</p>';
+      if(r.status === "nao_encontrado" && !codBusca) h += '<p class="card ia-vazio">Nada encontrado. Confira a embalagem ou use "Conferir rótulo digitado".</p>';
+      if(codBusca && !daCasa && (r.status === "nao_encontrado" || r.status === "indisponivel"))
+        h += '<div class="card ia-lacuna" role="note"><b>' + (r.status === "nao_encontrado" ? 'Este código não está na base.' : 'A base não respondeu agora.') + '</b>' +
+          '<span>Sem a base, o código sozinho não diz se tem leite, glúten, ovo ou soja. A resposta está no verso da embalagem.</span>' +
+          '<button class="bigbtn" type="button" data-act="foto-codigo">Fotografar ingredientes e ALÉRGICOS</button>' +
+          '<small>Depois que você conferir o texto, o Élida reconhece este código nas próximas buscas, mesmo sem internet.</small></div>';
       r.produtos.forEach(function(p){
         var a = p.sugestao ? null : avaliarProduto(p), sub = [p.marca, p.quantidade, p.ean].filter(Boolean).map(esc).join(' · ');
         h += '<article class="card ia-prod"><div class="ia-topo"><div><b>' + esc(p.nome) + '</b>' + (p.fonte.rascunho ? '<span class="ia-badge">' + (p.sugestao ? 'Sugestão' : 'Rascunho') + '</span>' : '') + '<br><small>' + sub + '</small></div>' + (a ? chipEstado(a.status, a.texto) : '') + '</div>' +
-          (p.sugestao ? '<p class="sub">Confirme se é o mesmo produto, sabor e tamanho da embalagem antes de ver a avaliação.</p>' : window.ElidaRadar.casaChipsHtml(perfisEstado.perfis, BUS.rotuloParaRegras(p), todayStr())) +
+          (p.sugestao ? '<p class="sub">Confirme se é o mesmo produto, sabor e tamanho da embalagem antes de ver a avaliação.</p>' : resumoAvisos(p.rotulo.advertencias) + lacunaDaBase(p, !!daCasa) + window.ElidaRadar.casaChipsHtml(perfisEstado.perfis, BUS.rotuloParaRegras(p), todayStr())) +
           (a ? '<ul class="ia-det">' + a.detalhes.map(function(d){ return '<li>' + esc(d.nome) + ': ' + chipEstado(d.estado, d.texto) + '</li>'; }).join("") + '</ul>' : '') +
           '<p class="ia-fonte">Fonte: ' + fonteTexto(p.fonte) + '</p><div class="links">' +
           (p.sugestao ? '<button class="link" type="button" data-act="confirmar-sugestao" data-id="' + esc(p.id) + '">É este produto (mesmo sabor e tamanho)</button>'
@@ -2204,6 +2214,43 @@
     });
   }
   function produtoDaBusca(id){ var r = buscaIA.resposta; return r && r.produtos.filter(function(p){ return p.id === id; })[0]; }
+  function codigoDaBusca(){ var r = buscaIA.resposta, c = r && r.consulta && r.consulta.tipo === "codigo" ? String(r.consulta.valor || "") : ""; return BUS.gtinValido(c) ? c : null; }
+  function dataCurtaBR(iso){ return String(iso || "").slice(0, 10).split("-").reverse().join("/"); }
+  /* O que a embalagem (ou a base) avisa, visível mesmo sem perfil escolhido. "Contém" e "pode conter" nunca se misturam. */
+  function resumoAvisos(adv){
+    adv = adv || {};
+    if(!adv.contem && !adv.podeConter) return '';
+    return '<dl class="ia-avisos">' + (adv.contem ? '<div class="ia-av-contem"><dt>Contém</dt><dd>' + esc(adv.contem) + '</dd></div>' : '') +
+      (adv.podeConter ? '<div class="ia-av-pode"><dt>Pode conter (traços)</dt><dd>' + esc(adv.podeConter) + '</dd></div>' : '') + '</dl>';
+  }
+  /* Base sem ingredientes nem avisos: o código não basta. Diz isso com todas as letras e leva para a foto do rótulo. */
+  function lacunaDaBase(p, jaConferido){
+    var cb = p.cobertura;
+    if(!cb || jaConferido) return '';
+    if(!cb.ingredientes && !cb.avisos) return '<div class="ia-lacuna" role="note"><b>A base não tem os ingredientes nem os avisos de alérgicos deste código.</b>' +
+      '<span>Pelo código, o app não tem como saber se tem leite, glúten, ovo ou soja. Isso não quer dizer que não tenha.</span>' +
+      '<button class="bigbtn" type="button" data-act="foto-codigo" data-id="' + esc(p.id) + '">Fotografar ingredientes e ALÉRGICOS</button>' +
+      '<small>Depois que você conferir o texto, o Élida reconhece este código nas próximas buscas, mesmo sem internet.</small></div>';
+    if(!cb.avisos) return '<p class="ia-duv">A base tem a lista de ingredientes, mas não traz o bloco ALÉRGICOS. O aviso "pode conter" (traços) só aparece na embalagem. ' +
+      '<button class="link" type="button" data-act="foto-codigo" data-id="' + esc(p.id) + '">Fotografar o rótulo</button></p>';
+    return '';
+  }
+  function cartaoDaCasa(c){
+    var pa = perfilAtivo(), rot = c.rotulo || {}, a = pa ? IA.analisar(pa, rot, { hoje: todayStr() }) : null;
+    if(a && a.status === "INVALIDO") a = null;
+    return '<article class="card ia-prod ia-casa"><div class="ia-topo"><div><b>' + esc(c.produto || rot.nome || "Produto") + '</b><span class="ia-badge ia-badge-casa">Conferido por vocês</span><br><small>' +
+      esc([c.ean || rot.ean, 'conferido em ' + dataCurtaBR(c.quando)].filter(Boolean).join(' · ')) + '</small></div>' + (a ? chipEstado(a.status, a.texto) : '') + '</div>' +
+      resumoAvisos(rot.advertencias) + window.ElidaRadar.casaChipsHtml(perfisEstado.perfis, rot, todayStr()) +
+      (a ? '<ul class="ia-det">' + a.detalhes.map(function(d){ return '<li>' + esc(d.nome) + ': ' + chipEstado(d.estado, d.texto) + '</li>'; }).join("") + '</ul>' : (pa ? '' : '<p class="sub">Escolha um perfil para ver a avaliação.</p>')) +
+      '<p class="sub">Se a embalagem mudou desde a conferência, confira de novo: a receita pode ter mudado.</p>' +
+      '<div class="links"><button class="link" type="button" data-act="reanalisar" data-id="' + esc(c.id) + '">Ver rótulo e motivos</button><button class="link" type="button" data-act="foto-codigo">Conferir de novo por foto</button></div></article>';
+  }
+  function fotoDoCodigo(id){
+    var cod = codigoDaBusca(), p = id ? produtoDaBusca(id) : null;
+    if(p && p.ean) cod = p.ean;
+    var casa = cod ? BUS.conferidoPorCodigo(lerConferencias(), cod) : null;
+    sheetFoto(cod ? { ean: cod, nome: p ? p.nome : casa ? casa.produto : "" } : null);
+  }
   function blocoAnalise(a){
     var f = a.fonte || {};
     return '<div class="dbox"><b>Resultado: ' + esc(a.texto) + '</b>' + a.detalhes.map(function(d){ return '<span><b>' + esc(d.nome) + ':</b> ' + esc(d.texto) + '. ' + esc(d.motivos.join(" ")) + (d.trechos.length ? ' Achado: ' + esc(d.trechos.join(", ")) + '.' : '') + '</span>'; }).join("") +
@@ -2300,7 +2347,7 @@
   function guardarConferencia(rot, a){
     var l = lerConferencias().filter(function(c){ return c.evidencia !== a.evidencia; });
     l.unshift({ id: uid(), quando: a.carimbo, produto: rot.nome || "Produto sem nome", ean: rot.ean || null, rotulo: rot, fonte: a.fonte, evidencia: a.evidencia, versaoMotor: a.versaoMotor, versaoPolitica: a.versaoPolitica });
-    try{ localStorage.setItem(CONF_KEY, JSON.stringify(l.slice(0, 30))); }catch(e){}
+    try{ localStorage.setItem(CONF_KEY, JSON.stringify(l.slice(0, MAX_CONF))); }catch(e){}
   }
   function reanalisar(id){
     var c = lerConferencias().filter(function(x){ return x.id === id; })[0], pa = perfilAtivo(); if(!c) return;
@@ -2311,9 +2358,11 @@
       (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') + window.ElidaRadar.casaBlocoHtml(perfisEstado.perfis, c.rotulo, todayStr(), "ra") + '<div class="sh-actions"><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
   }
   /* Foto do rótulo: lida aqui mesmo, sem enviar a imagem. Ilegível = INFORMAÇÃO INSUFICIENTE. */
-  function sheetFoto(){
-    ui.sheet = {type: "foto"};
+  function sheetFoto(pre){
+    pre = pre && BUS.gtinValido(pre.ean) ? pre : null;
+    ui.sheet = {type: "foto", ean: pre ? pre.ean : null, nome: pre ? String(pre.nome || "") : ""};
     openSheet('<h3 class="sh-title" id="sh-title">Ler rótulo por foto</h3><p class="sh-sub">Fotografe de perto, com luz e sem reflexo, a lista de ingredientes junto com o bloco ALÉRGICOS. A foto é lida neste aparelho e não é enviada a ninguém nem guardada. Depois você confere o texto antes da análise.</p>' +
+      (pre ? '<p class="ia-duv">Código ' + esc(pre.ean) + (pre.nome ? ' · ' + esc(pre.nome) : '') + '. Depois que você conferir o texto, este código fica ligado a este rótulo neste aparelho.</p>' : '') +
       '<input type="file" id="ocr-foto" accept="image/*" hidden>' +
       '<div id="ocr-status" role="status" aria-live="polite"></div>' +
       '<div class="sh-actions"><button class="bigbtn" type="button" data-act="ocr-escolher">Tirar ou escolher foto</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
@@ -2334,7 +2383,7 @@
     OCR.lerImagem(file, { base: "./vendor/ocr/", hoje: todayStr(), destacarLinha:destacarLinha, etapa: function(i, n){ if(ui.sheet !== sessao) return; var e = document.getElementById("ocr-status"); if(e) e.innerHTML = '<p class="sub">Lendo a foto (tentativa ' + i + ' de ' + n + ')…</p>'; } }).then(function(r){
       if(ui.sheet !== sessao) return;
       ui.sheet.lendo = false;
-      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", foto:r.foto, linhas:r.linhas || [], texto:r.transcricao || r.textoLido, rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas }); return; }
+      if(r.status === OCR.STATUS.OK){ sheetRotuloDigitado({ origem: "foto", foto:r.foto, linhas:r.linhas || [], texto:r.transcricao || r.textoLido, rotulo: r.rotulo, avisos: r.avisos, duvidosas: r.palavrasDuvidosas, ean: sessao.ean || null, nome: sessao.nome || "" }); return; }
       var e = document.getElementById("ocr-status"); if(!e) return;
       e.innerHTML = '<div>' + chipEstado("INFORMACAO_INSUFICIENTE") + '</div>' + r.motivos.map(function(m){ return '<p class="ia-erro">' + esc(m) + '</p>'; }).join("") +
         '<p class="sub">O app não analisa uma foto que não conseguiu ler direito. Tire outra ou digite o rótulo.</p><div class="links"><button class="link" type="button" data-act="rotulo-digitado">Digitar o rótulo</button><button type="button" class="link" data-act="nova-duvida" data-motivo="rotulo">Levar dúvida à consulta</button></div>';
@@ -2447,6 +2496,7 @@
       case "produto-lista": var pl = produtoDaBusca(id); if(pl) produtoNaLista(pl); break;
       case "rotulo-digitado": sheetRotuloDigitado(); break;
       case "rotulo-foto": sheetFoto(); break;
+      case "foto-codigo": fotoDoCodigo(id); break;
       case "ouvir-rotulo": ouvirRotulo(); break;
       case "ocr-escolher": var fi = document.getElementById("ocr-foto"); if(fi){ fi.value = ""; fi.click(); } break;
       case "confirmar-sugestao": var ps = produtoDaBusca(id); if(ps && ps.ean){ buscaIA.rodando = true; render(); Busca.porCodigo(ps.ean).then(function(r){ buscaIA.rodando = false; buscaIA.resposta = r; render(); var al = document.getElementById("ia-resultados"); if(al) al.focus(); }); } break;

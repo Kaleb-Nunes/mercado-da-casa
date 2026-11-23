@@ -35,6 +35,11 @@ t("abreviação INGR.: e leitura sem o I (NGR.:)", function () {
   assert.equal(ler("INGR.: ÁGUA GASEIFICADA, EXTRATO DE NOZ DE COLA, CAFEÍNA. NÃO CONTÉM GLÚTEN").status, "ok");
   assert.equal(ler("NGR.: AGUA GASEIFICADA, EXTRATO DE NOZ DE COLA, CAFEINA").status, "ok");
 });
+t("OCR cola palavras (CONTÉMGLUTEN, NÃOCONTÉM LACTOSE): a declaração continua valendo", function () {
+  var r = ler("INGREDIENTES: farinha de trigo, açúcar, sal. ALÉRGICOS: CONTÉM DERIVADOS DE TRIGO E SOJA. PODE CONTER OVO E LEITE, CONTÉMGLUTEN");
+  assert.equal(r.rotulo.declaracaoGluten, "contem");
+  assert.equal(ler("INGREDIENTES: arroz, sal. NÃOCONTÉMGLÚTEN.").rotulo.declaracaoGluten, "nao_contem");
+});
 t("ingrediente único (Ingrediente: gelatina)", function () { var r = ler("INGREDIENTE: GELATINA.\nNÃO CONTÉM GLÚTEN."); assert.equal(r.status, "ok"); assert.deepEqual(r.rotulo.ingredientes, ["GELATINA"]); });
 t("vírgula dentro de parênteses não separa ingrediente", function () {
   var r = ler("Ingredientes: milho, especiarias (cravo, pimenta-preta e cominho), sal. NÃO CONTÉM GLÚTEN.");

@@ -22,6 +22,9 @@ window.ElidaEntrada = (function () {
       botao.dataset.estado = estado;
       botao.setAttribute("aria-disabled", String(ocupado || estado !== "ativo"));
     });
+    /* Até o Google aprovar a marca, a tela dele mostra o endereço do Supabase. Avisar antes evita susto. */
+    const avisoGoogle = buscar(".entrada-aviso-google");
+    if (avisoGoogle) avisoGoogle.hidden = estadoDe("google") !== "ativo";
   }
   function juntar(lista) {
     return lista.length < 2 ? lista.join("") : lista.slice(0, -1).join(", ") + " e " + lista[lista.length - 1];
@@ -53,6 +56,14 @@ window.ElidaEntrada = (function () {
     }
     nota.textContent = semConfiguracao ? servicos.erroLegivel(new Error("sem configuração"))
       : falhou ? "Sem conexão com o login social. Toque em uma das opções para tentar de novo." : avisoDisponibilidade();
+    mostrarOficial(semConfiguracao);
+  }
+  /* Em prévia de teste, leva a pessoa ao endereço oficial em vez de deixá-la presa em botões que não funcionam. */
+  function mostrarOficial(semConfiguracao) {
+    const link = buscar(".entrada-oficial"), alvo = semConfiguracao && servicos.enderecoOficial ? servicos.enderecoOficial() : "";
+    if (!link) return;
+    if (alvo) link.href = alvo; else link.removeAttribute("href");
+    link.hidden = !alvo;
   }
   function escolherProvedor(provedor) {
     if (consulta) { status.textContent = "Consultando opções de entrada…"; return; }

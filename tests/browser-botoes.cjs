@@ -88,8 +88,13 @@ async function testar(){
   await nota.evaluate(el=>{el.textContent="Sem leite (proteína do leite de vaca)";});
   for(const width of [320,360,390,430]){
     await page.setViewportSize({width,height:844});
-    const [marca,perfil,conta]=await Promise.all([".top .brand","#top-note","#elida-conta-botao"].map(sel=>page.locator(sel).boundingBox()));
-    assert.ok(marca.x+marca.width<=perfil.x+1 && perfil.x+perfil.width<=conta.x+1 && conta.x+conta.width<=width);
+    const [marca,perfil,conta,fab]=await Promise.all([".top .brand","#top-note","#elida-conta-botao","nav.tabs .fab"].map(sel=>page.locator(sel).boundingBox()));
+    assert.ok(marca.x+marca.width<=perfil.x+1 && perfil.x+perfil.width<=width,"topo cabe na largura "+width);
+    assert.equal(await page.locator("nav.tabs > #elida-conta-botao").count(),1,"Conta fica na barra de baixo");
+    assert.ok(conta.x>=0 && conta.x+conta.width<=width,"Conta cabe na barra em "+width);
+    assert.ok(Math.abs(fab.x+fab.width/2-width/2)<=2,"botão central continua no meio em "+width);
+    const rotulos=await page.locator("nav.tabs .tab, #elida-conta-botao").evaluateAll(els=>els.map(e=>e.scrollWidth<=e.clientWidth+1));
+    assert.ok(rotulos.every(Boolean),"rótulos da barra sem corte em "+width);
   }
   await page.setViewportSize({width:390,height:844});
   const atalho=page.locator('#view-inicio .radar-scan [data-act="scan"][data-modo="foto"]');
@@ -326,8 +331,11 @@ async function testar(){
     body:"window.ELIDA_SUPABASE="+JSON.stringify({origem:"https://outro-endereco.pages.dev",url:mockAuth,chavePublicavel:"sb_publishable_teste"})}));
   await foraPag.goto(origem);
   await foraPag.locator('#entrada .entrada-cta [data-tela="login"]').click();
-  await foraPag.locator(".entrada-provedores",{hasText:/aguarda a configuração pública/}).waitFor();
+  await foraPag.locator(".entrada-provedores",{hasText:/endereço de teste/}).waitFor();
   assert.equal(await foraPag.locator("#entrada [data-provedor]:visible").count(),3);
+  const oficial=foraPag.locator("#entrada .entrada-oficial");
+  assert.equal(await oficial.isVisible(),true,"prévia mostra o caminho para o endereço oficial");
+  assert.equal(await oficial.getAttribute("href"),"https://outro-endereco.pages.dev/");
   await fora.close();
   resultado.push("marcas, disponibilidade e rota de autorização PKCE dos três provedores com serviço simulado");
 

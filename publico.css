@@ -1,0 +1,31 @@
+/* Elida · páginas públicas (Sobre e Privacidade). Sem JavaScript, sem fontes externas. */
+:root{--bg:#F7F4EC;--card:#FFFDF8;--ink:#10261F;--muted:#4D5E56;--line:#DDE3DC;--hero:#0F3B2E;--hero-ink:#F4F1E6;--brass:#B8892B}
+@media (prefers-color-scheme: dark){:root{--bg:#0B1411;--card:#121D19;--ink:#E9EEE9;--muted:#A7B5AE;--line:#22302A;--hero:#143D30;--hero-ink:#F4F1E6;--brass:#D9B45A}}
+@font-face{font-family:"Fraunces";src:url("fonts/fraunces.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"Onest";src:url("fonts/onest.woff2") format("woff2");font-display:swap}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 "Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-underline-offset:3px}
+a:focus-visible{outline:3px solid var(--brass);outline-offset:2px;border-radius:4px}
+.topo{background:var(--hero);color:var(--hero-ink);padding:28px 20px 40px}
+.topo .marca{display:flex;align-items:center;gap:10px;text-decoration:none;font:600 20px "Fraunces",Georgia,serif}
+.topo .marca img{width:40px;height:40px;border-radius:10px}
+.topo h1{font:550 clamp(32px,6vw,52px)/1.08 "Fraunces",Georgia,serif;letter-spacing:-.02em;margin:28px 0 12px;max-width:760px}
+.topo p{max-width:680px;margin:0;color:#D6E2DB;font-size:18px}
+main{max-width:760px;margin:0 auto;padding:28px 20px 48px}
+h2{font:600 24px/1.25 "Fraunces",Georgia,serif;margin:36px 0 10px}
+h3{font-size:17px;margin:22px 0 6px}
+p,li{color:var(--ink)}
+.suave{color:var(--muted);font-size:15px}
+ul{padding-left:20px}
+li{margin:6px 0}
+.cartao{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:16px 0}
+.acoes{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 0}
+.botao{display:inline-block;padding:13px 18px;border-radius:14px;background:var(--brass);color:#1B1405;font-weight:700;text-decoration:none}
+.botao.sec{background:transparent;color:var(--hero-ink);border:1px solid #6F8F81}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:12px 0}
+th,td{text-align:left;vertical-align:top;padding:10px 8px;border-bottom:1px solid var(--line)}
+th{font-weight:700}
+footer{border-top:1px solid var(--line);padding:24px 20px 40px;text-align:center;color:var(--muted);font-size:14px}
+footer a{margin:0 6px}

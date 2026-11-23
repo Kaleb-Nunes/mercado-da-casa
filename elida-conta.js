@@ -13,6 +13,11 @@
     return !!CONFIG && CONFIG.origem===location.origin && /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(CONFIG.url)
       && /^sb_publishable_[A-Za-z0-9_-]+$/.test(CONFIG.chavePublicavel);
   }
+  /* Prévia de teste: a configuração existe, mas vale só para o endereço oficial. Devolve esse endereço para a tela de entrada. */
+  function enderecoOficial(){
+    if(!CONFIG || configValida() || typeof CONFIG.origem!=="string" || !/^https:\/\/[a-z0-9.-]+$/.test(CONFIG.origem))return "";
+    return CONFIG.origem+"/";
+  }
   function obterCliente(){
     if(!configValida())throw Error("Configuração Supabase pendente");
     if(!cliente){
@@ -47,7 +52,9 @@
     ["email","password"].forEach(function(n){var e=panel().querySelector("[data-elida-"+n+"]");if(e)e.value="";});
   }
   function erroLegivel(e){
-    if(!configValida())return "A homologação aguarda a configuração pública do Supabase.";
+    if(!configValida())return enderecoOficial()
+      ? "Este é um endereço de teste: aqui não dá para entrar com Google nem com e-mail. Use o endereço oficial ou continue como visitante."
+      : "A entrada com conta ainda não está disponível neste endereço. Continue como visitante.";
     if(e && e.code==="weak_password")return "Escolha uma senha com pelo menos 12 caracteres.";
     if(e && e.code==="missing_email")return "Informe seu e-mail.";
     if(e && e.code==="email_not_confirmed")return "Confirme seu e-mail antes de entrar.";
@@ -123,7 +130,7 @@
     }finally{clearTimeout(limite);}
   }
   function abrirEntrada(aviso){
-    root.ElidaEntrada.abrir({provedores,autenticar,erroLegivel,visitar:async function(){
+    root.ElidaEntrada.abrir({provedores,autenticar,erroLegivel,enderecoOficial,visitar:async function(){
       if(modo==="conta"){await acao("visitante");return;}
       guardarModo("visitante");
     }},aviso);
@@ -241,12 +248,13 @@
       }
     }
     /* Botão criado antes da aplicação, sem iniciar rede no modo visitante. */
+    /* Fica na barra de baixo, junto das outras guias. Sem a barra (página antiga), volta para o topo. */
     var botao=document.createElement("button");
     botao.id="elida-conta-botao";botao.type="button";
-    botao.textContent="Conta";
+    botao.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.6 18.4c1.2-2 3.1-3.1 5.4-3.1s4.2 1.1 5.4 3.1"/></svg><span>Conta</span>';
     botao.setAttribute("aria-label","Abrir conta Elida");
     botao.addEventListener("click",mostrar);
-    document.querySelector(".top").appendChild(botao);
+    (document.querySelector("nav.tabs")||document.querySelector(".top")).appendChild(botao);
     if(root.ElidaEntrada && !usuarioPermitido(usuario)){
       let primeiraVisita=true;
       try{primeiraVisita=!localStorage.getItem(CHAVE_MODO);}catch(e){}

@@ -267,3 +267,17 @@
 #view-lista .jantar-corpo h2{font-size:clamp(24px,6vw,34px)}
 .nutri-hub p{margin:0 0 12px}
 .nutri-hub h3{margin:0 0 6px}
+
+/* ---------- Busca por código de barras: avisos, falta de dados e memória da casa ---------- */
+.ia-avisos{margin:10px 0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.ia-avisos>div{border-radius:10px;padding:7px 10px;border-left:4px solid}
+.ia-avisos dt{font-weight:700;font-size:12px;letter-spacing:.02em;text-transform:uppercase}
+.ia-avisos dd{margin:2px 0 0;word-break:break-word}
+.ia-av-contem{background:var(--t-risco-bg);color:var(--t-risco-ink);border-color:var(--t-risco)}
+.ia-av-pode{background:var(--t-atencao-bg);color:var(--t-atencao-ink);border-color:var(--t-atencao)}
+.ia-lacuna{display:flex;flex-direction:column;gap:8px;margin:10px 0;padding:12px;border-radius:12px;background:var(--t-falta-bg);color:var(--t-falta-ink);border:1px dashed var(--t-falta);font-size:14px}
+.card.ia-lacuna{margin:10px 0}
+.ia-lacuna .bigbtn{align-self:stretch}
+.ia-lacuna small{color:inherit;opacity:.85}
+.ia-badge.ia-badge-casa{background:var(--t-ok-bg);color:var(--t-ok-ink);border-color:var(--t-ok)}
+.ia-casa{border:1px solid var(--t-ok)}

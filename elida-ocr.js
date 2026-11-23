@@ -27,9 +27,9 @@
   var RX_INGR = /(?:^|[^A-Z])((?:[A-Z]?N?GRED[I1L]?[A-Z]{3,5}S?)|(?:I?NGR\.\s*:?)|(?:INGR\b))\s*[:.;,]?\s*/;
   var RX_INGR_FRACO = /REDIENTES?\s*[:.;,]?\s*/;
   var RX_FIM_ING = /\bALERG[A-Z]*\b|\b(?:NAO\s+)?CONT[EF]M\b|\bPODE\s*\W{0,3}\s*CONT|\bINFORMACAO\s+NUTRI|\bCONSERVAR\b|\bINDUSTRIA\s+BRASILEIRA\b|\bVALIDADE\b|\bLOTE\b/;
-  var RX_GL_NAO = /NAO\s+CONT[EF]M\s+GL[UV]TEN|(?:SEM|ISENTO\s+DE)\s+GL[UV]TEN/;
-  var RX_LAC_SEM = /NAO\s+CONT[EF]M\s+LACTOSE|(?:SEM|ZERO|ISENTO\s+DE)\s+LACTOSE/;
-  var RX_LAC_SIM = /CONT[EF]M\s+LACTOSE/;
+  var RX_GL_NAO = /NAO\s*CONT[EF]M\s*GL[UV]TEN|(?:SEM|ISENTO\s+DE)\s+GL[UV]TEN/;
+  var RX_LAC_SEM = /NAO\s*CONT[EF]M\s*LACTOSE|(?:SEM|ZERO|ISENTO\s+DE)\s+LACTOSE/;
+  var RX_LAC_SIM = /CONT[EF]M\s*LACTOSE/;
 
   /* Separa por vírgula/ponto e vírgula fora de parênteses e colchetes. */
   function separar(s) {
@@ -46,12 +46,12 @@
 
   function declaracaoGluten(k) {
     var nao = RX_GL_NAO.test(k);
-    var sim = false, rx = /CONT[EF]M\s+GL[UV]TEN/g, m;
+    var sim = false, rx = /CONT[EF]M\s*GL[UV]TEN/g, m;
     while ((m = rx.exec(k))) { var antes = k.slice(Math.max(0, m.index - 5), m.index); if (!/NAO\s*$/.test(antes)) sim = true; }
     return nao && sim ? "contraditorio" : sim ? "contem" : nao ? "nao_contem" : "nao_informado";
   }
   function declaracaoLactose(k) {
-    var sem = RX_LAC_SEM.test(k), sim = false, rx = /CONT[EF]M\s+LACTOSE/g, m;
+    var sem = RX_LAC_SEM.test(k), sim = false, rx = /CONT[EF]M\s*LACTOSE/g, m;
     while ((m = rx.exec(k))) { var antes = k.slice(Math.max(0, m.index - 5), m.index); if (!/NAO\s*$/.test(antes)) sim = true; }
     return sem && sim ? "contraditorio" : sim ? "contem_lactose" : sem ? "sem_lactose" : "nao_informado";
   }
