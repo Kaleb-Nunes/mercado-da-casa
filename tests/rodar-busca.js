@@ -154,6 +154,69 @@ t("OFF: módulo só conhece os dois endereços do OFF", function () {
   urls.forEach(function (u) { assert.ok(/^https:\/\/(world|search)\.openfoodfacts\.org\//.test(u), u); });
 });
 
+/* ---------- Código de barras sem dado na base e memória da casa (23/11/2026) ----------
+   Caso real: Pão Sanduíche Trabulai, EAN 7896999099186. Embalagem fotografada em 23/11/2026:
+   "ALÉRGICOS: CONTÉM DERIVADOS DE TRIGO E SOJA. PODE CONTER CASTANHA-DO-PARÁ, CENTEIO, CEVADA, AVEIA, OVO E LEITE. CONTÉM GLÚTEN".
+   A ficha do OFF consultada no mesmo dia (fixture) não tinha ingredientes nem alérgicos. */
+var OCR = require(path.join(__dirname, "..", "elida-ocr.js"));
+var PAO_ING = "Farinha de trigo enriquecida com ferro e ácido fólico, açúcar, óleo vegetal, sal, conservador propionato de cálcio e emulsificantes: mono e diglicerídeos de ácidos graxos.";
+var PAO_AVISOS = "ALÉRGICOS: CONTÉM DERIVADOS DE TRIGO E SOJA. PODE CONTER CASTANHA-DO-PARÁ, CENTEIO, CEVADA, AVEIA, OVO E LEITE. CONTÉM GLÚTEN";
+function estado(perfilTeste, rot) { return R.analisar(perfilTeste, rot, { hoje: HOJE }).detalhes[0].estado; }
+t("código real sem dado no OFF: cobertura vazia e nenhuma restrição sai favorável", function () {
+  return B.criarBusca({ provedor: off(ROTAS) }).porCodigo("7896999099186").then(function (r) {
+    var p = r.produtos[0];
+    assert.equal(r.status, "ok"); assert.equal(p.nome, "Pão Sanduíche");
+    assert.deepEqual(p.cobertura, { ingredientes: false, avisos: false, declaracoes: false });
+    ["aplv", "lactose", "celiaca", "alergia_soja", "alergia_ovo"].forEach(function (tipo) { assert.equal(estado(perfil(tipo), B.rotuloParaRegras(p)), E.INSUFICIENTE, tipo); });
+  });
+});
+t("bloco ALÉRGICOS colado nos ingredientes do OFF: 'pode conter leite' não vira ingrediente nem 'contém'", function () {
+  var p = B._produtoOFF({ code: "7896999099186", product_name: "Pão Sanduíche", brands: "Trabulai", ingredients_text_pt: PAO_ING + " " + PAO_AVISOS, allergens_tags: [], traces_tags: [] }, HOJE, false);
+  var rot = B.rotuloParaRegras(p);
+  assert.ok(!rot.ingredientes.some(function (i) { return /leite|ovo|castanha/i.test(i); }), rot.ingredientes.join(" | "));
+  assert.match(rot.advertencias.contem, /TRIGO E SOJA/); assert.match(rot.advertencias.podeConter, /OVO E LEITE/);
+  assert.deepEqual(p.cobertura, { ingredientes: true, avisos: true, declaracoes: true });
+  assert.equal(estado(perfil("aplv"), rot), E.CONTAMINACAO);
+  assert.equal(estado(perfil("lactose"), rot), E.CONTAMINACAO);
+  assert.equal(estado(perfil("alergia_ovo"), rot), E.CONTAMINACAO);
+  assert.equal(estado(perfil("celiaca"), rot), E.INCOMPATIVEL);
+  assert.equal(estado(perfil("alergia_soja"), rot), E.INCOMPATIVEL);
+});
+t("separarAvisos: '(contém lactose)' dentro do ingrediente e 'não contém glúten' não viram aviso", function () {
+  var s = B.separarAvisos("Ingredientes: leite integral (contém lactose), açúcar, cacau. Não contém glúten.");
+  assert.equal(s.contem, ""); assert.equal(s.podeConter, ""); assert.match(s.ingredientes, /^leite integral \(contém lactose\), açúcar, cacau$/);
+  var s2 = B.separarAvisos("arroz, sal. Pode conter traços de leite e soja.");
+  assert.equal(s2.ingredientes, "arroz, sal"); assert.match(s2.podeConter, /traços de leite e soja/); assert.equal(s2.contem, "");
+});
+t("tags do OFF e texto do OFF somam avisos, sem repetir em ingrediente", function () {
+  var p = B._produtoOFF({ code: "7896999099186", product_name: "x", ingredients_text_pt: "arroz, sal. Contém soja.", allergens_tags: ["en:soybeans"], traces_tags: ["en:milk"] }, HOJE, false);
+  assert.match(p.rotulo.advertencias.contem, /Open Food Facts indica: soja.*Texto cadastrado no OFF: Contém soja/);
+  assert.match(p.rotulo.advertencias.podeConter, /traços de: leite/); assert.deepEqual(p.rotulo.ingredientes, ["arroz", "sal"]);
+});
+function conferenciaDoPao(quando, ean) {
+  var lido = OCR.interpretar("INGREDIENTES: " + PAO_ING + " " + PAO_AVISOS, { hoje: HOJE });
+  var c = OCR.confirmar(lido.rotulo, { nome: "Pão Sanduíche Trabulai" }, { textoConferido: true, ingredientesCompletos: true, advertenciasCompletas: true }, HOJE);
+  assert.ok(c.ok); c.rotulo.ean = ean;
+  return { id: "c-" + quando, quando: quando, produto: "Pão Sanduíche Trabulai", ean: ean, rotulo: c.rotulo };
+}
+t("memória da casa: depois da foto conferida, o código sozinho já avisa 'pode conter leite'", function () {
+  var lista = [conferenciaDoPao("2026-11-19T10:00:00Z", "7896999099186")];
+  var achado = B.conferidoPorCodigo(lista, "7896999099186");
+  assert.ok(achado, "acha pelo código");
+  assert.equal(estado(perfil("aplv"), achado.rotulo), E.CONTAMINACAO);
+  assert.equal(estado(perfil("celiaca"), achado.rotulo), E.INCOMPATIVEL);
+  assert.ok(!achado.rotulo.ingredientes.some(function (i) { return /leite/i.test(i); }), "leite fica em 'pode conter', não em ingrediente");
+});
+t("memória da casa: pega a conferência mais nova, ignora rascunho e outro código, aceita zero à esquerda", function () {
+  var velha = conferenciaDoPao("2026-10-01T10:00:00Z", "7896999099186"), nova = conferenciaDoPao("2026-11-20T10:00:00Z", "07896999099186");
+  var rasc = { id: "r", quando: "2026-11-22T10:00:00Z", ean: "7896999099186", rotulo: { rascunho: true, ingredientes: [] } };
+  var outro = conferenciaDoPao("2026-11-23T10:00:00Z", "7891000100103");
+  assert.equal(B.conferidoPorCodigo([velha, rasc, nova, outro], "7896999099186").id, nova.id);
+  assert.equal(B.conferidoPorCodigo([velha, nova], "7891000100103"), null);
+  assert.equal(B.conferidoPorCodigo(null, "7896999099186"), null);
+  assert.equal(B.conferidoPorCodigo([rasc], "7896999099186"), null);
+});
+
 (function roda(i) {
   if (i >= fila.length) { console.log("Elida IA · busca: " + ok + " testes passaram, " + falhas.length + " falharam."); falhas.forEach(function (f) { console.log("FALHA " + f); }); process.exit(falhas.length ? 1 : 0); }
   var nome = fila[i][0];

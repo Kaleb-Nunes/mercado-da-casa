@@ -1,0 +1,30 @@
+{
+ "code": "7896999099186",
+ "product": {
+  "allergens": "",
+  "allergens_from_ingredients": "",
+  "allergens_tags": [],
+  "brands": "Trabulai",
+  "last_modified_t": 1775139560,
+  "product_name": "Pão Sanduíche",
+  "states_tags": [
+   "en:to-be-completed",
+   "en:nutrition-facts-completed",
+   "en:ingredients-to-be-completed",
+   "en:expiration-date-to-be-completed",
+   "en:packaging-code-to-be-completed",
+   "en:characteristics-to-be-completed",
+   "en:origins-to-be-completed",
+   "en:categories-to-be-completed",
+   "en:brands-completed",
+   "en:packaging-to-be-completed",
+   "en:quantity-to-be-completed",
+   "en:product-name-completed",
+   "en:photos-to-be-uploaded"
+  ],
+  "traces": "",
+  "traces_tags": []
+ },
+ "status": 1,
+ "status_verbose": "product found"
+}

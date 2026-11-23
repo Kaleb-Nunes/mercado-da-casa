@@ -126,19 +126,51 @@
     while ((m = rx.exec(n))) { if (!/nao\s*$/.test(n.slice(Math.max(0, m.index - 5), m.index))) sim = true; }
     return [nao, sim];
   }
+  /* No Brasil, quem cadastra no OFF costuma colar o bloco ALÉRGICOS junto da lista de ingredientes.
+     Sem separar, "PODE CONTER ... LEITE" vira ingrediente e o app diz "contém" quando o rótulo diz "pode conter".
+     separarAvisos devolve a lista de ingredientes sem os avisos e as frases de "contém" e "pode conter".
+     Só olha avisos fora de parênteses: "leite (contém lactose)" continua sendo ingrediente. */
+  function chaveMesmoTamanho(t) {
+    var k = "";
+    for (var i = 0; i < t.length; i++) { var b = t.charAt(i).normalize("NFD").replace(/[̀-ͯ]/g, ""); k += b.length ? b.charAt(0).toUpperCase() : " "; }
+    return k;
+  }
+  function separarAvisos(texto) {
+    var t = String(texto == null ? "" : texto).replace(/\s+/g, " ").trim(), k = chaveMesmoTamanho(t);
+    var rx = /\bAL[E]RG[A-Z]*\b\s*:?|\bPODE[M]?\s*CONTER\b|\b(?:NAO\s+)?CONTEM\b/g, marcas = [], m, nivel = [], n = 0;
+    for (var i = 0; i < t.length; i++) { var c = t.charAt(i); if (c === "(" || c === "[") n++; else if ((c === ")" || c === "]") && n > 0) n--; nivel.push(n); }
+    while ((m = rx.exec(k))) { if (nivel[m.index] === 0) marcas.push({ i: m.index, tipo: /^AL/.test(m[0]) ? "alergicos" : /^PODE/.test(m[0]) ? "pode" : /^NAO/.test(m[0]) ? "nao" : "contem", tam: m[0].length }); }
+    if (!marcas.length) return { ingredientes: t, contem: "", podeConter: "" };
+    var contem = [], pode = [];
+    marcas.forEach(function (mc, j) {
+      var fim = j + 1 < marcas.length ? marcas[j + 1].i : t.length;
+      var frase = t.slice(mc.i, fim).split(".")[0].replace(/[\s,;:]+$/, "").trim(), corpo = chaveMesmoTamanho(frase).slice(mc.tam).replace(/[^A-Z]+/g, " ").trim();
+      if (!corpo || mc.tipo === "nao") return;
+      if (mc.tipo === "pode") { pode.push(frase); return; }
+      if (/^(GLUTEN|LACTOSE)$/.test(corpo)) return; /* "contém glúten" é declaração: vai para declaracaoGluten/Lactose. */
+      contem.push(frase);
+    });
+    var lista = t.slice(0, marcas[0].i).replace(/^\s*ingredientes?\s*:?\s*/i, "").replace(/[\s.,;:]+$/, "");
+    return { ingredientes: lista, contem: contem.join(". "), podeConter: pode.join(". ") };
+  }
   function produtoOFF(p, hoje, sugestao) {
     var codigo = String(p.code || "").replace(/\D/g, "");
-    var bruto = String(p.ingredients_text_pt || p.ingredients_text || "").trim(), ing = plausivel(bruto) ? separarIngredientes(bruto) : [];
+    var bruto = String(p.ingredients_text_pt || p.ingredients_text || "").trim(), partes = separarAvisos(bruto);
+    var ing = plausivel(partes.ingredientes) ? separarIngredientes(partes.ingredientes) : [];
     var g = declaracao(bruto, /nao contem gluten|sem gluten|isento de gluten/, /contem gluten/), l = declaracao(bruto, /nao contem lactose|(sem|zero|isento de) lactose/, /contem lactose/);
     var tagsA = (p.allergens_tags || []).map(function (x) { return TAG[x]; }).filter(Boolean), tagsT = (p.traces_tags || []).map(function (x) { return TAG[x]; }).filter(Boolean);
     var editado = p.last_modified_t ? new Date(p.last_modified_t * 1000).toISOString().slice(0, 10) : null;
     var nome = String(p.product_name_pt || p.product_name || p.generic_name_pt || "").trim() || ("Produto " + codigo);
+    /* Sinais do OFF só podem deixar o resultado mais grave: viram "contém"/"pode conter", nunca "completo". */
+    var contem = [tagsA.length ? "Open Food Facts indica: " + tagsA.join(", ") : "", partes.contem ? "Texto cadastrado no OFF: " + partes.contem : ""].filter(Boolean).join(". ");
+    var podeConter = [tagsT.length ? "Open Food Facts indica traços de: " + tagsT.join(", ") : "", partes.podeConter ? "Texto cadastrado no OFF: " + partes.podeConter : ""].filter(Boolean).join(". ");
     return {
       id: "off-" + codigo, nome: nome, marca: String(p.brands || "").split(",")[0].trim(), quantidade: String(p.quantity || ""),
       ean: gtinValido(codigo) ? codigo : null, sugestao: !!sugestao,
+      /* O que a base tem deste produto. Sem ingredientes e sem avisos, o código sozinho não diz nada sobre alérgicos. */
+      cobertura: { ingredientes: ing.length > 0, avisos: !!(contem || podeConter), declaracoes: g[0] || g[1] || l[0] || l[1] },
       rotulo: { categoria: "alimento", ingredientes: ing,
-        /* Sinais do OFF só podem deixar o resultado mais grave: viram "contém"/"pode conter", nunca "completo". */
-        advertencias: { contem: tagsA.length ? "Open Food Facts indica: " + tagsA.join(", ") : "", podeConter: tagsT.length ? "Open Food Facts indica traços de: " + tagsT.join(", ") : "" },
+        advertencias: { contem: contem, podeConter: podeConter },
         declaracaoGluten: g[0] && g[1] ? "contraditorio" : g[1] ? "contem" : g[0] ? "nao_contem" : "nao_informado",
         declaracaoLactose: l[0] && l[1] ? "contraditorio" : l[1] ? "contem_lactose" : l[0] ? "sem_lactose" : "nao_informado",
         ingredientesCompletos: false, advertenciasCompletas: false, rascunho: true },
@@ -233,6 +265,20 @@
       porFoto: function () { return Promise.resolve(resposta(STATUS.NAO_IMPLEMENTADO, { tipo: "foto", valor: null }, [], ["A foto é lida no próprio aparelho, pela tela de leitura de rótulo. Ela não passa pela busca."])); }
     };
   }
+  /* Memória da casa por código de barras: o rótulo mais recente que a família conferiu na embalagem.
+     Funciona sem internet e vale para qualquer produto já conferido uma vez, esteja ou não na base.
+     GTIN-12/13/14 do mesmo produto diferem só por zeros à esquerda. Rascunho não conta. */
+  function chaveGtin(c) { return String(c == null ? "" : c).replace(/\D/g, "").replace(/^0+/, ""); }
+  function conferidoPorCodigo(conferencias, codigo) {
+    var alvo = chaveGtin(codigo);
+    if (!alvo || !Array.isArray(conferencias)) return null;
+    var achados = conferencias.filter(function (c) {
+      var r = c && c.rotulo;
+      return r && !r.rascunho && !(r.fonte && r.fonte.rascunho) && chaveGtin(c.ean || r.ean) === alvo;
+    });
+    achados.sort(function (a, b) { return String(b.quando || "") < String(a.quando || "") ? -1 : String(b.quando || "") > String(a.quando || "") ? 1 : 0; });
+    return achados[0] || null;
+  }
   /* Busca que entende o que foi digitado: só números = código de barras; o resto = nome. */
   function consultar(busca, texto) {
     var t = String(texto == null ? "" : texto).trim();
@@ -240,5 +286,5 @@
   }
 
   return Object.freeze({ VERSAO_CONTRATO: VERSAO_CONTRATO, STATUS: STATUS, gtinValido: gtinValido, validarProduto: validarProduto, rotuloParaRegras: rotuloParaRegras,
-    provedorFicticio: provedorFicticio, provedorIndisponivel: provedorIndisponivel, provedorOpenFoodFacts: provedorOpenFoodFacts, OFF: OFF, _produtoOFF: produtoOFF, criarBusca: criarBusca, consultar: consultar, _catalogo: function () { return CATALOGO.map(copia); } });
+    provedorFicticio: provedorFicticio, provedorIndisponivel: provedorIndisponivel, provedorOpenFoodFacts: provedorOpenFoodFacts, OFF: OFF, _produtoOFF: produtoOFF, separarAvisos: separarAvisos, conferidoPorCodigo: conferidoPorCodigo, criarBusca: criarBusca, consultar: consultar, _catalogo: function () { return CATALOGO.map(copia); } });
 });
