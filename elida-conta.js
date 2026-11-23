@@ -248,12 +248,13 @@
       }
     }
     /* Botão criado antes da aplicação, sem iniciar rede no modo visitante. */
+    /* Fica na barra de baixo, junto das outras guias. Sem a barra (página antiga), volta para o topo. */
     var botao=document.createElement("button");
     botao.id="elida-conta-botao";botao.type="button";
-    botao.textContent="Conta";
+    botao.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.6 18.4c1.2-2 3.1-3.1 5.4-3.1s4.2 1.1 5.4 3.1"/></svg><span>Conta</span>';
     botao.setAttribute("aria-label","Abrir conta Elida");
     botao.addEventListener("click",mostrar);
-    document.querySelector(".top").appendChild(botao);
+    (document.querySelector("nav.tabs")||document.querySelector(".top")).appendChild(botao);
     if(root.ElidaEntrada && !usuarioPermitido(usuario)){
       let primeiraVisita=true;
       try{primeiraVisita=!localStorage.getItem(CHAVE_MODO);}catch(e){}

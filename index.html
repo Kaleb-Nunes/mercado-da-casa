@@ -410,7 +410,22 @@ body:has(.sheet.on) #elida-conta-botao{visibility:hidden}
 }
 </style>
 <style id="elida-conta-estilos">
-#elida-conta-botao{position:static;flex:0 0 auto;min-height:44px;padding:7px 13px;border:1px solid #aab9af;border-radius:28px;background:#fff;color:#0F3B2E;font:600 14px system-ui;box-shadow:0 2px 9px #0002}
+/* Conta: guia discreta na barra de baixo, em verde. Com ela, a barra fica 2 + botão central + 3, e as metades têm o mesmo peso para o botão central continuar no meio. */
+nav.tabs:has(#elida-conta-botao){grid-template-columns:1.5fr 1.5fr 64px 1fr 1fr 1fr}
+#elida-conta-botao{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:6px 0;font:inherit;font-size:11px;font-weight:600;color:var(--good);cursor:pointer}
+#elida-conta-botao svg{width:24px;height:24px}
+#elida-conta-botao span{opacity:.85}
+#elida-conta-botao:focus-visible{outline:2px solid var(--good);outline-offset:2px;border-radius:10px}
+.tab{min-width:0;white-space:nowrap}
+@media (max-width:380px){
+  nav.tabs:has(#elida-conta-botao){grid-template-columns:1.5fr 1.5fr 60px 1fr 1fr 1fr;padding-left:4px;padding-right:4px}
+  nav.tabs:has(#elida-conta-botao) .tab,#elida-conta-botao{font-size:10px;letter-spacing:-.01em}
+}
+@media (max-width:340px){
+  nav.tabs:has(#elida-conta-botao) .tab,#elida-conta-botao{font-size:9.5px;letter-spacing:-.03em}
+}
+.top #elida-conta-botao{flex-direction:row;gap:6px;min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:20px;font-size:13px}
+.top #elida-conta-botao svg{width:20px;height:20px}
 #elida-conta-painel[hidden]{display:none!important}
 #elida-conta-painel{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:16px;background:rgba(5,21,15,.88);overflow:auto;color:#10261F}
 #elida-conta-painel .elida-account-card{box-sizing:border-box;width:min(100%,440px);max-height:95vh;overflow:auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 15px 55px #0005}
