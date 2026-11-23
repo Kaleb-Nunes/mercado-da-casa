@@ -207,3 +207,8 @@
   .cena-legenda span {font-size:12px;margin:0 0 3px}
   .entrada-inicio {gap:8px}
 }
+
+/* Prévia de teste: botão para o endereço oficial, onde o login funciona. */
+#entrada .entrada-oficial { display: block; min-height: 48px; padding: 13px 14px; margin: 4px 0 12px; border: 1px solid #103c2e; border-radius: 14px; text-align: center; text-decoration: none; font: 600 15px Onest, sans-serif; }
+#entrada .entrada-oficial:focus-visible { outline: 3px solid #926827; outline-offset: 2px; }
+#entrada .entrada-oficial[hidden] { display: none; }

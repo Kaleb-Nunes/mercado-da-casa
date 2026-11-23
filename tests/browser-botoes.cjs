@@ -326,8 +326,11 @@ async function testar(){
     body:"window.ELIDA_SUPABASE="+JSON.stringify({origem:"https://outro-endereco.pages.dev",url:mockAuth,chavePublicavel:"sb_publishable_teste"})}));
   await foraPag.goto(origem);
   await foraPag.locator('#entrada .entrada-cta [data-tela="login"]').click();
-  await foraPag.locator(".entrada-provedores",{hasText:/aguarda a configuração pública/}).waitFor();
+  await foraPag.locator(".entrada-provedores",{hasText:/endereço de teste/}).waitFor();
   assert.equal(await foraPag.locator("#entrada [data-provedor]:visible").count(),3);
+  const oficial=foraPag.locator("#entrada .entrada-oficial");
+  assert.equal(await oficial.isVisible(),true,"prévia mostra o caminho para o endereço oficial");
+  assert.equal(await oficial.getAttribute("href"),"https://outro-endereco.pages.dev/");
   await fora.close();
   resultado.push("marcas, disponibilidade e rota de autorização PKCE dos três provedores com serviço simulado");
 
