@@ -212,3 +212,9 @@
 #entrada .entrada-oficial { display: block; min-height: 48px; padding: 13px 14px; margin: 4px 0 12px; border: 1px solid #103c2e; border-radius: 14px; text-align: center; text-decoration: none; font: 600 15px Onest, sans-serif; }
 #entrada .entrada-oficial:focus-visible { outline: 3px solid #926827; outline-offset: 2px; }
 #entrada .entrada-oficial[hidden] { display: none; }
+
+/* Aviso antes da tela do Google e links públicos. */
+#entrada .entrada-aviso-google { display: block; margin: 2px 0 12px; padding: 10px 12px; border-radius: 12px; background: #eef3ee; color: #2f4239; font-size: 13px; line-height: 1.45; }
+#entrada .entrada-aviso-google[hidden] { display: none; }
+#entrada .entrada-legal { margin: 8px 0 0; text-align: center; font-size: 13px; color: #4d5e56; }
+#entrada .entrada-legal a { color: inherit; text-underline-offset: 3px; }

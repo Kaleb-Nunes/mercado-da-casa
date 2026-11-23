@@ -22,6 +22,9 @@ window.ElidaEntrada = (function () {
       botao.dataset.estado = estado;
       botao.setAttribute("aria-disabled", String(ocupado || estado !== "ativo"));
     });
+    /* Até o Google aprovar a marca, a tela dele mostra o endereço do Supabase. Avisar antes evita susto. */
+    const avisoGoogle = buscar(".entrada-aviso-google");
+    if (avisoGoogle) avisoGoogle.hidden = estadoDe("google") !== "ativo";
   }
   function juntar(lista) {
     return lista.length < 2 ? lista.join("") : lista.slice(0, -1).join(", ") + " e " + lista[lista.length - 1];
