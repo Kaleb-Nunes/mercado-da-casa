@@ -41,16 +41,18 @@ window.ElidaEntrada = (function () {
     nota.textContent = "Consultando opções de entrada…";
     consulta = Promise.resolve().then(() => servicos.provedores());
     atualizarBotoes();
-    let falhou = false;
+    let falhou = false, semConfiguracao = false;
     try {
       disponibilidade = await consulta;
-    } catch {
+    } catch (erro) {
       falhou = true;
+      semConfiguracao = /Configuração Supabase pendente/.test(erro?.message || "");
     } finally {
       consulta = null;
       atualizarBotoes();
     }
-    nota.textContent = falhou ? "Sem conexão com o login social. Toque em uma das opções para tentar de novo." : avisoDisponibilidade();
+    nota.textContent = semConfiguracao ? servicos.erroLegivel(new Error("sem configuração"))
+      : falhou ? "Sem conexão com o login social. Toque em uma das opções para tentar de novo." : avisoDisponibilidade();
   }
   function escolherProvedor(provedor) {
     if (consulta) { status.textContent = "Consultando opções de entrada…"; return; }

@@ -319,6 +319,16 @@ async function testar(){
   await social.getByRole("button",{name:"Continuar com Google"}).click({force:true});
   await social.locator('[data-provedor="google"][aria-disabled="false"]').waitFor();
   await login.close();
+  // Endereço de teste fora da configuração pública do Supabase: os botões aparecem e explicam o motivo.
+  const fora=await browser.newContext({serviceWorkers:"block"});
+  const foraPag=await fora.newPage();
+  await fora.route("**/elida-supabase-config.js",r=>r.fulfill({contentType:"application/javascript",
+    body:"window.ELIDA_SUPABASE="+JSON.stringify({origem:"https://outro-endereco.pages.dev",url:mockAuth,chavePublicavel:"sb_publishable_teste"})}));
+  await foraPag.goto(origem);
+  await foraPag.locator('#entrada .entrada-cta [data-tela="login"]').click();
+  await foraPag.locator(".entrada-provedores",{hasText:/aguarda a configuração pública/}).waitFor();
+  assert.equal(await foraPag.locator("#entrada [data-provedor]:visible").count(),3);
+  await fora.close();
   resultado.push("marcas, disponibilidade e rota de autorização PKCE dos três provedores com serviço simulado");
 
   // Botão de conta: abrir e fechar o modal deve funcionar no visitante.
