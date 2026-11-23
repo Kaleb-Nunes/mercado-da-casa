@@ -161,9 +161,11 @@ t("evidência muda quando o rótulo deixa de ser rascunho", function () {
 
 /* --- Convivência com o app atual --- */
 t("app: DietaMotor intacto, chaves da Despensa iguais e motor novo integrado", function () {
-  var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  var shell = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  var html = shell + "\n" + fs.readFileSync(path.join(__dirname, "..", "elida-app.js"), "utf8");
   assert.ok(/PFX \+ "mercado-casa-v1"/.test(html));
-  assert.ok(/<script src="dieta\.js"><\/script>\s*<script src="elida-regras\.js"><\/script>\s*<script src="elida-busca\.js"><\/script>\s*<script src="elida-ocr\.js"><\/script>/.test(html));
+  /* ordem: dieta, regras, camada de apresentação (demo/uau/radar/dossiê), busca, OCR */
+  assert.ok(/<script src="dieta\.js"><\/script>\s*<script src="elida-regras\.js"><\/script>(\s*<script src="elida-(demo|uau|radar|dossie)\.js"><\/script>)*\s*<script src="elida-busca\.js"><\/script>\s*<script src="elida-ocr\.js"><\/script>/.test(shell));
   assert.ok(/IA\.criarArmazem\(window\.localStorage, PFX \+ "elida-perfis-v1"\)/.test(html), "perfis na mesma origem do app, com prefixo de homologação");
   assert.ok(/function criarProvedorIA\(\)\{\s*if\(!AMB\.homologacao\) return null;/.test(html), "produção: nenhum provedor (fictício ou OFF)");
   assert.ok(/return AMB\.catalogoFicticio \? BUS\.provedorFicticio\(\) : null;/.test(html), "dados fictícios só na homologação");

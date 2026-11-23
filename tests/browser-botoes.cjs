@@ -48,12 +48,19 @@ async function testar(){
   await page.goto(origem,{waitUntil:"domcontentloaded",timeout:20000});
   const entrada=page.locator("#entrada");
   await entrada.waitFor({state:"visible"});
-  await entrada.getByRole("button",{name:"Pausar animação do fundo"}).click();
-  assert.equal(await entrada.getAttribute("data-pausado"),"");
-  const foto=entrada.locator(".entrada-foto");
-  assert.equal(await foto.evaluate(el=>getComputedStyle(el,"::after").animationPlayState),"paused");
+  /* Primeiro fold: a simulação real aparece antes de qualquer cadastro e o veredito da casa cabe na primeira tela. */
+  const sim=entrada.locator("#uau-sim-landing");
+  await sim.waitFor({state:"visible"});
+  const veredito=sim.locator(".uau-casa");
+  await veredito.waitFor({state:"visible",timeout:8000});
+  const caixa=await veredito.boundingBox();
+  assert.ok(caixa && caixa.y+60<844,"veredito da casa fora da primeira tela: y="+(caixa&&caixa.y));
+  assert.match(await veredito.innerText(),/evitar/i);
+  for(const frase of (await sim.innerText()).split(/(?<=[.!?])\s+/))
+    if(/\bseguro\b/i.test(frase))assert.match(frase,/\b(nunca|não)\b/i,"'seguro' fora de uma negação: "+frase);
+  assert.ok(await entrada.locator(".entrada-cta").getByRole("button",{name:"Criar conta",exact:true}).isVisible(),"Criar conta precisa estar visível sem rolar");
   await page.emulateMedia({reducedMotion:"reduce"});
-  assert.equal(await foto.evaluate(el=>getComputedStyle(el,"::after").animationName),"none");
+  assert.equal(await sim.isVisible(),true);
   await page.emulateMedia({reducedMotion:"no-preference"});
   await entrada.getByRole("button",{name:"Criar conta",exact:true}).click();
   await entrada.getByLabel("Confirmar senha").waitFor({state:"visible"});
@@ -69,7 +76,7 @@ async function testar(){
   await entrada.getByRole("button",{name:"Continuar como visitante"}).click();
   await page.reload();
   assert.equal(await entrada.isHidden(),true);
-  resultado.push("abertura, pausa da imagem, cadastro, recuperação e persistência do visitante");
+  resultado.push("abertura com simulação no primeiro fold, cadastro, recuperação e persistência do visitante");
   await page.locator("#view-inicio.on").waitFor({state:"visible",timeout:15000});
   resultado.push("inicialização e renderização no Android 390px");
 
@@ -85,8 +92,8 @@ async function testar(){
     assert.ok(marca.x+marca.width<=perfil.x+1 && perfil.x+perfil.width<=conta.x+1 && conta.x+conta.width<=width);
   }
   await page.setViewportSize({width:390,height:844});
-  const atalho=page.locator("#view-inicio .inicio-rotulo");
-  await atalho.locator("img").evaluate(img=>img.decode());
+  const atalho=page.locator('#view-inicio .radar-scan [data-act="scan"][data-modo="foto"]');
+  await atalho.waitFor({state:"visible"});
   await atalho.click();
   await page.getByRole("heading",{name:"Ler rótulo por foto"}).waitFor();
   await page.locator('#sheet [data-act="fechar"]').first().click();
@@ -132,13 +139,13 @@ async function testar(){
   await painel.getByRole("button",{name:"Levar dúvida à consulta"}).click();
   assert.ok((await painel.getByLabel("Pergunta para a consulta").inputValue()).length);
   await painel.getByRole("button",{name:"Fechar",exact:true}).click();
-  await mercado.getByRole("button",{name:"Abrir meus rótulos"}).click();
+  await mercado.getByRole("button",{name:/Minha prateleira/}).click();
   await painel.getByRole("button",{name:"Guardar um rótulo"}).click();
   await painel.getByLabel("Nome, marca e versão").fill("Biscoito teste 100 g");
   await painel.getByLabel("Texto da embalagem").fill("Pode conter soja.");
   await painel.getByRole("button",{name:"Guardar na minha prateleira"}).click();
   await mercado.reload();
-  await mercado.getByRole("button",{name:"Abrir meus rótulos"}).click();
+  await mercado.getByRole("button",{name:/Minha prateleira/}).click();
   await painel.getByRole("button",{name:/Biscoito teste/}).click();
   await painel.getByRole("button",{name:"Comparar com a embalagem de hoje"}).click();
   assert.equal(await painel.getByLabel("Embalagem anterior").inputValue(),"Pode conter soja.");
@@ -203,17 +210,17 @@ async function testar(){
   await folha.locator('[data-act="fechar"]').first().click();
   resultado.push("revisão da compra delegada e comparação do preço usado e do desembolso");
   await jantar.reload();
-  await jantar.locator("#tab-inicio").click();
+  await jantar.locator("#tab-lista").click();
   await jantar.getByRole("button",{name:"Planejar meu jantar",exact:true}).click();
   await folha.getByRole("heading",{name:"Jantar de domingo"}).waitFor();
   await folha.getByLabel("Cenoura").check();
   await folha.getByRole("button",{name:"Levar à lista · 1 ingrediente",exact:true}).click();
   assert.equal(await lista.getByText("Tomate",{exact:true}).count(),1);
-  await jantar.locator("#tab-inicio").click();
+  await jantar.locator("#tab-lista").click();
   await jantar.getByRole("button",{name:"Planejar meu jantar",exact:true}).click();
   await folha.getByLabel("Cenoura").check(); await folha.getByLabel("Tomate").check();
   await folha.getByRole("button",{name:"Concluir · já tenho tudo"}).click();
-  assert.equal(await jantar.locator("#view-inicio.on").count(),1);
+  assert.equal(await jantar.locator("#view-lista.on").count(),1,"concluir o jantar sem faltas não muda de tela");
   await jantar.waitForFunction(()=>!!navigator.serviceWorker.controller);
   await familia.setOffline(true);
   await jantar.reload({waitUntil:"domcontentloaded"});
@@ -235,8 +242,9 @@ async function testar(){
   await folha.getByRole("button",{name:"Guardar combinado"}).click();
   await folha.getByText("Ficou caro · Combinado anotado").waitFor();
   await jantar.reload();
+  await jantar.locator("#tab-lista").click();
   await jantar.locator("#tab-inicio").click();
-  await jantar.locator(".inicio-consulta").click();
+  await jantar.locator('#view-inicio [data-act="consulta"]').click();
   await folha.getByRole("button",{name:/Pão de teste/}).click();
   assert.match(await folha.getByLabel("O que combinamos").inputValue(),/embalagem/);
   await folha.getByRole("button",{name:"Excluir anotação"}).click();
@@ -279,14 +287,16 @@ async function testar(){
   assert.equal(await entrada.isHidden(),true);
   resultado.push("botões abrir/fechar conta");
 
-  for(const tela of ["precos","lista","rotulo","inicio"]){
+  for(const tela of ["perfis","lista","rotulo","inicio"]){
     await page.locator("#tab-"+tela).click();
     assert.equal(await page.locator("#view-"+tela).evaluate(el=>el.classList.contains("on")),true,
       "Aba não ativou: "+tela);
   }
-  resultado.push("navegação Início, Preços, Lista e Dieta");
+  resultado.push("navegação Radar, Família, Economia e Nutri");
 
-  await page.locator("#tab-precos").click();
+  await page.locator("#tab-lista").click();
+  await page.locator('.eco-seg [data-view="precos"]:visible').first().click();
+  assert.equal(await page.locator("#view-precos").evaluate(el=>el.classList.contains("on")),true,"Preços precisa abrir pela navegação da Economia");
   await page.locator('[data-act="novo-item"]:visible').first().click();
   await page.locator("#n-nome").waitFor({state:"visible",timeout:4000});
   await page.locator("#n-nome").fill("Produto fictício de teste");
@@ -294,7 +304,8 @@ async function testar(){
   assert.equal(await page.locator("#sheet").evaluate(el=>el.classList.contains("on")),false);
   resultado.push("abrir/cancelar formulário Novo produto");
 
-  await page.locator("#tab-inicio").click();
+  await page.locator("#tab-lista").click();
+  await page.locator('.eco-seg [data-view="gastos"]:visible').first().click();
   const orc=page.locator('[data-act="orcamento"]:visible').first();
   if(!await orc.count())throw Error("Botão Orçamento não encontrado");
   await orc.click();

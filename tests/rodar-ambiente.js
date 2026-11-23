@@ -31,9 +31,11 @@ t("a configuração não pode ser alterada em tempo de execução", function () 
 t("o resultado é congelado", function () { var a = amb("elida-homologacao.pages.dev"); assert.ok(Object.isFrozen(a)); });
 
 /* O app e o service worker usam a mesma configuração, sem detecção por domínio escrita à mão */
-var html = fs.readFileSync(path.join(RAIZ, "index.html"), "utf8"), sw = fs.readFileSync(path.join(RAIZ, "sw.js"), "utf8");
+/* O código do app mora em elida-app.js; o index.html guarda a ordem dos scripts. Os testes olham os dois. */
+var htmlIndex = fs.readFileSync(path.join(RAIZ, "index.html"), "utf8");
+var html = htmlIndex + "\n" + fs.readFileSync(path.join(RAIZ, "elida-app.js"), "utf8"), sw = fs.readFileSync(path.join(RAIZ, "sw.js"), "utf8");
 t("index.html carrega ambiente.js antes do app e não tem domínio fixo", function () {
-  assert.ok(html.indexOf('<script src="ambiente.js"></script>') > 0 && html.indexOf('<script src="ambiente.js"></script>') < html.indexOf('<script src="dieta.js"></script>'));
+  assert.ok(htmlIndex.indexOf('<script src="ambiente.js"></script>') > 0 && htmlIndex.indexOf('<script src="ambiente.js"></script>') < htmlIndex.indexOf('<script src="dieta.js"></script>'));
   assert.ok(!/hostname\s*===\s*"[a-z]/.test(html), "detecção de domínio escrita à mão no index.html");
   assert.ok(/ElidaAmbiente\.resolver\(location\)/.test(html));
 });
@@ -44,7 +46,7 @@ t("catálogo fictício e dados de teste dependem só do ambiente", function () {
   assert.ok(/if\(!AMB\.dadosDeTeste\) break;/.test(html));
 });
 function rodarSW(host) {
-  var ctx = { self: { location: { hostname: host, protocol: "https:" }, addEventListener: function () {}, clients: {} }, caches: {}, fetch: function () {}, URL: URL, Promise: Promise };
+  var ctx = { self: { location: { hostname: host, protocol: "https:", href: "https://" + host + "/sw.js", origin: "https://" + host }, addEventListener: function () {}, clients: {} }, caches: {}, fetch: function () {}, URL: URL, Promise: Promise };
   ctx.importScripts = function (f) { vm.runInContext(fs.readFileSync(path.join(RAIZ, f.replace(/^\.\//, "")), "utf8"), ctx); };
   vm.createContext(ctx); ctx.self.self = ctx.self;
   vm.runInContext("var self = this.self;", ctx);

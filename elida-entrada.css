@@ -27,7 +27,7 @@
 .entrada-marca { display: block; object-fit: contain; margin: 0 0 18px -5px; }
 #entrada h1 { font: 550 clamp(30px, 4vw, 42px)/1.06 Fraunces, Georgia, serif; letter-spacing: -.04em; margin: 0 0 22px; }
 .entrada-inicio, .entrada-form { display: grid; gap: 11px; }
-#entrada button { min-height: 44px; padding: 10px; cursor: pointer; font: 600 15px Onest, sans-serif; border: 1px solid #a3b2a7; border-radius: 10px; background: #fffdf8; color: #103c2e; }
+#entrada :where(button):not(.uau-sim *) { min-height: 44px; padding: 10px; cursor: pointer; font: 600 15px Onest, sans-serif; border: 1px solid #a3b2a7; border-radius: 10px; background: #fffdf8; color: #103c2e; }
 #entrada button:focus-visible, #entrada input:focus-visible { outline: 3px solid #926827; outline-offset: 2px; }
 #entrada button:disabled { color: #646e68; background: #f2f2eb; cursor: default; }
 #entrada .entrada-principal { border-color: #103c2e; background: #103c2e; color: white; }

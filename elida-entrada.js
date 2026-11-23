@@ -47,8 +47,26 @@ window.ElidaEntrada = (function () {
     buscar(".cena-legenda strong").textContent=clinica?"Que dúvida a família trouxe hoje?":"O biscoito é o mesmo. E os ingredientes?";
     buscar("[data-comparar]").hidden=clinica;
     buscar("[data-caso]").hidden=!clinica;
+    buscar("[data-relatorio]").hidden=!clinica;
     buscar("[data-prateleira]").hidden=clinica;
     buscar(".entrada-rapidos").hidden=clinica;
+    const sim=buscar("#uau-sim-landing");
+    if(sim) sim.hidden=clinica;
+  }
+  let simulador;
+  function montarSimulador(){
+    const alvo=buscar("#uau-sim-landing");
+    if(simulador||!alvo||!window.ElidaUau) return;
+    try{
+      simulador=window.ElidaUau.montarSimulador(alvo,{atraso:900,nivelTitulo:2});
+      if(window.matchMedia){
+        const largura=window.matchMedia("(min-width:900px)");
+        const ajustar=()=>alvo.classList.toggle("largo",largura.matches);
+        ajustar();
+        if(largura.addEventListener) largura.addEventListener("change",ajustar);
+      }
+    }
+    catch(erro){ alvo.hidden=true; }
   }
   function exibir(destino) {
     tela = destino;
@@ -111,12 +129,13 @@ window.ElidaEntrada = (function () {
     } else if (botao.dataset.tela) exibir(botao.dataset.tela);
     else if (botao.matches(".entrada-voltar")) exibir(tela === "recuperar" ? "login" : "inicio");
     else if (botao.dataset.provedor) executar(() => servicos.autenticar(botao.dataset.provedor));
-    else if (botao.matches(".entrada-visitante, [data-jantar], [data-comparar], [data-ler-foto], [data-caso], [data-prateleira]")) executar(async () => {
+    else if (botao.matches(".entrada-visitante, [data-jantar], [data-comparar], [data-ler-foto], [data-caso], [data-relatorio], [data-prateleira]")) executar(async () => {
       await servicos.visitar();
       form.reset();
       dialogo.close();
       if (botao.hasAttribute("data-comparar")) location.hash = "comparar-rotulos";
       if(botao.hasAttribute("data-caso")) location.hash="caso-clinica";
+      if(botao.hasAttribute("data-relatorio")) location.hash="relatorio-exemplo";
       if(botao.hasAttribute("data-prateleira")) location.hash="meus-rotulos";
       if (botao.hasAttribute("data-jantar")) location.hash = "jantar";
       if (botao.hasAttribute("data-ler-foto")) location.hash = "ler-foto";
@@ -141,6 +160,7 @@ window.ElidaEntrada = (function () {
       servicos = deps;
       if (!dialogo.open) dialogo.showModal();
       exibir("inicio");
+      montarSimulador();
       if (aviso) status.textContent = aviso;
     }
   });

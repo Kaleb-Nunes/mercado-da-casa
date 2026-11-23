@@ -51,7 +51,7 @@ jobs:
       - name: Pacote de homologação
         run: |
           mkdir -p _homologacao
-          cp -r index.html marca elida-entrada.js elida-entrada.css elida-app.js elida-backup-seguro.js elida-conta.js elida-aprovacao.js elida-supabase-config.js _headers ambiente.js dieta.js elida-regras.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
+          cp -r index.html marca elida-entrada.js elida-entrada.css elida-app.js elida-backup-seguro.js elida-conta.js elida-aprovacao.js elida-supabase-config.js _headers ambiente.js dieta.js elida-regras.js elida-demo.js elida-uau.js elida-uau.css elida-radar.js elida-dossie.js elida-busca.js elida-ocr.js fonts sw.js manifest.webmanifest ofertas.json favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png vendor _homologacao/
       - uses: actions/upload-artifact@v4
         with:
           name: homologacao-${{ github.sha }}
@@ -70,6 +70,8 @@ jobs:
         run: npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.55.0
       - name: Exercitar botões e formulários no Chromium real, sem credenciais
         run: node tests/browser-botoes.cjs
+      - name: Radar da casa, simulação, relatório e scanner (catálogo fictício) no Chromium real
+        run: node tests/browser-uau.cjs
       - name: Guardar relatório e captura em caso de falha
         if: always()
         uses: actions/upload-artifact@v4
@@ -93,6 +95,7 @@ jobs:
           node tests/rodar-busca.js | tee -a relatorio-elida-ia.txt
           node tests/rodar-ambiente.js | tee -a relatorio-elida-ia.txt
           node tests/rodar-ocr.js | tee -a relatorio-elida-ia.txt
+          node tests/rodar-demo.js | tee -a relatorio-elida-ia.txt
       - uses: actions/upload-artifact@v4
         with:
           name: elida-ia-${{ github.sha }}

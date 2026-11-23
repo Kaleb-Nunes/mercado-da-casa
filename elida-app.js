@@ -288,7 +288,7 @@
       if(remote && remote.atualizado === o.atualizado && JSON.stringify(remote) === JSON.stringify(o)) return;
       remote = o;
       try{ localStorage.setItem(OF_KEY, JSON.stringify(o)); }catch(e){}
-      if(ui.view === "inicio" || ui.view === "ofertas" || ui.view === "precos" || ui.view === "lista") render();
+      if(ui.view === "inicio" || ui.view === "gastos" || ui.view === "ofertas" || ui.view === "precos" || ui.view === "lista") render();
     }).catch(function(){});
   }
   function encartesAtivos(){
@@ -409,36 +409,22 @@
     wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>'
   };
 
-  /* ---------- Início ---------- */
-  function renderInicio(){
-    var k = state.mes, m = mesData(k, false), gasto = gastoTotal(m), orc = m.orc || 0;
-    var saldo = orc - gasto, pct = orc > 0 ? Math.min(100, gasto / orc * 100) : 0;
-    var nowKey = monthKey(todayStr()), isNow = k === nowKey;
-    var tip = "";
-    if(orc > 0){
-      if(saldo < 0){ tip = "Passou " + brl(-saldo) + " do orçamento"; }
-      else if(isNow){
-        var left = daysInMonth(k) - new Date().getDate() + 1;
-        tip = "Dá " + brl(saldo / left) + " por dia até " + daysInMonth(k) + "/" + k.slice(5);
-      } else if(k < nowKey){ tip = "Mês fechado com " + brl(saldo) + " de sobra"; }
-      else { tip = "Mês ainda não começou"; }
-    } else { tip = "Defina quanto pode gastar no mês"; }
-
+  /* ---------- Radar (início) ---------- */
+  function segEco(atual){
+    return '<nav class="eco-seg" aria-label="Economia">' + [["lista","Lista"],["precos","Preços"],["ofertas","Ofertas"],["gastos","Gastos"]].map(function(x){
+      return '<button type="button" data-act="nav" data-view="' + x[0] + '"' + (x[0] === atual ? ' aria-current="page"' : '') + '>' + x[1] + '</button>'; }).join("") + '</nav>';
+  }
+  function jantarCardHtml(){
     var jantar = jantarSalvo();
-    var compras = state.items.filter(function(it){return it.lista;});
-    var carrinho = compras.filter(function(it){return it.ok;}).length;
-    var h = '<section class="inicio-jantar"><div class="jantar-corpo"><h2>' +
+    return '<section class="inicio-jantar"><div class="jantar-corpo"><h2>' +
       (jantar ? esc(jantar.nome) : 'O que falta para o jantar?') + '</h2><p>' +
       (jantar ? 'Sua refeição está salva. Confira a despensa para a próxima compra.' : 'Escolha o prato, confira a despensa e leve só o que falta.') +
-      '</p><button class="bigbtn" type="button" data-act="jantar">Planejar meu jantar</button></div></section>' +
-      '<div class="mercado-acoes"><button class="inicio-rotulo" type="button" data-act="rotulo-foto">' +
-      '<img src="marca/familia-confere-rotulo.webp" width="88" height="78" alt="">' +
-      '<span>Ler rótulo por foto<small>Conferir a embalagem</small></span>' + IC.right + '</button>' +
-      '<button type="button" class="inicio-delegar" data-act="delegar"><span>Comprar para alguém<small>Preparar uma lista para enviar</small></span>' + IC.right + '</button></div>';
-    h += '<button type="button" class="inicio-consulta" data-act="consulta"><img src="marca/orientacao-rotulo.webp" width="68" height="64" alt=""><span><b>Levar à consulta</b><small>Guarde uma dúvida da compra para conversar com sua nutricionista.</small></span>'+IC.right+'</button>';
-    h += '<button type="button" class="atalho-comparar" data-act="comparar-proprios"><span><b>O que mudou no rótulo?</b><small>Compare o texto de duas embalagens.</small></span>'+IC.right+'</button>';
-    h += '<section class="retorno-mercado"><div><h2>Minha prateleira</h2><p>Guarde o rótulo de hoje. Na próxima compra, basta trazer o novo.</p></div><button class="bigbtn" type="button" data-act="prateleira">Abrir meus rótulos</button></section>'+
-      '<button class="btn-sm" type="button" data-act="caso-clinica">Conhecer o Elida para clínicas</button>';
+      '</p><button class="bigbtn" type="button" data-act="jantar">Planejar meu jantar</button></div></section>';
+  }
+  function dicasInicio(){
+    var h = "";
+    var compras = state.items.filter(function(it){return it.lista;});
+    var carrinho = compras.filter(function(it){return it.ok;}).length;
     if(compras.length){
       h += '<button type="button" class="compra-progresso" data-act="nav" data-view="lista"><b>Retomar minha compra</b>' +
         '<span>' + carrinho + ' de ' + compras.length + ' no carrinho</span><progress aria-label="Itens no carrinho" value="' + carrinho + '" max="' + compras.length + '"></progress></button>';
@@ -464,6 +450,33 @@
           '<button class="act" type="button" data-act="nav" data-view="rotulo">Ver dieta</button></div>';
       }
     }
+    return h;
+  }
+  function radarCtx(){
+    var confs = lerConferencias();
+    return { perfis: perfisEstado.perfis, conferencias: confs, hoje: todayStr(), homologacao: !!AMB.homologacao,
+      temDemo: perfisEstado.perfis.some(window.ElidaRadar.ehDemo) || confs.some(window.ElidaRadar.ehDemo) };
+  }
+  function renderInicio(){
+    document.getElementById("view-inicio").innerHTML = window.ElidaRadar.radarHtml(radarCtx()) + dicasInicio();
+  }
+
+  /* ---------- Gastos (antigo Início) ---------- */
+  function renderGastos(){
+    var k = state.mes, m = mesData(k, false), gasto = gastoTotal(m), orc = m.orc || 0;
+    var saldo = orc - gasto, pct = orc > 0 ? Math.min(100, gasto / orc * 100) : 0;
+    var nowKey = monthKey(todayStr()), isNow = k === nowKey;
+    var tip = "";
+    if(orc > 0){
+      if(saldo < 0){ tip = "Passou " + brl(-saldo) + " do orçamento"; }
+      else if(isNow){
+        var left = daysInMonth(k) - new Date().getDate() + 1;
+        tip = "Dá " + brl(saldo / left) + " por dia até " + daysInMonth(k) + "/" + k.slice(5);
+      } else if(k < nowKey){ tip = "Mês fechado com " + brl(saldo) + " de sobra"; }
+      else { tip = "Mês ainda não começou"; }
+    } else { tip = "Defina quanto pode gastar no mês"; }
+
+    var h = segEco("gastos");
     h += '<div class="mnav"><button class="round" type="button" data-act="mes-ant" aria-label="Mês anterior">' + IC.left + '</button>' +
       '<b>' + esc(monthName(k)) + '</b>' +
       '<button class="round" type="button" data-act="mes-prox" aria-label="Próximo mês">' + IC.right + '</button></div>';
@@ -524,7 +537,7 @@
       '<a class="link" id="wa-resumo" href="#" target="_blank" rel="noopener">Enviar resumo do mês</a>' +
       (state.carta ? '<button class="link" type="button" data-act="ver-carta">Ler a mensagem</button>' : '') + '</div></div></div></div>';
 
-    document.getElementById("view-inicio").innerHTML = h;
+    document.getElementById("view-gastos").innerHTML = h;
     var a = document.getElementById("wa-resumo");
     if(a) a.href = "https://wa.me/?text=" + encodeURIComponent(resumoTexto());
   }
@@ -562,12 +575,13 @@
   function renderPrecos(){
     var v = document.getElementById("view-precos");
     if(!v.dataset.built){
-      v.innerHTML = '<div class="head-row"><div><h2 class="title">Preços</h2><p class="sub">O último valor pago em cada item.</p></div>' +
+      v.innerHTML = '<div id="seg-precos"></div><div class="head-row"><div><h2 class="title">Preços</h2><p class="sub">O último valor pago em cada item.</p></div>' +
         '<div style="display:flex;gap:8px"><button class="btn-sm" type="button" data-act="nav" data-view="ofertas">🏷️ Ofertas</button><button class="btn-sm" type="button" data-act="novo-item">' + IC.plus + 'Novo</button></div></div>' + '<div id="precos-mudancas"></div>' +
         '<div class="searchbox"><label class="search" for="busca">' + IC.search + '<input id="busca" type="search" placeholder="Buscar item" autocomplete="off" enterkeyhint="search"></label>' +
         '<div class="chips" id="chips-cat"></div></div><div id="precos-lista" class="section"></div>';
       v.dataset.built = "1";
     }
+    document.getElementById("seg-precos").innerHTML = segEco("precos");
     document.getElementById("precos-mudancas").innerHTML = mudancasHtml();
     var cats = ["Todos"].concat(CATS.filter(function(c){ return state.items.some(function(i){ return i.cat === c; }); }));
     document.getElementById("chips-cat").innerHTML = cats.map(function(c){
@@ -612,7 +626,7 @@
     var est = items.reduce(function(s,i){ return s + lineTotal(i); }, 0);
     var cart = items.filter(function(i){ return i.ok; }).reduce(function(s,i){ return s + lineTotal(i); }, 0);
     var done = items.filter(function(i){ return i.ok; }).length;
-    var h = '<div><h2 class="title">Lista</h2><p class="sub">Monte antes de sair. No mercado, toque no círculo quando pôr no carrinho.</p></div>';
+    var h = segEco("lista") + '<div><h2 class="title">Lista</h2><p class="sub">Monte antes de sair. No mercado, toque no círculo quando pôr no carrinho.</p></div>' + jantarCardHtml();
     h += '<button type="button" class="btn-sm" data-act="nova-duvida" data-motivo="falta">Registrar dificuldade para a consulta</button>';
     if(!items.length){
       h += '<div class="card"><div class="empty">' + IC.basket + '<b>Sua lista está vazia</b>Comece com o básico da casa ou escolha os itens em Preços.' +
@@ -656,16 +670,20 @@
   var sheet = document.getElementById("sheet"), scrim = document.getElementById("scrim");
   var lastFocus = null;
   function openSheet(html, focusId){
+    pararCamera();
     lastFocus = document.activeElement;
     sheet.innerHTML = '<div class="grab" aria-hidden="true"></div><button class="sh-close" type="button" data-act="fechar" aria-label="Fechar">×</button>' + html;
     sheet.scrollTop = 0;
     sheet.classList.add("on"); scrim.classList.add("on");
+    sheet.removeAttribute("aria-hidden");
     document.body.style.overflow = "hidden";
     setTimeout(function(){ var f = focusId && document.getElementById(focusId); if(f){ try{ f.focus(); if(f.select) f.select(); }catch(e){} } }, 280);
   }
   function closeSheet(){
+    pararCamera();
     if(ui.sheet && ui.sheet.falando && window.speechSynthesis) speechSynthesis.cancel();
     sheet.classList.remove("on"); scrim.classList.remove("on"); ui.sheet = null; ui.armed = null;
+    sheet.setAttribute("aria-hidden", "true");
     if(window.ElidaOCR) window.ElidaOCR.encerrar();
     setTimeout(function(){ if(!sheet.classList.contains("on")) sheet.innerHTML = ""; }, 350);
     document.body.style.overflow = "";
@@ -843,7 +861,7 @@
       toast("Informe o prato e até 30 ingredientes de até 80 caracteres cada."); return;
     }
     state.jantar = {nome:nome, ingredientes:ingredientes};
-    save(); renderInicio(); abrirJantar();
+    save(); render(); abrirJantar();
   }
   function comprarJantar(){
     if(!ui.sheet || ui.sheet.type !== "jantar") return;
@@ -1322,10 +1340,10 @@
   function renderDieta(){
     var d = state.dieta || defaultDieta(), mod = DietaMotor.modeloPorId(d.modelo);
     var temLista = !!mod || (d.evitar || []).length > 0, ligada = d.ativa && temLista;
-    var h = segDieta("rotulo") + '<div class="head-row"><div><h2 class="title">' + esc(ligada ? (d.nome || 'Dieta') : (temLista ? 'Dieta desligada' : 'Nenhuma dieta')) + '</h2><p class="sub">' +
+    var h = '<div class="head-row"><div><h2 class="title">' + esc(ligada ? (d.nome || 'Dieta') : (temLista ? 'Dieta desligada' : 'Nenhuma dieta')) + '</h2><p class="sub">' +
       (ligada ? 'Cada item da casa recebe um de três avisos, só pelo nome.' : temLista ? 'O app não está avisando nada. Toque em Editar para ligar de novo.' : 'Se alguém da casa tem uma restrição orientada pelo médico, monte a lista aqui.') + '</p></div>' +
       (temLista ? '<button class="btn-sm" type="button" data-act="editar-dieta">' + IC.edit + 'Editar</button>' : '') + '</div>';
-    h += '<p class="aviso-fixo" role="note">' + esc(DietaMotor.AVISO_FIXO) + '</p>';
+    h += '<p class="aviso-fixo" role="note">' + esc(DietaMotor.AVISO_FIXO) + '</p>' + nutriHubHtml();
     if(!temLista){
       h += '<div class="card pad"><h3>Começar</h3><p class="note-sm">A lista base sem leite ainda não foi revisada por profissional de saúde. Mostre ao médico ou ao nutricionista antes de confiar nela.</p>' +
         '<div class="sh-actions"><button class="bigbtn" type="button" data-act="usar-modelo">Usar a lista base sem leite</button>' +
@@ -1412,7 +1430,7 @@
   function cap(s){ s = String(s || ""); return s.charAt(0).toUpperCase() + s.slice(1); }
   function renderOfertas(){
     var v = document.getElementById("view-ofertas"), w = new Date().getDay(), mine = meusMercados();
-    var h = '<div><button class="back" type="button" data-act="nav" data-view="inicio">' + IC.left + 'Início</button>' +
+    var h = segEco("ofertas") + '<div>' +
       '<h2 class="title">Ofertas da semana</h2><p class="sub">' + (remote ? esc(remote.regiao || "") + ' · atualizado em ' + dShort(remote.atualizado) + (remote.proxima && remote.proxima >= todayStr() ? ' · próxima atualização ' + dShort(remote.proxima) : '') : 'As ofertas chegam quando o app abre com internet.') + '</p></div>';
 
     avisosAtivos().forEach(function(a){
@@ -1881,7 +1899,9 @@
   }
 
   /* ---------- Navegação ---------- */
-  var VIEWS = ["inicio","precos","lista","rotulo","ofertas","perfis","rotulos"];
+  var VIEWS = ["inicio","precos","lista","rotulo","ofertas","perfis","rotulos","gastos"];
+  /* Quatro destinos na barra; as demais telas pertencem a um deles. */
+  var TAB_DE = {inicio:"inicio", rotulos:"inicio", perfis:"perfis", lista:"lista", precos:"lista", ofertas:"lista", gastos:"lista", rotulo:"rotulo"};
   /* ---------- Elida IA: perfis e rótulos dentro do app ----------
      Perfis ficam neste endereço (mesma origem do app), só com consentimento. A busca usa o
      contrato do elida-busca.js: dados fictícios na homologação, "indisponível" em produção. */
@@ -1917,27 +1937,19 @@
   }, { fornecedorAprovado: !!Busca.fornecedor });
   function perfilAtivo(){ return perfisEstado.perfis.filter(function(p){ return p.id === perfisEstado.ativo; })[0] || null; }
   function salvarPerfis(){ return Perfis.salvar(perfisEstado); }
-  function segDieta(atual){
-    return '<nav class="seg" aria-label="Seções da dieta">' + [["rotulo","Avisos da lista"],["perfis","Perfis"],["rotulos","Rótulos"]].map(function(s){
-      return '<button type="button" data-act="nav" data-view="' + s[0] + '"' + (s[0] === atual ? ' aria-current="page"' : '') + '>' + s[1] + '</button>'; }).join("") + '</nav>';
+  function nutriHubHtml(){
+    var confs = lerConferencias(), al = window.ElidaRadar.alertasMudanca(confs, perfisEstado.perfis, {hoje: todayStr()});
+    return '<section class="card pad nutri-hub"><h3>Modo nutricionista</h3><p class="note-sm">Leve para a consulta o que a família conferiu e perguntou. Você escolhe o que mostrar e nada é enviado sozinho.' +
+      (confs.length ? ' Hoje há ' + confs.length + (confs.length === 1 ? ' rótulo conferido' : ' rótulos conferidos') + (al.length ? ' e ' + al.length + (al.length === 1 ? ' mudança de fórmula' : ' mudanças de fórmula') : '') + '.' : '') +
+      '</p><div class="radar-atalhos"><button type="button" data-act="dossie">Exportar relatório<small>Dúvidas e consumo, para imprimir</small></button>' +
+      '<button type="button" data-act="consulta">Levar à consulta<small>Dúvidas e combinados</small></button>' +
+      '<button type="button" data-act="prateleira">Minha prateleira<small>Rótulos guardados</small></button>' +
+      '<button type="button" data-act="caso-clinica">Para clínicas<small>Exemplo fictício</small></button></div></section>';
   }
   function nomesRestricoes(p){ return p.restricoes.map(function(r){ return IA.RESTRICOES[r.tipo].nome + " (" + IA.SITUACOES[r.situacao].toLowerCase() + ")"; }).join(", "); }
   function renderPerfisIA(){
-    var v = document.getElementById("view-perfis"), ps = perfisEstado.perfis;
-    var h = segDieta("perfis") + '<div class="head-row"><div><h2 class="title">Perfis</h2><p class="sub">Um perfil para cada pessoa com restrição. O perfil escolhido é aplicado em todas as buscas de rótulo.</p></div>' +
-      '<button class="btn-sm" type="button" data-act="novo-perfil">' + IC.plus + 'Novo</button></div>';
-    if(!ps.length) h += '<div class="card ia-vazio"><p><b>Nenhum perfil ainda.</b></p><p class="sub">Não precisa de diagnóstico: dá para marcar uma suspeita ou preferência.</p><button class="bigbtn" type="button" data-act="novo-perfil">Criar o primeiro perfil</button></div>';
-    else {
-      h += '<fieldset class="card ia-lista"><legend class="sr">Perfil usado nas buscas</legend>' + ps.map(function(p){
-        return '<div class="ia-perfil"><label class="ia-op"><input type="radio" name="perfil-ativo" value="' + esc(p.id) + '"' + (p.id === perfisEstado.ativo ? ' checked' : '') + '><span><b>' + esc(p.apelido) + '</b>' +
-          (p.faixaEtaria ? ' · ' + esc(IA.FAIXAS[p.faixaEtaria]) : '') + '<br><small>' + esc(nomesRestricoes(p)) + '</small></span></label>' +
-          '<span class="ia-acoes"><button class="link" type="button" data-act="editar-perfil" data-id="' + esc(p.id) + '">Editar<span class="sr"> ' + esc(p.apelido) + '</span></button>' +
-          '<button class="link" type="button" data-act="excluir-perfil" data-id="' + esc(p.id) + '">' + (ui.armed === "xp-" + p.id ? 'Toque de novo' : 'Excluir') + '<span class="sr"> ' + esc(p.apelido) + '</span></button></span></div>';
-      }).join("") + '</fieldset>';
-      h += '<p class="sub">' + (perfisEstado.guardar ? 'Guardados só neste aparelho e no seu backup. Nada vai para a internet.' : 'Só nesta sessão: os perfis somem ao fechar o app. Para guardar, edite um perfil e marque "Guardar neste aparelho".') + '</p>' +
-        '<div class="links"><button class="link" type="button" data-act="apagar-perfis">' + (ui.armed === "apagar-perfis" ? 'Toque de novo para apagar todos' : 'Apagar todos os perfis') + '</button></div>';
-    }
-    v.innerHTML = h;
+    document.getElementById("view-perfis").innerHTML = window.ElidaRadar.familiaHtml({ perfis: perfisEstado.perfis, IA: IA, ativo: perfisEstado.ativo, armed: ui.armed,
+      guardar: perfisEstado.guardar, homologacao: !!AMB.homologacao, iconeMais: IC.plus, temDemo: perfisEstado.perfis.some(window.ElidaRadar.ehDemo) });
   }
   function sheetPerfil(p){
     ui.sheet = {type: "perfil", id: p ? p.id : null};
@@ -1980,13 +1992,170 @@
     toast(perfisEstado.guardar ? (guardou ? "Perfil salvo neste aparelho" : "Sem espaço para guardar o perfil") : "Perfil salvo só nesta sessão");
     gatilhosIA.disparar(antes && JSON.stringify(antes.restricoes) !== JSON.stringify(v.perfil.restricoes) ? "RESTRICAO_ALTERADA" : "PERFIL_SALVO");
   }
+
+  /* ---------- Escanear: código de barras, foto, busca ou digitação ---------- */
+  var scanStream = null, scanTimer = null;
+  function pararCamera(){
+    if(scanTimer){ clearInterval(scanTimer); scanTimer = null; }
+    if(scanStream){ try{ scanStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} scanStream = null; }
+  }
+  /* Dígito verificador GTIN (EAN-8, UPC-A, EAN-13, GTIN-14). */
+  function gtinValido(cod){
+    if(!/^\d+$/.test(cod) || [8,12,13,14].indexOf(cod.length) < 0) return false;
+    var soma = 0, n = cod.length;
+    for(var i = 0; i < n - 1; i++){ soma += (+cod.charAt(n - 2 - i)) * (i % 2 === 0 ? 3 : 1); }
+    return (10 - soma % 10) % 10 === +cod.charAt(n - 1);
+  }
+  function cameraDisponivel(){ return !!(window.BarcodeDetector && navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+  function abrirScanner(modo){
+    if(modo === "foto"){ sheetFoto(); return; }
+    if(modo === "digitar"){ sheetRotuloDigitado(); return; }
+    if(modo === "busca"){ closeSheet(); show("rotulos"); setTimeout(function(){ var f = document.getElementById("f-busca"); if(f) f.focus(); }, 60); return; }
+    if(modo === "codigo"){ painelCodigo(); return; }
+    ui.sheet = {type: "scan"};
+    function opc(m, ic, t, d){ return '<button type="button" class="scan-modo" data-act="scan" data-modo="' + m + '"><span class="ic">' + ic + '</span><span>' + t + '<small>' + d + '</small></span>' + IC.right + '</button>'; }
+    var U = window.ElidaUau;
+    openSheet('<h3 class="sh-title" id="sh-title">Conferir uma embalagem</h3><p class="sh-sub">Escolha como trazer o rótulo. A foto é lida neste aparelho. Na busca, só o código ou o nome digitado saem do aparelho; o perfil nunca.</p>' +
+      '<div class="scan-modos">' +
+      opc("codigo", U.ICONES_MODO.codigo, "Código de barras", cameraDisponivel() ? "Aponte a câmera ou digite o número" : "Digite o número do código") +
+      opc("foto", U.ICONES_MODO.foto, "Foto do rótulo", "Lê ingredientes e alérgicos aqui mesmo") +
+      opc("busca", U.ICONES_MODO.busca, "Buscar pelo nome", "Procure o produto e confira com a embalagem") +
+      opc("digitar", IC.edit, "Digitar o rótulo", "Copie da embalagem, campo a campo") + '</div>' +
+      '<p class="aviso-fixo" role="note">O app não diz que um alimento é seguro. Confira sempre a embalagem na sua mão.</p>');
+  }
+  function painelCodigo(){
+    var cam = cameraDisponivel();
+    ui.sheet = {type: "scan", modo: "codigo"};
+    openSheet('<h3 class="sh-title" id="sh-title">Código de barras</h3><p class="sh-sub">O número do código identifica o produto. Só ele sai do aparelho, e só quando você busca.</p>' +
+      (cam ? '<div id="scan-cam"><button class="bigbtn" type="button" data-act="scan-camera">Abrir a câmera</button></div>' : '<p class="tip">Este navegador não lê código de barras pela câmera. Digite o número ou fotografe o rótulo.</p>') +
+      '<form id="form-scan" class="scan-form" novalidate><label class="sr" for="scan-cod">Número do código de barras</label><input class="inp" id="scan-cod" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="8 a 14 números"><button class="btn-sm" type="submit">Buscar</button></form>' +
+      '<p class="ia-erro" id="scan-erro" role="alert" hidden></p>' +
+      (Busca.ficticio ? '<p class="sub">Homologação: códigos do catálogo fictício.</p><div class="chips">' + [["2000000000015","Biscoito de polvilho"],["2000000000039","Pão de forma"],["2000000000060","Chocolate meio amargo"]].map(function(x){
+        return '<button class="chip" type="button" data-act="scan-exemplo" data-cod="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join("") + '</div>' : '') +
+      '<div class="sh-actions"><button class="quiet" type="button" data-act="scan">Outras formas</button></div>', cam ? null : "scan-cod");
+  }
+  function buscarCodigo(cod){
+    closeSheet(); show("rotulos"); executarBusca(cod);
+  }
+  function abrirCamera(){
+    var box = document.getElementById("scan-cam"), sessao = ui.sheet;
+    if(!box || !cameraDisponivel()) return;
+    navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: "environment"}}, audio: false}).then(function(stream){
+      if(ui.sheet !== sessao){ stream.getTracks().forEach(function(t){ t.stop(); }); return; }
+      scanStream = stream;
+      box.innerHTML = '<video class="scan-video" id="scan-video" playsinline muted autoplay aria-label="Imagem da câmera"></video><p class="sub" role="status">Aponte para o código de barras da embalagem.</p>';
+      var v = document.getElementById("scan-video"); v.srcObject = stream;
+      var det, lendo = false;
+      try{ det = new window.BarcodeDetector({formats: ["ean_13","ean_8","upc_a"]}); }catch(err){ pararCamera(); box.innerHTML = '<p class="ia-erro">Não consegui iniciar a leitura. Digite o número do código.</p>'; return; }
+      scanTimer = setInterval(function(){
+        if(lendo || v.readyState < 2) return;
+        lendo = true;
+        det.detect(v).then(function(r){
+          lendo = false;
+          var cod = r && r.length ? String(r[0].rawValue || "") : "";
+          if(cod && gtinValido(cod)){ pararCamera(); buscarCodigo(cod); }
+        }, function(){ lendo = false; });
+      }, 350);
+    }, function(){
+      if(ui.sheet === sessao && box.isConnected) box.innerHTML = '<p class="ia-erro">Não consegui abrir a câmera. Libere o acesso no navegador ou digite o número do código.</p>';
+    });
+  }
+
+  /* ---------- Radar: alertas de mudança ---------- */
+  function alertaPorId(id){
+    return window.ElidaRadar.alertasMudanca(lerConferencias(), perfisEstado.perfis, {hoje: todayStr()}).filter(function(a){ return a.id === id; })[0];
+  }
+  function abrirAlertaRadar(id){
+    var a = alertaPorId(id);
+    if(!a){ toast("Esse alerta não está mais disponível."); return; }
+    ui.sheet = {type: "radar", id: id};
+    var R = window.ElidaRadar;
+    openSheet('<h3 class="sh-title" id="sh-title">' + esc(a.produto) + '</h3><p class="sh-sub">Rótulos conferidos em ' + esc(R.dataCurta(a.de)) + ' e ' + esc(R.dataCurta(a.para)) + '. Resultado de cada pessoa com o rótulo mais novo.</p>' +
+      R.alertaDetalheHtml(a) + '<div class="sh-actions"><button class="bigbtn" type="button" data-act="radar-consulta" data-id="' + esc(id) + '">Levar à consulta</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+  }
+  function consultaDoAlerta(id){
+    var a = alertaPorId(id);
+    if(!a){ toast("Esse alerta não está mais disponível."); return; }
+    novaDuvida("rotulo");
+    sheet.querySelector('[name="item"]').value = a.produto.slice(0, 80);
+    sheet.querySelector('[name="pergunta"]').value = window.ElidaRadar.perguntaConsulta(a);
+  }
+  function simulacaoNoApp(){
+    ui.sheet = {type: "simulacao"};
+    openSheet('<h3 class="sh-title" id="sh-title">Veja como funciona</h3><p class="sh-sub">Rótulos e pessoas fictícios. Escolha um produto e veja o que o Elida acha para cada pessoa da casa.</p><div id="sim-app" class="uau-ancora"></div>' +
+      '<div class="sh-actions"><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+    window.ElidaUau.montarSimulador(document.getElementById("sim-app"), {hoje: todayStr(), atraso: 250});
+  }
+  function demoFamiliaCarregar(){
+    if(!AMB.homologacao) return;
+    var R = window.ElidaRadar, dm = R.demoFamilia(todayStr(), IA);
+    perfisEstado.perfis = perfisEstado.perfis.filter(function(p){ return !R.ehDemo(p); }).concat(dm.perfis);
+    if(!perfisEstado.ativo) perfisEstado.ativo = dm.perfis[0].id;
+    salvarPerfis();
+    var antes = lerConferencias().filter(function(c){ return !R.ehDemo(c); });
+    try{ localStorage.setItem(CONF_KEY, JSON.stringify(dm.conferencias.concat(antes).sort(function(a, b){ return String(b.quando) < String(a.quando) ? -1 : 1; }).slice(0, 30))); }catch(e){}
+    render(); toast("Família de demonstração carregada. Dados fictícios.");
+  }
+  function demoFamiliaRemover(){
+    var R = window.ElidaRadar;
+    perfisEstado.perfis = perfisEstado.perfis.filter(function(p){ return !R.ehDemo(p); });
+    if(!perfisEstado.perfis.some(function(p){ return p.id === perfisEstado.ativo; })) perfisEstado.ativo = perfisEstado.perfis[0] ? perfisEstado.perfis[0].id : null;
+    salvarPerfis();
+    try{ localStorage.setItem(CONF_KEY, JSON.stringify(lerConferencias().filter(function(c){ return !R.ehDemo(c); }))); }catch(e){}
+    render(); toast("Dados de demonstração removidos.");
+  }
+
+  /* ---------- Relatório de dúvidas e consumo ---------- */
+  function dossieCtx(){
+    return {
+      hoje: todayStr(), perfis: perfisEstado.perfis, conferencias: lerConferencias(), IA: IA,
+      duvidas: lerConsulta().map(function(r){ return {item: r.item, motivo: motivosConsulta[r.motivo] ? motivosConsulta[r.motivo][0] : "", pergunta: r.pergunta, resposta: r.resposta}; }),
+      dieta: state.dieta,
+      dietaDe: function(nome){ return DietaMotor.avaliar({nome: nome}, state.dieta, {hoje: todayStr()}).estado; },
+      itensLista: state.items.filter(function(i){ return i.lista; }).map(function(i){ return {nome: i.nome, estado: DietaMotor.avaliar(i, state.dieta, {hoje: todayStr()}).estado}; }),
+      incluir: ui.dossieInc, motor: {versaoMotor: IA.VERSAO_MOTOR, versaoPolitica: IA.VERSAO_POLITICA}
+    };
+  }
+  function abrirDossie(){
+    var X = window.ElidaDossie;
+    if(!ui.dossieInc) ui.dossieInc = X.incluirPadrao();
+    ui.sheet = {type: "dossie"};
+    openSheet('<h3 class="sh-title" id="sh-title">Relatório de dúvidas e consumo</h3><p class="sh-sub">Escolha o que entra. O app não envia nada: você imprime, salva ou mostra na consulta.</p>' +
+      '<fieldset class="rd-grupo"><legend>O que incluir</legend>' + X.SECOES.map(function(k){
+        return '<label class="ia-op"><input type="checkbox" data-dossie-sec="' + k + '"' + (ui.dossieInc[k] ? ' checked' : '') + '> ' + esc(X.NOMES[k]) + '</label>'; }).join("") + '</fieldset>' +
+      '<div id="dossie-previa">' + X.dossieHtml(dossieCtx()) + '</div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="dossie-imprimir">Imprimir ou salvar em PDF</button><button class="btn-sm" type="button" data-act="dossie-baixar">Baixar arquivo</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+  }
+  function abrirDossieExemplo(){
+    var X = window.ElidaDossie;
+    ui.sheet = {type: "dossie-exemplo"};
+    openSheet('<h3 class="sh-title" id="sh-title">Relatório de exemplo</h3><p class="sh-sub">Dados fictícios. É assim que a família leva as dúvidas para a consulta, escolhendo o que mostrar.</p><div id="dossie-previa">' + X.exemplo(todayStr(), IA) + '</div>' +
+      '<div class="sh-actions"><button class="bigbtn" type="button" data-act="dossie-imprimir">Imprimir o exemplo</button><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+  }
+  function imprimirDossie(){
+    var alvo = document.getElementById("dossie-impressao"), prev = document.getElementById("dossie-previa");
+    if(!alvo || !prev) return;
+    alvo.innerHTML = prev.innerHTML;
+    var limpar = function(){ alvo.innerHTML = ""; window.removeEventListener("afterprint", limpar); };
+    window.addEventListener("afterprint", limpar);
+    try{ window.print(); }catch(e){ limpar(); toast("Não consegui abrir a impressão neste aparelho. Use Baixar arquivo."); }
+  }
+  function baixarDossie(){
+    try{
+      var html = window.ElidaDossie.dossieDocumento(dossieCtx()), blob = new Blob([html], {type: "text/html;charset=utf-8"}), url = URL.createObjectURL(blob);
+      var a = document.createElement("a"); a.href = url; a.download = window.ElidaDossie.nomeArquivo(todayStr()); document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      toast("Arquivo gerado neste aparelho. Nada foi enviado.");
+    }catch(e){ toast("Não consegui gerar o arquivo neste aparelho."); }
+  }
+
   function chipEstado(estado, texto){ return '<span class="ia-chip ia-' + esc(estado) + '">' + esc(texto || IA.TEXTO_ESTADO[estado]) + '</span>'; }
   function fonteTexto(f){ return esc(f.provedor) + ' · ' + esc(f.identificacao) + ' · consultado em ' + esc(f.dataVerificacao.split("-").reverse().join("/")) + (f.ficticio ? ' · <b>fictício</b>' : '') +
     (f.rascunho ? ' · <a class="link" href="' + esc(urlExternaSegura(f.urlProduto) || "https://world.openfoodfacts.org") + '" target="_blank" rel="noopener noreferrer">Dados: Open Food Facts (ODbL)</a>' : ''); }
   function avaliarProduto(p){ var pa = perfilAtivo(); return pa ? IA.analisar(pa, BUS.rotuloParaRegras(p), { hoje: todayStr() }) : null; }
   function renderRotulosIA(){
     var v = document.getElementById("view-rotulos"), pa = perfilAtivo(), r = buscaIA.resposta;
-    var h = segDieta("rotulos") + '<div class="head-row"><div><h2 class="title">Rótulos</h2><p class="sub">' +
+    var h = '<button class="back" type="button" data-act="nav" data-view="inicio">' + IC.left + 'Radar</button><div class="head-row"><div><h2 class="title">Rótulos</h2><p class="sub">' +
       (pa ? 'Usando o perfil <b>' + esc(pa.apelido) + '</b>. <button class="link" type="button" data-act="nav" data-view="perfis">Trocar</button>' : 'Nenhum perfil escolhido: os produtos aparecem sem avaliação. <button class="link" type="button" data-act="nav" data-view="perfis">Escolher perfil</button>') + '</p></div></div>';
     if(AMB.homologacao){
       var ft = fonteTeste();
@@ -2008,7 +2177,7 @@
       r.produtos.forEach(function(p){
         var a = p.sugestao ? null : avaliarProduto(p), sub = [p.marca, p.quantidade, p.ean].filter(Boolean).map(esc).join(' · ');
         h += '<article class="card ia-prod"><div class="ia-topo"><div><b>' + esc(p.nome) + '</b>' + (p.fonte.rascunho ? '<span class="ia-badge">' + (p.sugestao ? 'Sugestão' : 'Rascunho') + '</span>' : '') + '<br><small>' + sub + '</small></div>' + (a ? chipEstado(a.status, a.texto) : '') + '</div>' +
-          (p.sugestao ? '<p class="sub">Confirme se é o mesmo produto, sabor e tamanho da embalagem antes de ver a avaliação.</p>' : '') +
+          (p.sugestao ? '<p class="sub">Confirme se é o mesmo produto, sabor e tamanho da embalagem antes de ver a avaliação.</p>' : window.ElidaRadar.casaChipsHtml(perfisEstado.perfis, BUS.rotuloParaRegras(p), todayStr())) +
           (a ? '<ul class="ia-det">' + a.detalhes.map(function(d){ return '<li>' + esc(d.nome) + ': ' + chipEstado(d.estado, d.texto) + '</li>'; }).join("") + '</ul>' : '') +
           '<p class="ia-fonte">Fonte: ' + fonteTexto(p.fonte) + '</p><div class="links">' +
           (p.sugestao ? '<button class="link" type="button" data-act="confirmar-sugestao" data-id="' + esc(p.id) + '">É este produto (mesmo sabor e tamanho)</button>'
@@ -2047,7 +2216,7 @@
     var r = p.rotulo, a = avaliarProduto(p), dec = {contem: "contém glúten", nao_contem: "não contém glúten", nao_informado: "não informado", contraditorio: "contraditório"},
       lac = {contem_lactose: "contém lactose", sem_lactose: "sem lactose", nao_informado: "não informado", contraditorio: "contraditório"};
     openSheet('<h3 class="sh-title" id="sh-title">' + esc(p.nome) + '</h3><p class="sh-sub">Fonte: ' + fonteTexto(p.fonte) + '</p>' +
-      (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') +
+      (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') + window.ElidaRadar.casaBlocoHtml(perfisEstado.perfis, BUS.rotuloParaRegras(p), todayStr(), "pr") +
       '<dl class="ia-dl"><dt>Ingredientes</dt><dd>' + esc([].concat(r.ingredientes || []).join(", ") || "não informado") + (r.ingredientesCompletos ? '' : ' <b>(lista incompleta)</b>') + '</dd>' +
       '<dt>Alérgicos: contém</dt><dd>' + esc(r.advertencias && r.advertencias.contem || "nada declarado") + '</dd><dt>Pode conter</dt><dd>' + esc(r.advertencias && r.advertencias.podeConter || "nada declarado") + '</dd>' +
       '<dt>Glúten</dt><dd>' + esc(dec[r.declaracaoGluten] || "não informado") + '</dd><dt>Lactose</dt><dd>' + esc(lac[r.declaracaoLactose] || "não informado") + '</dd></dl>' +
@@ -2123,7 +2292,7 @@
     rot.categoria = g("rd-form").checked ? "formula_infantil" : "alimento";
     var a = IA.analisar(pa, rot, { hoje: todayStr() });
     if(a.status !== "INVALIDO") guardarConferencia(rot, a);
-    out.innerHTML = a.status === "INVALIDO" ? '<p class="ia-erro">' + esc(a.erros.join(" ")) + '</p>' : blocoAnalise(a);
+    out.innerHTML = a.status === "INVALIDO" ? '<p class="ia-erro">' + esc(a.erros.join(" ")) + '</p>' : blocoAnalise(a) + window.ElidaRadar.casaBlocoHtml(perfisEstado.perfis, rot, todayStr(), "dg");
     out.focus();
   }
   /* Rótulos conferidos ficam só neste aparelho: texto do rótulo, fonte, data e versões. Nada do perfil. */
@@ -2139,7 +2308,7 @@
     ui.sheet = {type: "conferencia", id: id};
     openSheet('<h3 class="sh-title" id="sh-title">' + esc(c.produto) + '</h3><p class="sh-sub">Conferido em ' + esc(String(c.quando).slice(0, 10).split("-").reverse().join("/")) + ' (motor ' + esc(c.versaoMotor) + ').' +
       (a && a.versaoMotor !== c.versaoMotor ? ' As regras mudaram desde então: esta é a análise com as regras atuais.' : '') + '</p>' +
-      (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') + '<div class="sh-actions"><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
+      (a ? blocoAnalise(a) : '<p class="tip">Escolha um perfil para ver a avaliação.</p>') + window.ElidaRadar.casaBlocoHtml(perfisEstado.perfis, c.rotulo, todayStr(), "ra") + '<div class="sh-actions"><button class="quiet" type="button" data-act="fechar">Fechar</button></div>');
   }
   /* Foto do rótulo: lida aqui mesmo, sem enviar a imagem. Ilegível = INFORMAÇÃO INSUFICIENTE. */
   function sheetFoto(){
@@ -2183,15 +2352,16 @@
     else if(ui.view === "ofertas") renderOfertas();
     else if(ui.view === "perfis") renderPerfisIA();
     else if(ui.view === "rotulos") renderRotulosIA();
+    else if(ui.view === "gastos") renderGastos();
     syncPill();
   }
   function show(v, fromHash){
     if(VIEWS.indexOf(v) < 0) v = "inicio";
     ui.view = v; ui.armed = null;
-    VIEWS.forEach(function(x){
-      document.getElementById("view-" + x).classList.toggle("on", x === v);
-      var t = document.getElementById("tab-" + x), dieta = x === "rotulo" && (v === "perfis" || v === "rotulos");
-      if(t){ if(x === v || dieta) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current"); }
+    VIEWS.forEach(function(x){ document.getElementById("view-" + x).classList.toggle("on", x === v); });
+    ["inicio","perfis","lista","rotulo"].forEach(function(x){
+      var t = document.getElementById("tab-" + x);
+      if(t){ if(TAB_DE[v] === x) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current"); }
     });
     render();
     if(!fromHash){ try{ history.replaceState(null, "", "#" + v); }catch(e){} }
@@ -2207,6 +2377,8 @@
 
   /* ---------- Eventos ---------- */
   document.addEventListener("click", function(e){
+    var ln = e.target.closest ? e.target.closest("[data-uau-linha]") : null;
+    if(ln && !ln.closest(".uau-sim[data-ligado]")){ window.ElidaUau.alternarLinha(ln); return; }
     var b = e.target.closest ? e.target.closest("[data-act]") : null;
     if(!b) return;
     var act = b.dataset.act, id = b.dataset.id, it;
@@ -2251,6 +2423,17 @@
       case "editar-jantar": editarJantar(); break;
       case "comprar-jantar": comprarJantar(); break;
       case "nav": show(b.dataset.view); break;
+      case "scan": abrirScanner(b.dataset.modo); break;
+      case "scan-camera": abrirCamera(); break;
+      case "scan-exemplo": buscarCodigo(b.dataset.cod); break;
+      case "radar-ver": abrirAlertaRadar(id); break;
+      case "radar-consulta": consultaDoAlerta(id); break;
+      case "radar-sim": simulacaoNoApp(); break;
+      case "demo-familia": demoFamiliaCarregar(); break;
+      case "demo-remover": demoFamiliaRemover(); break;
+      case "dossie": abrirDossie(); break;
+      case "dossie-imprimir": imprimirDossie(); break;
+      case "dossie-baixar": baixarDossie(); break;
       case "novo-perfil": sheetPerfil(null); break;
       case "editar-perfil": sheetPerfil(perfisEstado.perfis.filter(function(p){ return p.id === id; })[0] || null); break;
       case "excluir-perfil":
@@ -2273,8 +2456,8 @@
         if(ui.armed !== "apagar-conferencias"){ ui.armed = "apagar-conferencias"; render(); break; }
         ui.armed = null; try{ localStorage.removeItem(CONF_KEY); }catch(err){} render(); toast("Rótulos conferidos apagados deste aparelho"); break;
       case "fechar": closeSheet(); break;
-      case "fechar-dica": state.dica = false; save(); renderInicio(); break;
-      case "fechar-ios": state.dicaIos = false; save(); renderInicio(); break;
+      case "fechar-dica": state.dica = false; save(); render(); break;
+      case "fechar-ios": state.dicaIos = false; save(); render(); break;
       case "ver-carta": showWelcome(); break;
       case "colar-import": sheetColar(); break;
       case "ler-import":
@@ -2313,7 +2496,7 @@
         var wl = document.getElementById("welcome"); wl.hidden = true; wl.innerHTML = ""; document.body.style.overflow = "";
         show("inicio"); break;
       case "instalar":
-        if(installEvt){ try{ installEvt.prompt(); installEvt.userChoice.then(function(){ installEvt = null; renderInicio(); }, function(){}); }catch(err){} }
+        if(installEvt){ try{ installEvt.prompt(); installEvt.userChoice.then(function(){ installEvt = null; render(); }, function(){}); }catch(err){} }
         break;
       case "novo-gasto": sheetGasto(null); break;
       case "editar-gasto":
@@ -2338,14 +2521,14 @@
       case "set-local": document.getElementById("f-local").value = b.dataset.v; break;
       case "set-mercado": document.getElementById("f-mercado").value = b.dataset.v; break;
       case "set-por": var np = document.getElementById("n-por"); np.value = b.dataset.v; np.focus(); break;
-      case "mes-ant": state.mes = shiftMonth(state.mes, -1); save(); renderInicio(); break;
-      case "mes-prox": state.mes = shiftMonth(state.mes, 1); save(); renderInicio(); break;
-      case "ir-mes": state.mes = b.dataset.k; save(); renderInicio(); window.scrollTo(0,0); break;
+      case "mes-ant": state.mes = shiftMonth(state.mes, -1); save(); renderGastos(); break;
+      case "mes-prox": state.mes = shiftMonth(state.mes, 1); save(); renderGastos(); break;
+      case "ir-mes": state.mes = b.dataset.k; save(); renderGastos(); window.scrollTo(0,0); break;
       case "orcamento": sheetOrcamento(); break;
       case "salvar-orc":
         var o = parseMoney(document.getElementById("f-orc").value);
         if(o === null){ toast("Digite o valor"); break; }
-        mesData(state.mes, true).orc = o; save(); closeSheet(); renderInicio(); toast("Orçamento salvo"); break;
+        mesData(state.mes, true).orc = o; save(); closeSheet(); renderGastos(); toast("Orçamento salvo"); break;
       case "filtro": ui.filtro = b.dataset.v; renderPrecos(); break;
       case "item": it = findItem(id); if(it) sheetItem(it); break;
       case "salvar-preco": salvarPreco(); break;
@@ -2435,6 +2618,13 @@
   });
   document.addEventListener("submit", function(e){
     var f = e.target;
+    if(f.id === "form-scan"){
+      e.preventDefault();
+      var cod = f.elements["scan-cod"] ? f.elements["scan-cod"].value.replace(/\D/g, "") : document.getElementById("scan-cod").value.replace(/\D/g, ""), erro = document.getElementById("scan-erro");
+      if(!gtinValido(cod)){ erro.hidden = false; erro.textContent = "Esse número não parece um código de barras válido. Confira os dígitos (8 a 14 números)."; document.getElementById("scan-cod").setAttribute("aria-invalid", "true"); return; }
+      buscarCodigo(cod);
+      return;
+    }
     if(f.id==="form-referencia"){
       e.preventDefault();
       var nomeRef=f.elements.produto.value.trim(), textoRef=f.elements.atual.value.trim();
@@ -2477,6 +2667,12 @@
     else if(f.id === "form-rd"){ e.preventDefault(); analisarDigitado(); }
   });
   document.addEventListener("change", function(e){
+    if(e.target.dataset && e.target.dataset.dossieSec){
+      ui.dossieInc = ui.dossieInc || window.ElidaDossie.incluirPadrao();
+      ui.dossieInc[e.target.dataset.dossieSec] = e.target.checked;
+      var prev = document.getElementById("dossie-previa"); if(prev) prev.innerHTML = window.ElidaDossie.dossieHtml(dossieCtx());
+      return;
+    }
     if(e.target.name === "motivo" && e.target.form && e.target.form.id==="form-duvida"){
       var pergunta=e.target.form.elements.pergunta;
       if(!pergunta.value.trim() || Object.values(motivosConsulta).some(function(m){return pergunta.value===m[1];}))
@@ -2512,7 +2708,7 @@
     });
     e.target.value = "";
   });
-  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); installEvt = e; if(state && ui.view === "inicio") renderInicio(); });
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); installEvt = e; if(state && ui.view === "inicio") render(); });
   window.addEventListener("hashchange", function(){
     var hs = location.hash || "";
     if(hs.indexOf("#importar=") === 0){
@@ -2546,6 +2742,7 @@
     if(hs === "#ler-foto"){ show("inicio"); sheetFoto(); return; }
     if(hs === "#meus-rotulos"){ show("inicio"); abrirPrateleira(); return; }
     if(hs === "#caso-clinica"){ show("inicio"); casoClinica(0); return; }
+    if(hs === "#relatorio-exemplo"){ show("inicio"); abrirDossieExemplo(); return; }
     if(hs === "#comparar-rotulos"){ show("inicio"); abrirComparacao(); return; }
     if(hs === "#jantar"){ show("inicio"); abrirJantar(); return; }
     show(hs.replace("#",""), true);
@@ -2591,6 +2788,7 @@
     else if(h === "ler-foto"){ show("inicio"); sheetFoto(); }
     else if(h === "meus-rotulos"){ show("inicio"); abrirPrateleira(); }
     else if(h === "caso-clinica"){ show("inicio"); casoClinica(0); }
+    else if(h === "relatorio-exemplo"){ show("inicio"); abrirDossieExemplo(); }
     else if(h === "comparar-rotulos"){ show("inicio"); abrirComparacao(); }
     else if(h === "jantar"){ show("inicio"); abrirJantar(); }
     else if(pendingImport) setTimeout(function(){ sheetImport(pendingImport); }, 350);
