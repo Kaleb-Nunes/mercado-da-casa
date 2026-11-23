@@ -39,12 +39,17 @@
 .entrada-social { margin-top: 20px; text-align: center; }
 .entrada-social p { display: flex; align-items: center; gap: 12px; font-size: 13px; margin: 0 0 12px; }
 .entrada-social p::before, .entrada-social p::after { content: ""; flex: 1; height: 1px; background: #cad1c8; }
-.entrada-social > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-#entrada [data-provedor] { display: flex; align-items: center; justify-content: center; gap: 12px; background: white; font-size: 15px; }
+.entrada-social > .entrada-provedores-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+#entrada [data-provedor] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px; padding: 10px 4px; background: white; font-size: 14px; line-height: 1.15; overflow-wrap: anywhere; }
+#entrada [data-provedor] img { width: 32px; height: 32px; object-fit: contain; }
+#entrada [data-provedor="apple"] img { width: 40px; height: 40px; margin: -4px 0; }
 #entrada [data-provedor="apple"] { background: black; color: white; border-color: black; }
-#entrada [data-provedor] img { object-fit: contain; }
-#entrada [data-provedor="apple"] img { width: 32px; height: 32px; }
-.entrada-provedores { display: block; margin: 8px 0; color: #526259; font-size: 12px; }
+#entrada .prov-verbo { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#entrada [data-provedor][aria-disabled="true"] { cursor: default; }
+#entrada [data-provedor][data-estado="indisponivel"] { border-style: dashed; color: #526259; background: #f6f6ef; }
+#entrada [data-provedor][data-estado="indisponivel"] img, #entrada [data-provedor][data-estado="consultando"] img { opacity: .6; }
+#entrada [data-provedor="apple"][data-estado="indisponivel"] { color: #e4e4e4; border-color: #8c8c8c; }
+.entrada-provedores { display: block; margin: 10px 0; color: #44574c; font-size: 13px; line-height: 1.4; }
 .entrada-status:empty { display: none; }
 .entrada-status { font-size: 14px; padding: 10px 12px; border-radius: 8px; background: #e9eee5; }
 #entrada .entrada-pausa { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; width: 44px; border-radius: 50%; }

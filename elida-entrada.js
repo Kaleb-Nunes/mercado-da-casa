@@ -11,29 +11,55 @@ window.ElidaEntrada = (function () {
   const nomes = {login:"Entre na sua conta", cadastro:"Crie sua conta", recuperar:"Recupere sua senha"};
   let servicos, tela, ocupado = false, disponibilidade, consulta;
 
+  const marcas = {google:"Google", apple:"Apple", facebook:"Facebook"};
+  function estadoDe(provedor) {
+    if (consulta) return "consultando";
+    return disponibilidade?.[provedor] === true ? "ativo" : "indisponivel";
+  }
   function atualizarBotoes() {
     botoes.forEach(botao => {
-      botao.hidden = disponibilidade?.[botao.dataset.provedor] !== true;
-      botao.disabled = ocupado || botao.hidden;
+      const estado = estadoDe(botao.dataset.provedor);
+      botao.dataset.estado = estado;
+      botao.setAttribute("aria-disabled", String(ocupado || estado !== "ativo"));
     });
-    buscar(".entrada-separador").hidden = botoes.every(botao => botao.hidden);
+  }
+  function juntar(lista) {
+    return lista.length < 2 ? lista.join("") : lista.slice(0, -1).join(", ") + " e " + lista[lista.length - 1];
+  }
+  function avisoDisponibilidade() {
+    const fora = botoes.map(botao => botao.dataset.provedor).filter(provedor => disponibilidade?.[provedor] !== true);
+    if (!fora.length) return "";
+    const nomesFora = juntar(fora.map(provedor => marcas[provedor]));
+    return fora.length === botoes.length
+      ? "Entrada com " + nomesFora + " ainda não está disponível. Use e-mail e senha."
+      : "Entrada com " + nomesFora + " ainda não está disponível. Use as outras opções ou e-mail e senha.";
   }
   async function verificarProvedores() {
     if (consulta) return;
     disponibilidade = null;
-    atualizarBotoes();
     const nota = buscar(".entrada-provedores");
     nota.textContent = "Consultando opções de entrada…";
-    consulta = servicos.provedores();
+    consulta = Promise.resolve().then(() => servicos.provedores());
+    atualizarBotoes();
+    let falhou = false;
     try {
       disponibilidade = await consulta;
-      nota.textContent = "";
     } catch {
-      nota.textContent = "Sem conexão com o login social. Volte e tente novamente.";
+      falhou = true;
     } finally {
       consulta = null;
       atualizarBotoes();
     }
+    nota.textContent = falhou ? "Sem conexão com o login social. Toque em uma das opções para tentar de novo." : avisoDisponibilidade();
+  }
+  function escolherProvedor(provedor) {
+    if (consulta) { status.textContent = "Consultando opções de entrada…"; return; }
+    if (!disponibilidade) { verificarProvedores(); return; }
+    if (disponibilidade[provedor] !== true) {
+      status.textContent = "Entrada com " + marcas[provedor] + " ainda não está disponível. Use e-mail e senha.";
+      return;
+    }
+    executar(() => servicos.autenticar(provedor));
   }
   let publico="familia";
   function escolherPublico(valor){
@@ -89,6 +115,7 @@ window.ElidaEntrada = (function () {
     buscar('[data-tela="recuperar"]').hidden = tela !== "login";
     buscar('[type="submit"]').textContent = cadastro ? "Criar conta" : recuperar ? "Enviar instruções" : "Entrar por e-mail";
     social.hidden = inicio || recuperar;
+    buscar(".entrada-separador").textContent = cadastro ? "Ou cadastre-se com" : "Ou entre com";
     const alternar = social.querySelector("[data-tela]");
     alternar.dataset.tela = cadastro ? "login" : "cadastro";
     alternar.textContent = cadastro ? "Já tenho uma conta" : "Ainda não tem conta? Cadastre-se";
@@ -128,7 +155,7 @@ window.ElidaEntrada = (function () {
       botao.setAttribute("aria-label", pausado ? "Retomar animação do fundo" : "Pausar animação do fundo");
     } else if (botao.dataset.tela) exibir(botao.dataset.tela);
     else if (botao.matches(".entrada-voltar")) exibir(tela === "recuperar" ? "login" : "inicio");
-    else if (botao.dataset.provedor) executar(() => servicos.autenticar(botao.dataset.provedor));
+    else if (botao.dataset.provedor) escolherProvedor(botao.dataset.provedor);
     else if (botao.matches(".entrada-visitante, [data-jantar], [data-comparar], [data-ler-foto], [data-caso], [data-relatorio], [data-prateleira]")) executar(async () => {
       await servicos.visitar();
       form.reset();

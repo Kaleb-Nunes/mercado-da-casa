@@ -502,11 +502,11 @@ html[data-elida-bloqueada=true] #elida-conta-painel{visibility:visible!important
         <button class="entrada-principal" type="submit">Entrar por e-mail</button>
       </form>
       <div class="entrada-social" hidden>
-        <p class="entrada-separador" hidden>Ou</p>
-        <div>
-          <button type="button" data-provedor="google" hidden disabled><img src="marca/google-login.png" alt="" width="24" height="24">Continuar com Google</button>
-          <button type="button" data-provedor="facebook" hidden disabled><img src="marca/facebook-login.png" alt="" width="24" height="24">Continuar com Facebook</button>
-          <button type="button" data-provedor="apple" hidden disabled><img src="marca/apple-login.png" alt="" width="24" height="24">Continuar com Apple</button>
+        <p class="entrada-separador">Ou entre com</p>
+        <div class="entrada-provedores-grade" role="group" aria-label="Entrar com outra conta">
+          <button type="button" data-provedor="google" data-estado="consultando" aria-disabled="true"><img src="marca/google-login.png" alt="" width="32" height="32"><span><span class="prov-verbo">Continuar com </span><span class="prov-nome">Google</span></span></button>
+          <button type="button" data-provedor="apple" data-estado="consultando" aria-disabled="true"><img src="marca/apple-login.png" alt="" width="40" height="40"><span><span class="prov-verbo">Continuar com </span><span class="prov-nome">Apple</span></span></button>
+          <button type="button" data-provedor="facebook" data-estado="consultando" aria-disabled="true"><img src="marca/facebook-login.png" alt="" width="32" height="32"><span><span class="prov-verbo">Continuar com </span><span class="prov-nome">Facebook</span></span></button>
         </div>
         <small class="entrada-provedores" aria-live="polite"></small>
         <button class="entrada-link" type="button" data-tela="cadastro">Ainda não tem conta? Cadastre-se</button>

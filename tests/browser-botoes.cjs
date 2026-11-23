@@ -260,16 +260,45 @@ async function testar(){
   const mockAuth="https://elidateste.supabase.co";
   await login.route("**/elida-supabase-config.js",r=>r.fulfill({contentType:"application/javascript",
     body:"window.ELIDA_SUPABASE="+JSON.stringify({origem,url:mockAuth,chavePublicavel:"sb_publishable_teste"})}));
-  let ativos={google:true,apple:false,facebook:false};
-  await login.route(mockAuth+"/auth/v1/settings",r=>r.fulfill({json:{external:ativos}}));
-  await login.route(mockAuth+"/auth/v1/authorize?**",r=>r.fulfill({contentType:"text/html",body:"Autorização simulada"}));
+  let ativos={google:true,apple:false,facebook:false}, consultas=0, autorizacoes=0;
+  await login.route(mockAuth+"/auth/v1/settings",r=>{consultas++;return r.fulfill({json:{external:ativos}});});
+  await login.route(mockAuth+"/auth/v1/authorize?**",r=>{autorizacoes++;return r.fulfill({contentType:"text/html",body:"Autorização simulada"});});
+  const marcas={google:"Google",apple:"Apple",facebook:"Facebook"};
+  // Os três botões ficam sempre visíveis, com as marcas originais, em login e cadastro.
+  for(const tela of ["login","cadastro"]){
+    await social.goto(origem);
+    await social.locator('#entrada .entrada-cta [data-tela="'+tela+'"]').click();
+    assert.match(await social.locator(".entrada-separador").innerText(),tela==="login"?/Ou entre com/:/Ou cadastre-se com/);
+    const nomesVisiveis=await social.locator("#entrada [data-provedor]:visible .prov-nome").allInnerTexts();
+    assert.deepEqual(nomesVisiveis,["Google","Apple","Facebook"]);
+    for(const provedor of Object.keys(marcas)){
+      const botao=social.getByRole("button",{name:"Continuar com "+marcas[provedor]});
+      await botao.waitFor({state:"visible"});
+      const caixa=await botao.boundingBox();
+      assert.ok(caixa.height>=44&&caixa.width>=44,"alvo de toque pequeno: "+provedor);
+      const img=botao.locator("img");
+      await img.evaluate(el=>el.decode());
+      assert.match(await img.getAttribute("src"),new RegExp("^marca/"+provedor+"-login\\.png$"));
+      assert.ok(await img.evaluate(el=>el.naturalWidth)>=24,"logo não carregou: "+provedor);
+    }
+    await social.locator('#entrada [data-provedor][data-estado="consultando"]').first().waitFor({state:"detached"});
+    assert.equal(await social.locator('[data-provedor="google"]').getAttribute("data-estado"),"ativo");
+    assert.equal(await social.locator('[data-provedor="apple"]').getAttribute("data-estado"),"indisponivel");
+    assert.match(await social.locator(".entrada-provedores").innerText(),/Apple e Facebook ainda não está disponível/);
+  }
+  // Provedor desativado no servidor: toque informa, e nenhuma autorização é iniciada.
+  const antes=autorizacoes;
+  await social.getByRole("button",{name:"Continuar com Facebook"}).click({force:true});
+  assert.match(await social.locator(".entrada-status").innerText(),/Facebook ainda não está disponível/);
+  await social.getByRole("button",{name:"Continuar com Apple"}).click({force:true});
+  assert.match(await social.locator(".entrada-status").innerText(),/Apple ainda não está disponível/);
+  assert.equal(autorizacoes,antes,"provedor inativo não pode iniciar OAuth");
+  assert.equal(await social.url(),origem+"/");
   for(const provedor of ["google","apple","facebook"]){
     await social.goto(origem);
-    await social.locator('#entrada [data-tela="login"]').click();
-    const botao=social.locator('[data-provedor="'+provedor+'"]');
-    await botao.waitFor({state:"visible"});
-    await botao.locator("img").evaluate(img=>img.decode());
-    if(provedor==="google")assert.equal(await social.locator("#entrada [data-provedor]:visible").count(),1);
+    await social.locator('#entrada .entrada-cta [data-tela="login"]').click();
+    const botao=social.getByRole("button",{name:"Continuar com "+marcas[provedor]});
+    await social.locator('[data-provedor="'+provedor+'"][data-estado="'+(ativos[provedor]?"ativo":"indisponivel")+'"]').waitFor();
     await Promise.all([social.waitForURL(mockAuth+"/auth/v1/authorize?**"),botao.click()]);
     const url=new URL(social.url());
     assert.equal(url.searchParams.get("provider"),provedor);
@@ -277,6 +306,18 @@ async function testar(){
     assert.ok(url.searchParams.get("code_challenge"));
     ativos={google:true,apple:true,facebook:true};
   }
+  // Falha ao consultar o serviço: botões continuam visíveis, sem OAuth, e um toque tenta de novo.
+  let falha=true;
+  await login.unroute(mockAuth+"/auth/v1/settings");
+  await login.route(mockAuth+"/auth/v1/settings",r=>falha?r.abort("failed"):r.fulfill({json:{external:{google:true,apple:true,facebook:true}}}));
+  await social.goto(origem);
+  await social.locator('#entrada .entrada-cta [data-tela="login"]').click();
+  await social.locator(".entrada-provedores",{hasText:/Sem conexão/}).waitFor();
+  assert.equal(await social.locator("#entrada [data-provedor]:visible").count(),3);
+  assert.equal(await social.locator('[data-provedor="google"]').getAttribute("aria-disabled"),"true");
+  falha=false;
+  await social.getByRole("button",{name:"Continuar com Google"}).click({force:true});
+  await social.locator('[data-provedor="google"][aria-disabled="false"]').waitFor();
   await login.close();
   resultado.push("marcas, disponibilidade e rota de autorização PKCE dos três provedores com serviço simulado");
 
